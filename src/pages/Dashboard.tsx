@@ -22,8 +22,10 @@ import {
   User,
   FileText,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
 
 const enrolledCourses = [
@@ -86,6 +88,7 @@ const weeklyGoal = {
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState("courses");
   const { user, signOut } = useAuth();
+  const { isAdmin } = useUserRole();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -126,7 +129,15 @@ const DashboardPage = () => {
                 <p className="text-primary-foreground/80">{user?.email}</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="hero-outline" size="sm">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin Panel
+                  </Button>
+                </Link>
+              )}
               <Button variant="hero-outline" size="sm">
                 <Bell className="w-4 h-4 mr-2" />
                 Notifications
