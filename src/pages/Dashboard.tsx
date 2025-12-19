@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,13 +16,15 @@ import {
   Trophy,
   Target,
   TrendingUp,
-  Star,
   ChevronRight,
   Bell,
   Settings,
   User,
   FileText,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const enrolledCourses = [
   {
@@ -83,6 +85,29 @@ const weeklyGoal = {
 
 const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState("courses");
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+    navigate("/");
+  };
+
+  const getUserInitials = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+        .split(" ")
+        .map((n: string) => n[0])
+        .join("")
+        .toUpperCase();
+    }
+    return user?.email?.charAt(0).toUpperCase() || "U";
+  };
+
+  const getUserName = () => {
+    return user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+  };
 
   return (
     <Layout>
@@ -91,12 +116,14 @@ const DashboardPage = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Avatar className="w-16 h-16 border-2 border-accent">
-                <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" />
-                <AvatarFallback>VK</AvatarFallback>
+                <AvatarImage src="" />
+                <AvatarFallback className="bg-accent text-accent-foreground text-xl font-bold">
+                  {getUserInitials()}
+                </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="font-display text-2xl font-bold">Welcome back, Victor!</h1>
-                <p className="text-primary-foreground/80">Continue your learning journey</p>
+                <h1 className="font-display text-2xl font-bold">Welcome back, {getUserName()}!</h1>
+                <p className="text-primary-foreground/80">{user?.email}</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -110,6 +137,10 @@ const DashboardPage = () => {
                   Settings
                 </Button>
               </Link>
+              <Button variant="hero-outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
             </div>
           </div>
         </div>

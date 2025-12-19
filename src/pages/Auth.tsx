@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,13 +15,16 @@ import {
   EyeOff,
   ArrowRight,
   CheckCircle,
-  Github,
-  Chrome
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, signIn, signUp } = useAuth();
+  
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,16 +38,26 @@ const AuthPage = () => {
     agreeTerms: false,
   });
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      const from = (location.state as any)?.from?.pathname || "/dashboard";
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
     if (mode === "signup") {
       if (formData.password !== formData.confirmPassword) {
         toast.error("Passwords do not match");
+        setIsLoading(false);
+        return;
+      }
+      if (formData.password.length < 6) {
+        toast.error("Password must be at least 6 characters");
         setIsLoading(false);
         return;
       }
@@ -53,16 +66,37 @@ const AuthPage = () => {
         setIsLoading(false);
         return;
       }
-      toast.success("Account created successfully! Please check your email for verification.");
+      
+      const { error } = await signUp(formData.email, formData.password, formData.name);
+      
+      if (error) {
+        if (error.message.includes("already registered")) {
+          toast.error("This email is already registered. Please sign in instead.");
+        } else {
+          toast.error(error.message);
+        }
+        setIsLoading(false);
+        return;
+      }
+      
+      toast.success("Account created successfully! Welcome to EduVerse!");
     } else {
+      const { error } = await signIn(formData.email, formData.password);
+      
+      if (error) {
+        if (error.message.includes("Invalid login")) {
+          toast.error("Invalid email or password. Please try again.");
+        } else {
+          toast.error(error.message);
+        }
+        setIsLoading(false);
+        return;
+      }
+      
       toast.success("Welcome back! Redirecting to dashboard...");
     }
 
     setIsLoading(false);
-  };
-
-  const handleSocialLogin = (provider: string) => {
-    toast.info(`${provider} login coming soon!`);
   };
 
   return (
@@ -96,33 +130,6 @@ const AuthPage = () => {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Social Login Buttons */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleSocialLogin("Google")}
-              >
-                <Chrome className="w-4 h-4 mr-2" />
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleSocialLogin("GitHub")}
-              >
-                <Github className="w-4 h-4 mr-2" />
-                GitHub
-              </Button>
-            </div>
-
-            <div className="relative">
-              <Separator />
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-3 text-sm text-muted-foreground">
-                or continue with email
-              </span>
-            </div>
-
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "signup" && (
