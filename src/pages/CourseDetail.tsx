@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,9 +27,11 @@ import {
   BarChart,
   Trophy,
   Loader2,
+  GraduationCap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useEnrollment } from "@/hooks/useEnrollment";
 
 // Mock course data
 const courseData = {
@@ -148,8 +150,10 @@ const courseData = {
 
 const CourseDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const { isEnrolled, isLoading: isEnrollmentLoading } = useEnrollment(id);
 
   const handleEnroll = async () => {
     setIsProcessingPayment(true);
@@ -438,22 +442,39 @@ const CourseDetailPage = () => {
                   </p>
 
                   {/* Action Buttons */}
-                  <Button 
-                    variant="accent" 
-                    size="lg" 
-                    className="w-full" 
-                    onClick={handleEnroll}
-                    disabled={isProcessingPayment}
-                  >
-                    {isProcessingPayment ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Enroll Now"
-                    )}
-                  </Button>
+                  {isEnrollmentLoading ? (
+                    <Button variant="accent" size="lg" className="w-full" disabled>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Loading...
+                    </Button>
+                  ) : isEnrolled ? (
+                    <Button 
+                      variant="accent" 
+                      size="lg" 
+                      className="w-full" 
+                      onClick={() => navigate(`/course/${id}/learn`)}
+                    >
+                      <GraduationCap className="w-4 h-4 mr-2" />
+                      Continue Learning
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="accent" 
+                      size="lg" 
+                      className="w-full" 
+                      onClick={handleEnroll}
+                      disabled={isProcessingPayment}
+                    >
+                      {isProcessingPayment ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        "Enroll Now"
+                      )}
+                    </Button>
+                  )}
 
                   <Button variant="outline" size="lg" className="w-full" onClick={handleWishlist}>
                     <Heart className={`w-4 h-4 mr-2 ${isWishlisted ? "fill-destructive text-destructive" : ""}`} />

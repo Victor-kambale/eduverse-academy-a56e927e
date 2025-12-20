@@ -209,6 +209,25 @@
   }
 }
 
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Infinite scroll animation */
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 40s linear infinite;
+}
+
 @keyframes float {
   0%, 100% {
     transform: translateY(0);
