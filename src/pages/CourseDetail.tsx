@@ -26,8 +26,10 @@ import {
   MessageSquare,
   BarChart,
   Trophy,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock course data
 const courseData = {
@@ -147,9 +149,30 @@ const courseData = {
 const CourseDetailPage = () => {
   const { id } = useParams();
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  const handleEnroll = () => {
-    toast.success("Redirecting to checkout...");
+  const handleEnroll = async () => {
+    setIsProcessingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          courseId: id,
+          courseTitle: courseData.title,
+          amount: courseData.price,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('Failed to initiate payment. Please try again.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   const handleWishlist = () => {
@@ -415,8 +438,21 @@ const CourseDetailPage = () => {
                   </p>
 
                   {/* Action Buttons */}
-                  <Button variant="accent" size="lg" className="w-full" onClick={handleEnroll}>
-                    Enroll Now
+                  <Button 
+                    variant="accent" 
+                    size="lg" 
+                    className="w-full" 
+                    onClick={handleEnroll}
+                    disabled={isProcessingPayment}
+                  >
+                    {isProcessingPayment ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      "Enroll Now"
+                    )}
                   </Button>
 
                   <Button variant="outline" size="lg" className="w-full" onClick={handleWishlist}>
