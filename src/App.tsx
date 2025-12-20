@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
 import CourseLearning from "./pages/CourseLearning";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import Dashboard from "./pages/Dashboard";
 import Help from "./pages/Help";
 import About from "./pages/About";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/course/:id" element={<CourseDetail />} />
+            <Route path="/course/:id/success" element={<PaymentSuccess />} />
             <Route
               path="/course/:courseId/learn"
               element={
