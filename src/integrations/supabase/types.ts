@@ -475,13 +475,6 @@ export type Database = {
             referencedRelation: "quiz_answers"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "user_quiz_answers_selected_answer_id_fkey"
-            columns: ["selected_answer_id"]
-            isOneToOne: false
-            referencedRelation: "quiz_answers_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       user_roles: {
@@ -507,35 +500,7 @@ export type Database = {
       }
     }
     Views: {
-      quiz_answers_public: {
-        Row: {
-          answer_text: string | null
-          id: string | null
-          question_id: string | null
-          sort_order: number | null
-        }
-        Insert: {
-          answer_text?: string | null
-          id?: string | null
-          question_id?: string | null
-          sort_order?: number | null
-        }
-        Update: {
-          answer_text?: string | null
-          id?: string | null
-          question_id?: string | null
-          sort_order?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_answers_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "quiz_questions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       has_role: {
