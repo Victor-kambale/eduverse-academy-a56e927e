@@ -510,7 +510,7 @@ const CourseLearning = () => {
             </div>
           </header>
 
-          {/* Video Player */}
+          {/* Video Player - Download Protected */}
           <div className="bg-black flex items-center justify-center">
             <div className="relative w-full max-w-5xl aspect-video">
               <video
@@ -519,6 +519,9 @@ const CourseLearning = () => {
                 className="w-full h-full"
                 poster="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1280&h=720&fit=crop"
                 onClick={togglePlay}
+                controlsList="nodownload nofullscreen noremoteplayback"
+                disablePictureInPicture
+                onContextMenu={(e) => e.preventDefault()}
               />
               
               {/* Play/Pause Overlay */}

@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   Menu,
   GraduationCap,
+  FileCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ const navItems = [
   { title: 'Courses', url: '/admin/courses', icon: BookOpen },
   { title: 'Users', url: '/admin/users', icon: Users },
   { title: 'Teachers', url: '/admin/teachers', icon: GraduationCap },
+  { title: 'Content Approvals', url: '/admin/content-approvals', icon: FileCheck },
   { title: 'Analytics', url: '/admin/analytics', icon: BarChart3 },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
 ];
