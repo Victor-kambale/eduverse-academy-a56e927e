@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { PaymentMethodSelector } from "@/components/payment/PaymentMethodSelector";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -151,11 +154,18 @@ const courseData = {
 const CourseDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("stripe");
   const { isEnrolled, isLoading: isEnrollmentLoading } = useEnrollment(id);
 
   const handleEnroll = async () => {
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentConfirm = async () => {
     setIsProcessingPayment(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
@@ -163,6 +173,7 @@ const CourseDetailPage = () => {
           courseId: id,
           courseTitle: courseData.title,
           amount: courseData.price,
+          paymentMethod: selectedPaymentMethod,
         },
       });
 
@@ -171,6 +182,7 @@ const CourseDetailPage = () => {
       if (data?.url) {
         window.open(data.url, '_blank');
       }
+      setShowPaymentModal(false);
     } catch (error) {
       console.error('Payment error:', error);
       toast.error('Failed to initiate payment. Please try again.');
@@ -523,6 +535,50 @@ const CourseDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Payment Method Selection Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl">{t('payment.selectMethod')}</DialogTitle>
+            <DialogDescription>
+              {t('payment.checkout')} - ${courseData.price}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <PaymentMethodSelector
+              selectedMethod={selectedPaymentMethod}
+              onSelect={setSelectedPaymentMethod}
+            />
+            
+            <div className="border-t pt-4 space-y-3">
+              <div className="flex justify-between text-lg font-semibold">
+                <span>{t('payment.total')}</span>
+                <span>${courseData.price}</span>
+              </div>
+              <Button 
+                variant="accent" 
+                size="lg" 
+                className="w-full"
+                onClick={handlePaymentConfirm}
+                disabled={isProcessingPayment}
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t('payment.processing')}
+                  </>
+                ) : (
+                  `${t('payment.checkout')} - $${courseData.price}`
+                )}
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                🔒 Secure payment powered by Stripe
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };

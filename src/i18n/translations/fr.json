@@ -9,7 +9,8 @@
     "register": "S'inscrire",
     "dashboard": "Tableau de bord",
     "logout": "Déconnexion",
-    "becomeTeacher": "Devenir enseignant"
+    "becomeTeacher": "Devenir enseignant",
+    "contact": "Contact"
   },
   "home": {
     "hero": {
@@ -21,7 +22,10 @@
     "categories": "Catégories",
     "featured": "Cours en vedette",
     "popular": "Cours populaires",
-    "newCourses": "Nouveaux cours"
+    "newCourses": "Nouveaux cours",
+    "trustedBy": "Fait confiance par",
+    "whyChooseUs": "Pourquoi nous choisir",
+    "startLearning": "Commencez à apprendre aujourd'hui"
   },
   "courses": {
     "title": "Cours",
@@ -42,7 +46,12 @@
     "lessons": "leçons",
     "enrollNow": "S'inscrire maintenant",
     "addToCart": "Ajouter au panier",
-    "viewCourse": "Voir le cours"
+    "viewCourse": "Voir le cours",
+    "whatYouWillLearn": "Ce que vous apprendrez",
+    "requirements": "Prérequis",
+    "curriculum": "Programme",
+    "reviews": "Avis",
+    "instructor": "Instructeur"
   },
   "auth": {
     "login": "Connexion",
@@ -55,7 +64,9 @@
     "noAccount": "Pas de compte?",
     "hasAccount": "Déjà un compte?",
     "signUp": "S'inscrire",
-    "signIn": "Se connecter"
+    "signIn": "Se connecter",
+    "orContinueWith": "Ou continuer avec",
+    "rememberMe": "Se souvenir de moi"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -64,7 +75,10 @@
     "certificates": "Certificats",
     "purchases": "Achats",
     "settings": "Paramètres",
-    "profile": "Profil"
+    "profile": "Profil",
+    "notifications": "Notifications",
+    "analytics": "Analytiques",
+    "welcome": "Bon retour"
   },
   "payment": {
     "checkout": "Paiement",
@@ -72,14 +86,18 @@
     "selectMethod": "Sélectionner le mode de paiement",
     "processing": "Traitement en cours...",
     "success": "Paiement réussi!",
-    "failed": "Échec du paiement"
+    "failed": "Échec du paiement",
+    "securePayment": "Paiement sécurisé",
+    "moneyBack": "Garantie de remboursement"
   },
   "footer": {
     "about": "À propos",
     "contact": "Contact",
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d'utilisation",
-    "support": "Support"
+    "support": "Support",
+    "careers": "Carrières",
+    "blog": "Blog"
   },
   "common": {
     "loading": "Chargement...",
@@ -94,6 +112,22 @@
     "search": "Rechercher",
     "noResults": "Aucun résultat",
     "error": "Erreur",
-    "success": "Succès"
+    "success": "Succès",
+    "viewAll": "Voir tout",
+    "learnMore": "En savoir plus",
+    "getStarted": "Commencer"
+  },
+  "teacher": {
+    "dashboard": "Tableau de bord enseignant",
+    "myCourses": "Mes cours",
+    "students": "Mes étudiants",
+    "earnings": "Revenus",
+    "createCourse": "Créer un cours",
+    "analytics": "Analytiques"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "noNotifications": "Aucune notification"
   }
 }
