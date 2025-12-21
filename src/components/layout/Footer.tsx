@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   GraduationCap, 
@@ -8,12 +9,47 @@ import {
   Youtube,
   Mail,
   Phone,
-  MapPin
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async () => {
+    if (!email || !email.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("newsletter_subscribers")
+        .insert({ email, source: "footer" });
+
+      if (error) {
+        if (error.code === "23505") {
+          toast.info("You're already subscribed!");
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success("Successfully subscribed! Check your inbox for updates.");
+        setEmail("");
+      }
+    } catch (error: any) {
+      console.error("Subscription error:", error);
+      toast.error("Failed to subscribe. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <footer className="bg-primary text-primary-foreground">
       {/* Newsletter Section */}
@@ -32,9 +68,14 @@ export function Footer() {
               <Input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSubscribe()}
                 className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/50 w-full md:w-80"
               />
-              <Button variant="accent">Subscribe</Button>
+              <Button variant="accent" onClick={handleSubscribe} disabled={loading}>
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Subscribe"}
+              </Button>
             </div>
           </div>
         </div>

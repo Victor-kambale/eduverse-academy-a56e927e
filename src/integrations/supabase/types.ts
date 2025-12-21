@@ -221,6 +221,63 @@ export type Database = {
           },
         ]
       }
+      code_snippets: {
+        Row: {
+          code: string
+          course_id: string
+          created_at: string
+          description: string | null
+          id: string
+          language: string
+          lesson_id: string | null
+          sort_order: number | null
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          course_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          language?: string
+          lesson_id?: string | null
+          sort_order?: number | null
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          language?: string
+          lesson_id?: string | null
+          sort_order?: number | null
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_snippets_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "code_snippets_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_creation_fees: {
         Row: {
           amount: number
@@ -511,6 +568,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          id: string
+          is_active: boolean | null
+          source: string | null
+          subscribed_at: string
+          unsubscribed_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          is_active?: boolean | null
+          source?: string | null
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          source?: string | null
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
