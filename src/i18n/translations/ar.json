@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "courses": "الدورات",
+    "pricing": "الأسعار",
+    "about": "عنا",
+    "help": "مساعدة",
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "dashboard": "لوحة التحكم",
+    "logout": "تسجيل الخروج",
+    "becomeTeacher": "كن معلماً"
+  },
+  "home": {
+    "hero": {
+      "title": "تعلم بدون حدود",
+      "subtitle": "اكتشف آلاف الدورات من أفضل المدربين حول العالم",
+      "cta": "ابدأ التعلم",
+      "exploreCourses": "استكشف الدورات"
+    },
+    "categories": "التصنيفات",
+    "featured": "دورات مميزة",
+    "popular": "دورات شائعة",
+    "newCourses": "دورات جديدة"
+  },
+  "courses": {
+    "title": "الدورات",
+    "search": "بحث عن دورات...",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "all": "الكل",
+    "level": "المستوى",
+    "beginner": "مبتدئ",
+    "intermediate": "متوسط",
+    "advanced": "متقدم",
+    "price": "السعر",
+    "free": "مجاني",
+    "paid": "مدفوع",
+    "duration": "المدة",
+    "rating": "التقييم",
+    "students": "طلاب",
+    "lessons": "دروس",
+    "enrollNow": "سجل الآن",
+    "addToCart": "أضف للسلة",
+    "viewCourse": "عرض الدورة"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "fullName": "الاسم الكامل",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "noAccount": "ليس لديك حساب؟",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "signUp": "إنشاء حساب",
+    "signIn": "تسجيل الدخول"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "myCourses": "دوراتي",
+    "progress": "التقدم",
+    "certificates": "الشهادات",
+    "purchases": "المشتريات",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي"
+  },
+  "payment": {
+    "checkout": "الدفع",
+    "total": "المجموع",
+    "selectMethod": "اختر طريقة الدفع",
+    "processing": "جاري المعالجة...",
+    "success": "تم الدفع بنجاح!",
+    "failed": "فشل الدفع"
+  },
+  "footer": {
+    "about": "عنا",
+    "contact": "اتصل بنا",
+    "privacy": "سياسة الخصوصية",
+    "terms": "الشروط والأحكام",
+    "support": "الدعم"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "submit": "إرسال",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "search": "بحث",
+    "noResults": "لا توجد نتائج",
+    "error": "حدث خطأ",
+    "success": "تم بنجاح"
+  }
+}

@@ -31,6 +31,10 @@ import ChatManagement from "./pages/admin/ChatManagement";
 import EmailMarketing from "./pages/admin/EmailMarketing";
 import NewsletterManagement from "./pages/admin/NewsletterManagement";
 import TestingDashboard from "./pages/admin/TestingDashboard";
+import PromoManagement from "./pages/admin/PromoManagement";
+import LanguageManagement from "./pages/admin/LanguageManagement";
+import TeacherDashboardControl from "./pages/admin/TeacherDashboardControl";
+import StudentDashboardControl from "./pages/admin/StudentDashboardControl";
 import TeacherRegistration from "./pages/TeacherRegistration";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherChat from "./pages/teacher/TeacherChat";
@@ -38,6 +42,7 @@ import Quiz from "./pages/Quiz";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyCertificate from "./pages/VerifyCertificate";
+import { CopyProtection } from "./components/security/CopyProtection";
 
 const queryClient = new QueryClient();
 
@@ -135,6 +140,10 @@ const App = () => (
               <Route path="testing" element={<TestingDashboard />} />
               <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="promos" element={<PromoManagement />} />
+              <Route path="languages" element={<LanguageManagement />} />
+              <Route path="teacher-control" element={<TeacherDashboardControl />} />
+              <Route path="student-control" element={<StudentDashboardControl />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Awaka",
+    "courses": "Ebisomo",
+    "pricing": "Emiwendo",
+    "about": "Ku Ffe",
+    "help": "Obuyambi",
+    "login": "Yingira",
+    "register": "Wandiika",
+    "dashboard": "Ekifo ky'obukulu",
+    "logout": "Vaayo",
+    "becomeTeacher": "Fuka Omusomesa"
+  },
+  "home": {
+    "hero": {
+      "title": "Yiga Awatali Nsalo",
+      "subtitle": "Zuula amasomo enkumi okuva mu basomesa abasinga obulungi mu nsi yonna",
+      "cta": "Tandika Okuyiga",
+      "exploreCourses": "Kebera Ebisomo"
+    },
+    "categories": "Ebika",
+    "featured": "Ebisomo Ebirambibwa",
+    "popular": "Ebisomo Ebyayagalibwa",
+    "newCourses": "Ebisomo Ebipya"
+  },
+  "courses": {
+    "title": "Ebisomo",
+    "search": "Noonya ebisomo...",
+    "filter": "Siggula",
+    "sort": "Teeka mu ndagano",
+    "all": "Byonna",
+    "level": "Omutindo",
+    "beginner": "Omutandisi",
+    "intermediate": "Awakati",
+    "advanced": "Ow'amaanyi",
+    "price": "Omuwendo",
+    "free": "Bwa bwerere",
+    "paid": "Bisasula",
+    "duration": "Obudde",
+    "rating": "Obupimo",
+    "students": "abayizi",
+    "lessons": "ebyigirizo",
+    "enrollNow": "Wandiika Kati",
+    "addToCart": "Gatta ku katale",
+    "viewCourse": "Laba ekisomo"
+  },
+  "auth": {
+    "login": "Yingira",
+    "register": "Wandiika",
+    "email": "Yimeyiro",
+    "password": "Akakoddi",
+    "confirmPassword": "Kakasa akakoddi",
+    "fullName": "Erinnya lyonna",
+    "forgotPassword": "Werabidde akakoddi?",
+    "noAccount": "Tolina account?",
+    "hasAccount": "Olina account dda?",
+    "signUp": "Wandiika",
+    "signIn": "Yingira"
+  },
+  "dashboard": {
+    "title": "Ekifo ky'obukulu",
+    "myCourses": "Ebisomo byange",
+    "progress": "Entabuka",
+    "certificates": "Obujulizi",
+    "purchases": "Ebigula",
+    "settings": "Entegeka",
+    "profile": "Olupapula lwo"
+  },
+  "payment": {
+    "checkout": "Okusula",
+    "total": "Ebyonna",
+    "selectMethod": "Londa engeri y'okusasula",
+    "processing": "Kikola...",
+    "success": "Okusasula kutuuse!",
+    "failed": "Okusasula kulemye"
+  },
+  "footer": {
+    "about": "Ku Ffe",
+    "contact": "Tukube",
+    "privacy": "Enkola y'ekyama",
+    "terms": "Amateeka",
+    "support": "Obuyambi"
+  },
+  "common": {
+    "loading": "Kitikka...",
+    "save": "Tereka",
+    "cancel": "Sazaamu",
+    "delete": "Sangula",
+    "edit": "Kyuusa",
+    "submit": "Wereza",
+    "back": "Ddayo",
+    "next": "Ekiddako",
+    "previous": "Ekyayita",
+    "search": "Noonya",
+    "noResults": "Tewali byafulumya",
+    "error": "Ensobi",
+    "success": "Kituuse"
+  }
+}
