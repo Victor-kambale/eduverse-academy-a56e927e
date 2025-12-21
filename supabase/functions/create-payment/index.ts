@@ -53,6 +53,8 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "http://localhost:5173";
 
+    console.log("[CREATE-PAYMENT] Creating checkout session for:", { courseId, courseTitle, amount, userId });
+
     // Create a one-time payment session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -78,6 +80,8 @@ serve(async (req) => {
         userId: userId || "guest",
       },
     });
+
+    console.log("[CREATE-PAYMENT] Checkout session created:", session.id);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
