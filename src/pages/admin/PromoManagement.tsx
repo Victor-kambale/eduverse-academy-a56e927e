@@ -23,73 +23,77 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 
 interface PromoItem {
   id: string;
-  type: 'image' | 'video';
   title: string;
-  description: string;
-  mediaUrl: string;
-  linkUrl: string;
-  isActive: boolean;
-  startDate: string;
-  endDate: string;
-  order: number;
+  description: string | null;
+  media_url: string | null;
+  media_type: string;
+  link_url: string | null;
+  link_text: string | null;
+  is_active: boolean;
+  start_date: string | null;
+  end_date: string | null;
+  sort_order: number;
+  target_audience: string;
+  created_at: string;
 }
 
-const mockPromos: PromoItem[] = [
-  {
-    id: '1',
-    type: 'image',
-    title: 'Summer Sale 2025',
-    description: '50% off on all courses',
-    mediaUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800',
-    linkUrl: '/courses',
-    isActive: true,
-    startDate: '2025-01-01',
-    endDate: '2025-03-31',
-    order: 1
-  },
-  {
-    id: '2',
-    type: 'image',
-    title: 'New Web Development Bootcamp',
-    description: 'Learn full-stack development',
-    mediaUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800',
-    linkUrl: '/course/1',
-    isActive: true,
-    startDate: '2025-01-01',
-    endDate: '2025-12-31',
-    order: 2
-  }
-];
-
 export default function PromoManagement() {
-  const [promos, setPromos] = useState<PromoItem[]>(mockPromos);
+  const [promos, setPromos] = useState<PromoItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPromo, setEditingPromo] = useState<PromoItem | null>(null);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
-    type: 'image' as 'image' | 'video',
+    media_type: 'image',
     title: '',
     description: '',
-    mediaUrl: '',
-    linkUrl: '',
-    isActive: true,
-    startDate: '',
-    endDate: ''
+    media_url: '',
+    link_url: '',
+    link_text: '',
+    is_active: true,
+    start_date: '',
+    end_date: '',
+    target_audience: 'all'
   });
+
+  useEffect(() => {
+    fetchPromos();
+  }, []);
+
+  const fetchPromos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('promotional_banners' as any)
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setPromos((data as PromoItem[]) || []);
+    } catch (error) {
+      console.error('Error fetching promos:', error);
+      toast.error('Failed to load promotional banners');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
-      type: 'image',
+      media_type: 'image',
       title: '',
       description: '',
-      mediaUrl: '',
-      linkUrl: '',
-      isActive: true,
-      startDate: '',
-      endDate: ''
+      media_url: '',
+      link_url: '',
+      link_text: '',
+      is_active: true,
+      start_date: '',
+      end_date: '',
+      target_audience: 'all'
     });
     setEditingPromo(null);
   };
@@ -97,54 +101,98 @@ export default function PromoManagement() {
   const handleEdit = (promo: PromoItem) => {
     setEditingPromo(promo);
     setFormData({
-      type: promo.type,
+      media_type: promo.media_type,
       title: promo.title,
-      description: promo.description,
-      mediaUrl: promo.mediaUrl,
-      linkUrl: promo.linkUrl,
-      isActive: promo.isActive,
-      startDate: promo.startDate,
-      endDate: promo.endDate
+      description: promo.description || '',
+      media_url: promo.media_url || '',
+      link_url: promo.link_url || '',
+      link_text: promo.link_text || '',
+      is_active: promo.is_active,
+      start_date: promo.start_date ? format(new Date(promo.start_date), "yyyy-MM-dd'T'HH:mm") : '',
+      end_date: promo.end_date ? format(new Date(promo.end_date), "yyyy-MM-dd'T'HH:mm") : '',
+      target_audience: promo.target_audience
     });
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
-    if (!formData.title || !formData.mediaUrl) {
-      toast.error('Please fill in required fields');
+  const handleSave = async () => {
+    if (!formData.title) {
+      toast.error('Title is required');
       return;
     }
 
-    if (editingPromo) {
-      setPromos(promos.map(p => 
-        p.id === editingPromo.id 
-          ? { ...p, ...formData } 
-          : p
-      ));
-      toast.success('Promo updated successfully');
-    } else {
-      const newPromo: PromoItem = {
-        id: Date.now().toString(),
-        ...formData,
-        order: promos.length + 1
+    try {
+      const payload = {
+        title: formData.title,
+        description: formData.description || null,
+        media_url: formData.media_url || null,
+        media_type: formData.media_type,
+        link_url: formData.link_url || null,
+        link_text: formData.link_text || null,
+        is_active: formData.is_active,
+        start_date: formData.start_date || null,
+        end_date: formData.end_date || null,
+        target_audience: formData.target_audience,
+        sort_order: editingPromo?.sort_order || promos.length
       };
-      setPromos([...promos, newPromo]);
-      toast.success('Promo created successfully');
+
+      if (editingPromo) {
+        const { error } = await supabase
+          .from('promotional_banners' as any)
+          .update(payload)
+          .eq('id', editingPromo.id);
+
+        if (error) throw error;
+        toast.success('Banner updated successfully');
+      } else {
+        const { error } = await supabase
+          .from('promotional_banners' as any)
+          .insert([payload]);
+
+        if (error) throw error;
+        toast.success('Banner created successfully');
+      }
+      
+      setDialogOpen(false);
+      resetForm();
+      fetchPromos();
+    } catch (error) {
+      console.error('Error saving banner:', error);
+      toast.error('Failed to save banner');
     }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this banner?')) return;
     
-    setDialogOpen(false);
-    resetForm();
+    try {
+      const { error } = await supabase
+        .from('promotional_banners' as any)
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Banner deleted');
+      fetchPromos();
+    } catch (error) {
+      console.error('Error deleting banner:', error);
+      toast.error('Failed to delete banner');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setPromos(promos.filter(p => p.id !== id));
-    toast.success('Promo deleted');
-  };
+  const toggleActive = async (id: string, currentState: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('promotional_banners' as any)
+        .update({ is_active: !currentState })
+        .eq('id', id);
 
-  const toggleActive = (id: string) => {
-    setPromos(promos.map(p => 
-      p.id === id ? { ...p, isActive: !p.isActive } : p
-    ));
+      if (error) throw error;
+      fetchPromos();
+    } catch (error) {
+      console.error('Error toggling banner:', error);
+      toast.error('Failed to update banner');
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
