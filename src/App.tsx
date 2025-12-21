@@ -24,7 +24,9 @@ import CoursesManagement from "./pages/admin/CoursesManagement";
 import UsersManagement from "./pages/admin/UsersManagement";
 import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
+import TeacherApplications from "./pages/admin/TeacherApplications";
 import TeacherRegistration from "./pages/TeacherRegistration";
+import Quiz from "./pages/Quiz";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +73,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/quiz/:quizId"
+              element={
+                <ProtectedRoute>
+                  <Quiz />
+                </ProtectedRoute>
+              }
+            />
             
             {/* Admin Routes */}
             <Route
@@ -84,6 +94,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="courses" element={<CoursesManagement />} />
               <Route path="users" element={<UsersManagement />} />
+              <Route path="teachers" element={<TeacherApplications />} />
               <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
