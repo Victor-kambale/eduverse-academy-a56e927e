@@ -19,7 +19,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -266,16 +265,14 @@ const ChatManagement = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </AdminLayout>
+      <div className="p-6 flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
+    <div className="p-6 space-y-6">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">Chat Management</h1>
@@ -541,7 +538,7 @@ const ChatManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </div>
   );
 };
 

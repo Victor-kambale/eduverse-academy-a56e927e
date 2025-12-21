@@ -48,6 +48,7 @@ import { toast } from 'sonner';
 import { CopyProtection } from '@/components/security/CopyProtection';
 import { LessonCarousel } from '@/components/course/LessonCarousel';
 import { InfiniteCarousel } from '@/components/ui/infinite-carousel';
+import { CourseResources } from '@/components/course/CourseResources';
 
 // Mock course data with instructor info and dates
 const courseData = {
@@ -664,6 +665,13 @@ const CourseLearning = () => {
                 }}
                 completedLessons={completedLessons}
               />
+            </div>
+          </div>
+
+          {/* Course Resources */}
+          <div className="p-6 bg-background border-t border-border">
+            <div className="max-w-5xl mx-auto">
+              <CourseResources courseId={courseId || ''} lessonId={currentLessonId} />
             </div>
           </div>
 

@@ -20,7 +20,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -205,16 +204,14 @@ const NotificationsDashboard = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </AdminLayout>
+      <div className="p-6 flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
+    <div className="p-6 space-y-6">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -241,8 +238,9 @@ const NotificationsDashboard = () => {
                   <p className="text-2xl font-bold">{notifications.length}</p>
                   <p className="text-sm text-muted-foreground">Total</p>
                 </div>
-          </CardContent>
-        </Card>
+              </div>
+            </CardContent>
+          </Card>
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
@@ -288,7 +286,6 @@ const NotificationsDashboard = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-            </div>
               <Select value={filterPriority} onValueChange={setFilterPriority}>
                 <SelectTrigger className="w-[150px]">
                   <SelectValue placeholder="Priority" />
@@ -400,7 +397,7 @@ const NotificationsDashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </div>
   );
 };
 

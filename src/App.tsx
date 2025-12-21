@@ -26,8 +26,15 @@ import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
 import TeacherApplications from "./pages/admin/TeacherApplications";
 import ContentApprovals from "./pages/admin/ContentApprovals";
+import NotificationsDashboard from "./pages/admin/NotificationsDashboard";
+import ChatManagement from "./pages/admin/ChatManagement";
 import TeacherRegistration from "./pages/TeacherRegistration";
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import TeacherChat from "./pages/teacher/TeacherChat";
 import Quiz from "./pages/Quiz";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyCertificate from "./pages/VerifyCertificate";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +48,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-certificate/:credentialId" element={<VerifyCertificate />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/course/:id" element={<CourseDetail />} />
             <Route path="/course/:id/success" element={<PaymentSuccess />} />
@@ -83,6 +93,24 @@ const App = () => (
               }
             />
             
+            {/* Teacher Routes */}
+            <Route
+              path="/teacher/dashboard"
+              element={
+                <ProtectedRoute>
+                  <TeacherDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teacher/chat"
+              element={
+                <ProtectedRoute>
+                  <TeacherChat />
+                </ProtectedRoute>
+              }
+            />
+            
             {/* Admin Routes */}
             <Route
               path="/admin"
@@ -97,6 +125,8 @@ const App = () => (
               <Route path="users" element={<UsersManagement />} />
               <Route path="teachers" element={<TeacherApplications />} />
               <Route path="content-approvals" element={<ContentApprovals />} />
+              <Route path="notifications" element={<NotificationsDashboard />} />
+              <Route path="chat" element={<ChatManagement />} />
               <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
