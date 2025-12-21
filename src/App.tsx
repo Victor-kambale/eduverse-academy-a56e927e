@@ -28,6 +28,8 @@ import TeacherApplications from "./pages/admin/TeacherApplications";
 import ContentApprovals from "./pages/admin/ContentApprovals";
 import NotificationsDashboard from "./pages/admin/NotificationsDashboard";
 import ChatManagement from "./pages/admin/ChatManagement";
+import EmailMarketing from "./pages/admin/EmailMarketing";
+import NewsletterManagement from "./pages/admin/NewsletterManagement";
 import TeacherRegistration from "./pages/TeacherRegistration";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherChat from "./pages/teacher/TeacherChat";
@@ -125,6 +127,8 @@ const App = () => (
               <Route path="users" element={<UsersManagement />} />
               <Route path="teachers" element={<TeacherApplications />} />
               <Route path="content-approvals" element={<ContentApprovals />} />
+              <Route path="email-marketing" element={<EmailMarketing />} />
+              <Route path="newsletter" element={<NewsletterManagement />} />
               <Route path="notifications" element={<NotificationsDashboard />} />
               <Route path="chat" element={<ChatManagement />} />
               <Route path="analytics" element={<AnalyticsDashboard />} />
