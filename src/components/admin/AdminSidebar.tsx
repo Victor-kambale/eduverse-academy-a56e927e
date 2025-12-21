@@ -11,6 +11,8 @@ import {
   FileCheck,
   Bell,
   MessageSquare,
+  Mail,
+  Newspaper,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -22,6 +24,8 @@ const navItems = [
   { title: 'Users', url: '/admin/users', icon: Users },
   { title: 'Teachers', url: '/admin/teachers', icon: GraduationCap },
   { title: 'Content Approvals', url: '/admin/content-approvals', icon: FileCheck },
+  { title: 'Email Marketing', url: '/admin/email-marketing', icon: Mail },
+  { title: 'Newsletter', url: '/admin/newsletter', icon: Newspaper },
   { title: 'Notifications', url: '/admin/notifications', icon: Bell },
   { title: 'Chat Management', url: '/admin/chat', icon: MessageSquare },
   { title: 'Analytics', url: '/admin/analytics', icon: BarChart3 },
