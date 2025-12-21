@@ -9,7 +9,8 @@
     "register": "إنشاء حساب",
     "dashboard": "لوحة التحكم",
     "logout": "تسجيل الخروج",
-    "becomeTeacher": "كن معلماً"
+    "becomeTeacher": "كن معلماً",
+    "contact": "اتصل بنا"
   },
   "home": {
     "hero": {
@@ -21,7 +22,10 @@
     "categories": "التصنيفات",
     "featured": "دورات مميزة",
     "popular": "دورات شائعة",
-    "newCourses": "دورات جديدة"
+    "newCourses": "دورات جديدة",
+    "trustedBy": "موثوق به من قبل",
+    "whyChooseUs": "لماذا تختارنا",
+    "startLearning": "ابدأ التعلم اليوم"
   },
   "courses": {
     "title": "الدورات",
@@ -42,7 +46,12 @@
     "lessons": "دروس",
     "enrollNow": "سجل الآن",
     "addToCart": "أضف للسلة",
-    "viewCourse": "عرض الدورة"
+    "viewCourse": "عرض الدورة",
+    "whatYouWillLearn": "ماذا ستتعلم",
+    "requirements": "المتطلبات",
+    "curriculum": "المنهج",
+    "reviews": "التقييمات",
+    "instructor": "المدرب"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -55,7 +64,9 @@
     "noAccount": "ليس لديك حساب؟",
     "hasAccount": "لديك حساب بالفعل؟",
     "signUp": "إنشاء حساب",
-    "signIn": "تسجيل الدخول"
+    "signIn": "تسجيل الدخول",
+    "orContinueWith": "أو تابع باستخدام",
+    "rememberMe": "تذكرني"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -64,7 +75,10 @@
     "certificates": "الشهادات",
     "purchases": "المشتريات",
     "settings": "الإعدادات",
-    "profile": "الملف الشخصي"
+    "profile": "الملف الشخصي",
+    "notifications": "الإشعارات",
+    "analytics": "التحليلات",
+    "welcome": "مرحباً بعودتك"
   },
   "payment": {
     "checkout": "الدفع",
@@ -72,14 +86,18 @@
     "selectMethod": "اختر طريقة الدفع",
     "processing": "جاري المعالجة...",
     "success": "تم الدفع بنجاح!",
-    "failed": "فشل الدفع"
+    "failed": "فشل الدفع",
+    "securePayment": "دفع آمن",
+    "moneyBack": "ضمان استرداد الأموال"
   },
   "footer": {
     "about": "عنا",
     "contact": "اتصل بنا",
     "privacy": "سياسة الخصوصية",
     "terms": "الشروط والأحكام",
-    "support": "الدعم"
+    "support": "الدعم",
+    "careers": "الوظائف",
+    "blog": "المدونة"
   },
   "common": {
     "loading": "جاري التحميل...",
@@ -94,6 +112,22 @@
     "search": "بحث",
     "noResults": "لا توجد نتائج",
     "error": "حدث خطأ",
-    "success": "تم بنجاح"
+    "success": "تم بنجاح",
+    "viewAll": "عرض الكل",
+    "learnMore": "اعرف المزيد",
+    "getStarted": "ابدأ الآن"
+  },
+  "teacher": {
+    "dashboard": "لوحة تحكم المعلم",
+    "myCourses": "دوراتي",
+    "students": "طلابي",
+    "earnings": "الأرباح",
+    "createCourse": "إنشاء دورة",
+    "analytics": "التحليلات"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "noNotifications": "لا توجد إشعارات"
   }
 }
