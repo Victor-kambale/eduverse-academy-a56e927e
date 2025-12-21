@@ -40,9 +40,9 @@ const TestingDashboard = () => {
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
-          courseId: "test-course-id",
-          courseTitle: "Test Course - Admin Testing",
-          amount: 1.00, // $1 test charge
+          courseId: "11111111-1111-1111-1111-111111111111",
+          courseTitle: "Complete Web Development Bootcamp 2025",
+          amount: 89.99,
         },
       });
 

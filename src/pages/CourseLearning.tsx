@@ -53,7 +53,7 @@ import { CodeSnippets } from '@/components/course/CodeSnippets';
 
 // Mock course data with instructor info and dates
 const courseData = {
-  id: '1',
+  id: '11111111-1111-1111-1111-111111111111',
   title: 'Complete Web Development Bootcamp 2025',
   instructor: {
     name: 'Dr. Sarah Chen',
