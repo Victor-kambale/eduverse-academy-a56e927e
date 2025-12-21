@@ -25,6 +25,7 @@ import UsersManagement from "./pages/admin/UsersManagement";
 import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
 import TeacherApplications from "./pages/admin/TeacherApplications";
+import ContentApprovals from "./pages/admin/ContentApprovals";
 import TeacherRegistration from "./pages/TeacherRegistration";
 import Quiz from "./pages/Quiz";
 
@@ -95,6 +96,7 @@ const App = () => (
               <Route path="courses" element={<CoursesManagement />} />
               <Route path="users" element={<UsersManagement />} />
               <Route path="teachers" element={<TeacherApplications />} />
+              <Route path="content-approvals" element={<ContentApprovals />} />
               <Route path="analytics" element={<AnalyticsDashboard />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
