@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Mail,
   Newspaper,
+  TestTube,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ const navItems = [
   { title: 'Newsletter', url: '/admin/newsletter', icon: Newspaper },
   { title: 'Notifications', url: '/admin/notifications', icon: Bell },
   { title: 'Chat Management', url: '/admin/chat', icon: MessageSquare },
+  { title: 'Testing', url: '/admin/testing', icon: TestTube },
   { title: 'Analytics', url: '/admin/analytics', icon: BarChart3 },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
 ];
