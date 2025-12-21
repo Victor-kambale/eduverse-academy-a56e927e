@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "होम",
+    "courses": "कोर्स",
+    "pricing": "मूल्य निर्धारण",
+    "about": "हमारे बारे में",
+    "help": "मदद",
+    "login": "लॉगिन",
+    "register": "रजिस्टर",
+    "dashboard": "डैशबोर्ड",
+    "logout": "लॉगआउट",
+    "becomeTeacher": "शिक्षक बनें"
+  },
+  "home": {
+    "hero": {
+      "title": "बिना सीमाओं के सीखें",
+      "subtitle": "दुनिया भर के शीर्ष प्रशिक्षकों से हजारों कोर्स खोजें",
+      "cta": "सीखना शुरू करें",
+      "exploreCourses": "कोर्स देखें"
+    },
+    "categories": "श्रेणियां",
+    "featured": "विशेष कोर्स",
+    "popular": "लोकप्रिय कोर्स",
+    "newCourses": "नए कोर्स"
+  },
+  "courses": {
+    "title": "कोर्स",
+    "search": "कोर्स खोजें...",
+    "filter": "फ़िल्टर",
+    "sort": "क्रमबद्ध करें",
+    "all": "सभी",
+    "level": "स्तर",
+    "beginner": "शुरुआती",
+    "intermediate": "मध्यम",
+    "advanced": "उन्नत",
+    "price": "कीमत",
+    "free": "मुफ्त",
+    "paid": "सशुल्क",
+    "duration": "अवधि",
+    "rating": "रेटिंग",
+    "students": "छात्र",
+    "lessons": "पाठ",
+    "enrollNow": "अभी नामांकन करें",
+    "addToCart": "कार्ट में जोड़ें",
+    "viewCourse": "कोर्स देखें"
+  },
+  "auth": {
+    "login": "लॉगिन",
+    "register": "रजिस्टर",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "confirmPassword": "पासवर्ड की पुष्टि करें",
+    "fullName": "पूरा नाम",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "noAccount": "खाता नहीं है?",
+    "hasAccount": "पहले से खाता है?",
+    "signUp": "साइन अप करें",
+    "signIn": "साइन इन करें"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "myCourses": "मेरे कोर्स",
+    "progress": "प्रगति",
+    "certificates": "प्रमाणपत्र",
+    "purchases": "खरीदारी",
+    "settings": "सेटिंग्स",
+    "profile": "प्रोफ़ाइल"
+  },
+  "payment": {
+    "checkout": "चेकआउट",
+    "total": "कुल",
+    "selectMethod": "भुगतान विधि चुनें",
+    "processing": "प्रसंस्करण हो रहा है...",
+    "success": "भुगतान सफल!",
+    "failed": "भुगतान विफल"
+  },
+  "footer": {
+    "about": "हमारे बारे में",
+    "contact": "संपर्क करें",
+    "privacy": "गोपनीयता नीति",
+    "terms": "नियम और शर्तें",
+    "support": "सहायता"
+  },
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "submit": "जमा करें",
+    "back": "वापस",
+    "next": "अगला",
+    "previous": "पिछला",
+    "search": "खोजें",
+    "noResults": "कोई परिणाम नहीं",
+    "error": "त्रुटि",
+    "success": "सफलता"
+  }
+}

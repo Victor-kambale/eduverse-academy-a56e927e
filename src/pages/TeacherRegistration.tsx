@@ -271,8 +271,8 @@ const TeacherRegistration = () => {
 
       if (error) throw error;
 
-      toast.success("Application submitted successfully! We'll review your application within 3 business days.");
-      navigate("/dashboard");
+      toast.success("Application submitted successfully! Redirecting to your teacher dashboard...");
+      navigate("/teacher/dashboard");
     } catch (error: any) {
       console.error('Submission error:', error);
       toast.error(error.message || "Failed to submit application");

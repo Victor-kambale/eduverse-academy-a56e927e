@@ -8,14 +8,22 @@ import es from "./translations/es.json";
 import ru from "./translations/ru.json";
 import de from "./translations/de.json";
 import it from "./translations/it.json";
+import ar from "./translations/ar.json";
+import fr from "./translations/fr.json";
+import hi from "./translations/hi.json";
+import lg from "./translations/lg.json";
 
 export const languages = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "zh", name: "中文", flag: "🇨🇳" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "ru", name: "Русский", flag: "🇷🇺" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "zh", name: "中文", flag: "🇨🇳", rtl: false },
+  { code: "es", name: "Español", flag: "🇪🇸", rtl: false },
+  { code: "en", name: "English", flag: "🇺🇸", rtl: false },
+  { code: "fr", name: "Français", flag: "🇫🇷", rtl: false },
+  { code: "hi", name: "हिन्दी", flag: "🇮🇳", rtl: false },
+  { code: "ar", name: "العربية", flag: "🇸🇦", rtl: true },
+  { code: "ru", name: "Русский", flag: "🇷🇺", rtl: false },
+  { code: "de", name: "Deutsch", flag: "🇩🇪", rtl: false },
+  { code: "it", name: "Italiano", flag: "🇮🇹", rtl: false },
+  { code: "lg", name: "Oluganda", flag: "🇺🇬", rtl: false },
 ];
 
 const resources = {
@@ -25,6 +33,10 @@ const resources = {
   ru: { translation: ru },
   de: { translation: de },
   it: { translation: it },
+  ar: { translation: ar },
+  fr: { translation: fr },
+  hi: { translation: hi },
+  lg: { translation: lg },
 };
 
 i18n
@@ -41,5 +53,14 @@ i18n
       caches: ["localStorage"],
     },
   });
+
+// Handle RTL
+const updateDirection = (lng: string) => {
+  const lang = languages.find(l => l.code === lng);
+  document.documentElement.dir = lang?.rtl ? 'rtl' : 'ltr';
+};
+
+i18n.on('languageChanged', updateDirection);
+updateDirection(i18n.language);
 
 export default i18n;

@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "courses": "Cours",
+    "pricing": "Tarifs",
+    "about": "À propos",
+    "help": "Aide",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "dashboard": "Tableau de bord",
+    "logout": "Déconnexion",
+    "becomeTeacher": "Devenir enseignant"
+  },
+  "home": {
+    "hero": {
+      "title": "Apprenez sans limites",
+      "subtitle": "Découvrez des milliers de cours dispensés par les meilleurs instructeurs du monde",
+      "cta": "Commencer à apprendre",
+      "exploreCourses": "Explorer les cours"
+    },
+    "categories": "Catégories",
+    "featured": "Cours en vedette",
+    "popular": "Cours populaires",
+    "newCourses": "Nouveaux cours"
+  },
+  "courses": {
+    "title": "Cours",
+    "search": "Rechercher des cours...",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "all": "Tout",
+    "level": "Niveau",
+    "beginner": "Débutant",
+    "intermediate": "Intermédiaire",
+    "advanced": "Avancé",
+    "price": "Prix",
+    "free": "Gratuit",
+    "paid": "Payant",
+    "duration": "Durée",
+    "rating": "Note",
+    "students": "étudiants",
+    "lessons": "leçons",
+    "enrollNow": "S'inscrire maintenant",
+    "addToCart": "Ajouter au panier",
+    "viewCourse": "Voir le cours"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "fullName": "Nom complet",
+    "forgotPassword": "Mot de passe oublié?",
+    "noAccount": "Pas de compte?",
+    "hasAccount": "Déjà un compte?",
+    "signUp": "S'inscrire",
+    "signIn": "Se connecter"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "myCourses": "Mes cours",
+    "progress": "Progression",
+    "certificates": "Certificats",
+    "purchases": "Achats",
+    "settings": "Paramètres",
+    "profile": "Profil"
+  },
+  "payment": {
+    "checkout": "Paiement",
+    "total": "Total",
+    "selectMethod": "Sélectionner le mode de paiement",
+    "processing": "Traitement en cours...",
+    "success": "Paiement réussi!",
+    "failed": "Échec du paiement"
+  },
+  "footer": {
+    "about": "À propos",
+    "contact": "Contact",
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "support": "Support"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "submit": "Soumettre",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "search": "Rechercher",
+    "noResults": "Aucun résultat",
+    "error": "Erreur",
+    "success": "Succès"
+  }
+}
