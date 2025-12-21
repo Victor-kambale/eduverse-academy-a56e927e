@@ -1,0 +1,93 @@
+{
+  "common": {
+    "home": "Startseite",
+    "courses": "Kurse",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "dashboard": "Dashboard",
+    "settings": "Einstellungen",
+    "profile": "Profil",
+    "logout": "Abmelden",
+    "search": "Suchen",
+    "loading": "Laden...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "submit": "Absenden",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "language": "Sprache"
+  },
+  "hero": {
+    "title": "Lernen Ohne Grenzen",
+    "subtitle": "Erhalten Sie Zugang zu erstklassiger Bildung von führenden Universitäten und Branchenführern. Verdienen Sie Zertifikate und Abschlüsse für Ihre Karriere.",
+    "exploreCourses": "Kurse Entdecken",
+    "startFreeTrial": "Kostenlos Testen",
+    "joinLearners": "Schließen Sie sich 50 Millionen Lernenden an"
+  },
+  "courses": {
+    "title": "Kurse",
+    "featured": "Empfohlene Kurse",
+    "popular": "Beliebte Kurse",
+    "all": "Alle Kurse",
+    "category": "Kategorie",
+    "level": "Niveau",
+    "duration": "Dauer",
+    "instructor": "Dozent",
+    "students": "Teilnehmer",
+    "rating": "Bewertung",
+    "price": "Preis",
+    "free": "Kostenlos",
+    "enroll": "Einschreiben",
+    "preview": "Vorschau",
+    "bestseller": "Bestseller",
+    "beginner": "Anfänger",
+    "intermediate": "Mittelstufe",
+    "advanced": "Fortgeschritten"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "signup": "Registrieren",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?",
+    "noAccount": "Noch kein Konto?",
+    "hasAccount": "Bereits ein Konto?",
+    "fullName": "Vollständiger Name",
+    "confirmPassword": "Passwort bestätigen"
+  },
+  "dashboard": {
+    "welcome": "Willkommen zurück",
+    "enrolledCourses": "Eingeschriebene Kurse",
+    "certificates": "Zertifikate",
+    "learningTime": "Lernzeit",
+    "achievements": "Erfolge",
+    "myCourses": "Meine Kurse",
+    "continue": "Fortsetzen",
+    "completed": "Abgeschlossen",
+    "progress": "Fortschritt",
+    "purchaseHistory": "Kaufhistorie"
+  },
+  "payment": {
+    "title": "Zahlung",
+    "selectMethod": "Zahlungsmethode wählen",
+    "processing": "Verarbeitung...",
+    "success": "Zahlung Erfolgreich",
+    "failed": "Zahlung Fehlgeschlagen",
+    "amount": "Betrag",
+    "currency": "Währung"
+  },
+  "footer": {
+    "company": "Unternehmen",
+    "support": "Support",
+    "legal": "Rechtliches",
+    "followUs": "Folgen Sie uns",
+    "newsletter": "Newsletter",
+    "subscribeText": "Abonnieren Sie unseren Newsletter",
+    "copyright": "© 2025 EduVerse. Alle Rechte vorbehalten."
+  }
+}

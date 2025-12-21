@@ -1,0 +1,93 @@
+{
+  "common": {
+    "home": "Home",
+    "courses": "Courses",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Log In",
+    "signup": "Sign Up",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Log Out",
+    "search": "Search",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "language": "Language"
+  },
+  "hero": {
+    "title": "Learn Without Limits",
+    "subtitle": "Access world-class education from top universities and industry leaders. Earn certificates and degrees that advance your career.",
+    "exploreCourses": "Explore Courses",
+    "startFreeTrial": "Start Free Trial",
+    "joinLearners": "Join 50 million learners worldwide"
+  },
+  "courses": {
+    "title": "Courses",
+    "featured": "Featured Courses",
+    "popular": "Popular Courses",
+    "all": "All Courses",
+    "category": "Category",
+    "level": "Level",
+    "duration": "Duration",
+    "instructor": "Instructor",
+    "students": "Students",
+    "rating": "Rating",
+    "price": "Price",
+    "free": "Free",
+    "enroll": "Enroll Now",
+    "preview": "Preview",
+    "bestseller": "Bestseller",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "auth": {
+    "login": "Log In",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "fullName": "Full Name",
+    "confirmPassword": "Confirm Password"
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "enrolledCourses": "Enrolled Courses",
+    "certificates": "Certificates",
+    "learningTime": "Learning Time",
+    "achievements": "Achievements",
+    "myCourses": "My Courses",
+    "continue": "Continue",
+    "completed": "Completed",
+    "progress": "Progress",
+    "purchaseHistory": "Purchase History"
+  },
+  "payment": {
+    "title": "Payment",
+    "selectMethod": "Select Payment Method",
+    "processing": "Processing...",
+    "success": "Payment Successful",
+    "failed": "Payment Failed",
+    "amount": "Amount",
+    "currency": "Currency"
+  },
+  "footer": {
+    "company": "Company",
+    "support": "Support",
+    "legal": "Legal",
+    "followUs": "Follow Us",
+    "newsletter": "Newsletter",
+    "subscribeText": "Subscribe to our newsletter for updates",
+    "copyright": "© 2025 EduVerse. All rights reserved."
+  }
+}

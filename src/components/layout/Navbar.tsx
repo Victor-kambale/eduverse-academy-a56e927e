@@ -10,12 +10,6 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { 
   Search, 
   Menu, 
@@ -24,10 +18,9 @@ import {
   BookOpen, 
   Award, 
   Briefcase,
-  Globe,
-  ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LanguageSelector } from "./LanguageSelector";
 
 const categories = [
   { name: "Technology", icon: "💻", courses: 450 },
@@ -36,15 +29,6 @@ const categories = [
   { name: "Health", icon: "🏥", courses: 190 },
   { name: "Languages", icon: "🌍", courses: 150 },
   { name: "Personal Development", icon: "🎯", courses: 210 },
-];
-
-const languages = [
-  { code: "en", name: "English" },
-  { code: "fr", name: "Français" },
-  { code: "es", name: "Español" },
-  { code: "zh", name: "中文" },
-  { code: "ar", name: "العربية" },
-  { code: "sw", name: "Kiswahili" },
 ];
 
 export function Navbar() {
@@ -139,22 +123,7 @@ export function Navbar() {
         {/* Right Side Actions */}
         <div className="flex items-center gap-2">
           {/* Language Selector */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="hidden sm:flex">
-                <Globe className="w-4 h-4 mr-1" />
-                EN
-                <ChevronDown className="w-3 h-3 ml-1" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {languages.map((lang) => (
-                <DropdownMenuItem key={lang.code}>
-                  {lang.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <LanguageSelector />
 
           <Link to="/auth">
             <Button variant="ghost" size="sm" className="hidden sm:flex">
