@@ -1,7 +1,6 @@
 import { useRef } from 'react';
-import { Award, Download, Share2, QrCode } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { Award } from 'lucide-react';
+import { PDFCertificateGenerator } from './PDFCertificateGenerator';
 
 interface CertificateData {
   studentName: string;
@@ -11,6 +10,7 @@ interface CertificateData {
   credentialId: string;
   grade?: string;
   institutionName?: string;
+  courseDuration?: string;
 }
 
 interface CertificateGeneratorProps {
@@ -22,31 +22,8 @@ export const CertificateGenerator = ({ data, onDownload }: CertificateGeneratorP
   const certificateRef = useRef<HTMLDivElement>(null);
 
   const generateQRCodeUrl = (credentialId: string) => {
-    // Generate QR code URL for verification
-    const verifyUrl = `${window.location.origin}/verify/${credentialId}`;
+    const verifyUrl = `${window.location.origin}/verify-certificate/${credentialId}`;
     return `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(verifyUrl)}`;
-  };
-
-  const handleDownload = async () => {
-    // In production, you would use a library like html2canvas + jspdf
-    // For now, we'll trigger print dialog
-    window.print();
-    toast.success('Certificate downloaded!');
-    onDownload?.();
-  };
-
-  const handleShare = async () => {
-    const verifyUrl = `${window.location.origin}/verify/${data.credentialId}`;
-    if (navigator.share) {
-      await navigator.share({
-        title: `Certificate: ${data.courseName}`,
-        text: `I completed ${data.courseName} on EduVerse!`,
-        url: verifyUrl,
-      });
-    } else {
-      await navigator.clipboard.writeText(verifyUrl);
-      toast.success('Certificate link copied to clipboard!');
-    }
   };
 
   return (
@@ -54,6 +31,7 @@ export const CertificateGenerator = ({ data, onDownload }: CertificateGeneratorP
       {/* Certificate Preview */}
       <div
         ref={certificateRef}
+        id="certificate-container"
         className="relative w-full max-w-4xl mx-auto aspect-[1.414] bg-white rounded-lg shadow-2xl overflow-hidden print:shadow-none"
         style={{
           backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
@@ -156,16 +134,19 @@ export const CertificateGenerator = ({ data, onDownload }: CertificateGeneratorP
         <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-primary/10 to-transparent" />
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-center gap-4 print:hidden">
-        <Button onClick={handleDownload} size="lg">
-          <Download className="w-4 h-4 mr-2" />
-          Download Certificate
-        </Button>
-        <Button variant="outline" size="lg" onClick={handleShare}>
-          <Share2 className="w-4 h-4 mr-2" />
-          Share
-        </Button>
+      {/* PDF Download Actions */}
+      <div className="flex items-center justify-center print:hidden">
+        <PDFCertificateGenerator
+          data={{
+            studentName: data.studentName,
+            courseName: data.courseName,
+            issueDate: data.completionDate,
+            credentialId: data.credentialId,
+            instructorName: data.instructorName,
+            courseDuration: data.courseDuration,
+          }}
+          onDownload={onDownload}
+        />
       </div>
 
       {/* Print Styles */}
