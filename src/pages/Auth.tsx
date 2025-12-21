@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { CookieConsent } from "@/components/auth/CookieConsent";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -367,6 +368,9 @@ const AuthPage = () => {
             </div>
           </div>
         )}
+
+        {/* Cookie Consent */}
+        <CookieConsent />
       </div>
     </div>
   );
