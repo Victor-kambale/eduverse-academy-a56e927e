@@ -17,6 +17,7 @@ import {
   TrendingUp,
   Sparkles
 } from "lucide-react";
+import { PromoCarousel } from "@/components/home/PromoCarousel";
 
 const featuredCourses = [
   {
@@ -100,6 +101,11 @@ const partners = [
 const Index = () => {
   return (
     <Layout>
+      {/* Promo Carousel */}
+      <section className="bg-secondary/30 border-b border-border">
+        <PromoCarousel speed="normal" />
+      </section>
+
       {/* Hero Section */}
       <section className="relative gradient-hero text-primary-foreground overflow-hidden">
         {/* Background Pattern */}

@@ -1,0 +1,93 @@
+{
+  "common": {
+    "home": "首页",
+    "courses": "课程",
+    "about": "关于我们",
+    "contact": "联系我们",
+    "login": "登录",
+    "signup": "注册",
+    "dashboard": "控制面板",
+    "settings": "设置",
+    "profile": "个人资料",
+    "logout": "退出登录",
+    "search": "搜索",
+    "loading": "加载中...",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "submit": "提交",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "language": "语言"
+  },
+  "hero": {
+    "title": "无限学习",
+    "subtitle": "获取来自顶尖大学和行业领袖的世界级教育。获得能够推进您职业生涯的证书和学位。",
+    "exploreCourses": "探索课程",
+    "startFreeTrial": "开始免费试用",
+    "joinLearners": "加入全球5000万学习者"
+  },
+  "courses": {
+    "title": "课程",
+    "featured": "精选课程",
+    "popular": "热门课程",
+    "all": "所有课程",
+    "category": "分类",
+    "level": "级别",
+    "duration": "时长",
+    "instructor": "讲师",
+    "students": "学员",
+    "rating": "评分",
+    "price": "价格",
+    "free": "免费",
+    "enroll": "立即报名",
+    "preview": "预览",
+    "bestseller": "畅销",
+    "beginner": "初级",
+    "intermediate": "中级",
+    "advanced": "高级"
+  },
+  "auth": {
+    "login": "登录",
+    "signup": "注册",
+    "email": "邮箱",
+    "password": "密码",
+    "forgotPassword": "忘记密码？",
+    "noAccount": "还没有账户？",
+    "hasAccount": "已有账户？",
+    "fullName": "全名",
+    "confirmPassword": "确认密码"
+  },
+  "dashboard": {
+    "welcome": "欢迎回来",
+    "enrolledCourses": "已报名课程",
+    "certificates": "证书",
+    "learningTime": "学习时间",
+    "achievements": "成就",
+    "myCourses": "我的课程",
+    "continue": "继续学习",
+    "completed": "已完成",
+    "progress": "进度",
+    "purchaseHistory": "购买记录"
+  },
+  "payment": {
+    "title": "支付",
+    "selectMethod": "选择支付方式",
+    "processing": "处理中...",
+    "success": "支付成功",
+    "failed": "支付失败",
+    "amount": "金额",
+    "currency": "货币"
+  },
+  "footer": {
+    "company": "公司",
+    "support": "支持",
+    "legal": "法律",
+    "followUs": "关注我们",
+    "newsletter": "新闻通讯",
+    "subscribeText": "订阅我们的新闻通讯获取更新",
+    "copyright": "© 2025 EduVerse. 版权所有。"
+  }
+}

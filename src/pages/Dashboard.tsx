@@ -28,6 +28,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ProfilePhotoUpload } from "@/components/profile/ProfilePhotoUpload";
+import { PurchaseHistory } from "@/components/dashboard/PurchaseHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -220,6 +221,7 @@ const DashboardPage = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="w-full justify-start">
                 <TabsTrigger value="courses">My Courses</TabsTrigger>
+                <TabsTrigger value="purchases">Purchases</TabsTrigger>
                 <TabsTrigger value="certificates">Certificates</TabsTrigger>
                 <TabsTrigger value="achievements">Achievements</TabsTrigger>
               </TabsList>
@@ -282,6 +284,10 @@ const DashboardPage = () => {
                     </div>
                   </Card>
                 ))}
+              </TabsContent>
+
+              <TabsContent value="purchases" className="mt-6">
+                <PurchaseHistory />
               </TabsContent>
 
               <TabsContent value="certificates" className="mt-6">

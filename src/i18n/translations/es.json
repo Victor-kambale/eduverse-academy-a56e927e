@@ -1,0 +1,93 @@
+{
+  "common": {
+    "home": "Inicio",
+    "courses": "Cursos",
+    "about": "Acerca de",
+    "contact": "Contacto",
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "dashboard": "Panel",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "logout": "Cerrar Sesión",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "submit": "Enviar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "language": "Idioma"
+  },
+  "hero": {
+    "title": "Aprende Sin Límites",
+    "subtitle": "Accede a educación de clase mundial de las mejores universidades y líderes de la industria. Obtén certificados y títulos que impulsen tu carrera.",
+    "exploreCourses": "Explorar Cursos",
+    "startFreeTrial": "Prueba Gratuita",
+    "joinLearners": "Únete a 50 millones de estudiantes"
+  },
+  "courses": {
+    "title": "Cursos",
+    "featured": "Cursos Destacados",
+    "popular": "Cursos Populares",
+    "all": "Todos los Cursos",
+    "category": "Categoría",
+    "level": "Nivel",
+    "duration": "Duración",
+    "instructor": "Instructor",
+    "students": "Estudiantes",
+    "rating": "Calificación",
+    "price": "Precio",
+    "free": "Gratis",
+    "enroll": "Inscribirse",
+    "preview": "Vista Previa",
+    "bestseller": "Más Vendido",
+    "beginner": "Principiante",
+    "intermediate": "Intermedio",
+    "advanced": "Avanzado"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "fullName": "Nombre Completo",
+    "confirmPassword": "Confirmar Contraseña"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido de nuevo",
+    "enrolledCourses": "Cursos Inscritos",
+    "certificates": "Certificados",
+    "learningTime": "Tiempo de Aprendizaje",
+    "achievements": "Logros",
+    "myCourses": "Mis Cursos",
+    "continue": "Continuar",
+    "completed": "Completado",
+    "progress": "Progreso",
+    "purchaseHistory": "Historial de Compras"
+  },
+  "payment": {
+    "title": "Pago",
+    "selectMethod": "Seleccionar Método de Pago",
+    "processing": "Procesando...",
+    "success": "Pago Exitoso",
+    "failed": "Pago Fallido",
+    "amount": "Monto",
+    "currency": "Moneda"
+  },
+  "footer": {
+    "company": "Empresa",
+    "support": "Soporte",
+    "legal": "Legal",
+    "followUs": "Síguenos",
+    "newsletter": "Boletín",
+    "subscribeText": "Suscríbete a nuestro boletín",
+    "copyright": "© 2025 EduVerse. Todos los derechos reservados."
+  }
+}
