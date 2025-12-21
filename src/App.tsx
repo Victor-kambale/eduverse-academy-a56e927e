@@ -24,6 +24,7 @@ import CoursesManagement from "./pages/admin/CoursesManagement";
 import UsersManagement from "./pages/admin/UsersManagement";
 import AnalyticsDashboard from "./pages/admin/AnalyticsDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
+import TeacherRegistration from "./pages/TeacherRegistration";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,14 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/degrees" element={<Courses />} />
             <Route path="/careers" element={<About />} />
+            <Route
+              path="/teacher/register"
+              element={
+                <ProtectedRoute>
+                  <TeacherRegistration />
+                </ProtectedRoute>
+              }
+            />
             
             {/* Admin Routes */}
             <Route

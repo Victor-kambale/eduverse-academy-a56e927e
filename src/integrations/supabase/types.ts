@@ -14,6 +14,106 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_revenue: {
+        Row: {
+          commission_amount: number
+          commission_percentage: number
+          course_id: string | null
+          course_level: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          source_id: string | null
+          source_type: string
+          student_id: string | null
+          teacher_amount: number | null
+          teacher_id: string | null
+          total_amount: number
+        }
+        Insert: {
+          commission_amount: number
+          commission_percentage: number
+          course_id?: string | null
+          course_level?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          source_id?: string | null
+          source_type: string
+          student_id?: string | null
+          teacher_amount?: number | null
+          teacher_id?: string | null
+          total_amount: number
+        }
+        Update: {
+          commission_amount?: number
+          commission_percentage?: number
+          course_id?: string | null
+          course_level?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          source_id?: string | null
+          source_type?: string
+          student_id?: string | null
+          teacher_amount?: number | null
+          teacher_id?: string | null
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_revenue_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_creation_fees: {
+        Row: {
+          amount: number
+          course_id: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          paid_at: string | null
+          payment_id: string | null
+          payment_method: string | null
+          teacher_id: string
+        }
+        Insert: {
+          amount?: number
+          course_id?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_id?: string | null
+          payment_method?: string | null
+          teacher_id: string
+        }
+        Update: {
+          amount?: number
+          course_id?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_id?: string | null
+          payment_method?: string | null
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_creation_fees_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           category: string | null
@@ -189,6 +289,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          metadata: Json | null
+          read: boolean | null
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          metadata?: Json | null
+          read?: boolean | null
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          metadata?: Json | null
+          read?: boolean | null
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -239,28 +375,34 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          can_edit_profile: boolean | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          profile_disabled_reason: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          can_edit_profile?: boolean | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          profile_disabled_reason?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          can_edit_profile?: boolean | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          profile_disabled_reason?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -431,6 +573,147 @@ export type Database = {
           },
         ]
       }
+      teacher_applications: {
+        Row: {
+          academic_reference_contact: string | null
+          account_holder_name: string | null
+          account_number: string | null
+          approved_at: string | null
+          approved_by: string | null
+          bank_country: string | null
+          bank_name: string | null
+          bio: string | null
+          contract_document_url: string | null
+          contract_signed: boolean | null
+          contract_signed_at: string | null
+          country: string
+          created_at: string
+          cv_url: string | null
+          date_of_birth: string | null
+          degree_type: string | null
+          email: string
+          experience_years: number | null
+          full_name: string
+          graduation_degree_url: string | null
+          graduation_year: number | null
+          has_external_card_link: boolean | null
+          iban: string | null
+          id: string
+          id_document_url: string | null
+          linkedin_url: string | null
+          passport_url: string | null
+          phone: string | null
+          photo_url: string | null
+          registration_fee_paid: boolean | null
+          registration_payment_date: string | null
+          registration_payment_id: string | null
+          rejection_reason: string | null
+          routing_number: string | null
+          specializations: string[] | null
+          status:
+            | Database["public"]["Enums"]["teacher_application_status"]
+            | null
+          swift_code: string | null
+          university_country: string | null
+          university_name: string | null
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          academic_reference_contact?: string | null
+          account_holder_name?: string | null
+          account_number?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bio?: string | null
+          contract_document_url?: string | null
+          contract_signed?: boolean | null
+          contract_signed_at?: string | null
+          country: string
+          created_at?: string
+          cv_url?: string | null
+          date_of_birth?: string | null
+          degree_type?: string | null
+          email: string
+          experience_years?: number | null
+          full_name: string
+          graduation_degree_url?: string | null
+          graduation_year?: number | null
+          has_external_card_link?: boolean | null
+          iban?: string | null
+          id?: string
+          id_document_url?: string | null
+          linkedin_url?: string | null
+          passport_url?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          registration_fee_paid?: boolean | null
+          registration_payment_date?: string | null
+          registration_payment_id?: string | null
+          rejection_reason?: string | null
+          routing_number?: string | null
+          specializations?: string[] | null
+          status?:
+            | Database["public"]["Enums"]["teacher_application_status"]
+            | null
+          swift_code?: string | null
+          university_country?: string | null
+          university_name?: string | null
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          academic_reference_contact?: string | null
+          account_holder_name?: string | null
+          account_number?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_country?: string | null
+          bank_name?: string | null
+          bio?: string | null
+          contract_document_url?: string | null
+          contract_signed?: boolean | null
+          contract_signed_at?: string | null
+          country?: string
+          created_at?: string
+          cv_url?: string | null
+          date_of_birth?: string | null
+          degree_type?: string | null
+          email?: string
+          experience_years?: number | null
+          full_name?: string
+          graduation_degree_url?: string | null
+          graduation_year?: number | null
+          has_external_card_link?: boolean | null
+          iban?: string | null
+          id?: string
+          id_document_url?: string | null
+          linkedin_url?: string | null
+          passport_url?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          registration_fee_paid?: boolean | null
+          registration_payment_date?: string | null
+          registration_payment_id?: string | null
+          rejection_reason?: string | null
+          routing_number?: string | null
+          specializations?: string[] | null
+          status?:
+            | Database["public"]["Enums"]["teacher_application_status"]
+            | null
+          swift_code?: string | null
+          university_country?: string | null
+          university_name?: string | null
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       user_quiz_answers: {
         Row: {
           attempt_id: string
@@ -513,6 +796,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "instructor" | "user"
+      teacher_application_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -641,6 +925,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "instructor", "user"],
+      teacher_application_status: ["pending", "approved", "rejected"],
     },
   },
 } as const
