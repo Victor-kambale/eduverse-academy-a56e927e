@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,12 @@ import {
   FileText,
   LogOut,
   Shield,
+  Camera,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { ProfilePhotoUpload } from "@/components/profile/ProfilePhotoUpload";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const enrolledCourses = [
@@ -90,6 +93,24 @@ const DashboardPage = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useUserRole();
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<{ avatar_url: string | null; can_edit_profile: boolean; profile_disabled_reason: string | null } | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user?.id) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_url, can_edit_profile, profile_disabled_reason')
+        .eq('user_id', user.id)
+        .single();
+      if (data) setProfile(data);
+    };
+    fetchProfile();
+  }, [user?.id]);
+
+  const handlePhotoUpdated = (url: string) => {
+    setProfile(prev => prev ? { ...prev, avatar_url: url } : null);
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -118,12 +139,14 @@ const DashboardPage = () => {
         <div className="container">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <Avatar className="w-16 h-16 border-2 border-accent">
-                <AvatarImage src="" />
-                <AvatarFallback className="bg-accent text-accent-foreground text-xl font-bold">
-                  {getUserInitials()}
-                </AvatarFallback>
-              </Avatar>
+              <ProfilePhotoUpload
+                userId={user?.id || ''}
+                currentPhotoUrl={profile?.avatar_url}
+                userName={getUserName()}
+                onPhotoUpdated={handlePhotoUpdated}
+                disabled={profile?.can_edit_profile === false}
+                disabledReason={profile?.profile_disabled_reason || 'Profile editing disabled by admin'}
+              />
               <div>
                 <h1 className="font-display text-2xl font-bold">Welcome back, {getUserName()}!</h1>
                 <p className="text-primary-foreground/80">{user?.email}</p>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Eye, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, Search, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { MediaUpload } from '@/components/admin/MediaUpload';
 
 interface Course {
   id: string;
@@ -41,6 +42,7 @@ interface Course {
   level: string | null;
   is_published: boolean;
   created_at: string;
+  thumbnail_url: string | null;
 }
 
 export default function CoursesManagement() {
@@ -58,7 +60,9 @@ export default function CoursesManagement() {
     category: '',
     level: 'beginner',
     is_published: false,
+    thumbnail_url: '',
   });
+  const [showMediaUpload, setShowMediaUpload] = useState(false);
 
   const fetchCourses = async () => {
     const { data, error } = await supabase
@@ -123,8 +127,18 @@ export default function CoursesManagement() {
       category: course.category || '',
       level: course.level || 'beginner',
       is_published: course.is_published,
+      thumbnail_url: course.thumbnail_url || '',
     });
     setIsDialogOpen(true);
+  };
+
+  const handleMediaUploadComplete = (files: { name: string; url: string; type: string }[]) => {
+    const imageFile = files.find(f => f.type.startsWith('image/'));
+    if (imageFile) {
+      setFormData({ ...formData, thumbnail_url: imageFile.url });
+      setShowMediaUpload(false);
+      toast.success('Thumbnail uploaded!');
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -149,7 +163,9 @@ export default function CoursesManagement() {
       category: '',
       level: 'beginner',
       is_published: false,
+      thumbnail_url: '',
     });
+    setShowMediaUpload(false);
   };
 
   const filteredCourses = courses.filter((course) =>
@@ -241,6 +257,47 @@ export default function CoursesManagement() {
                   </SelectContent>
                 </Select>
               </div>
+              {/* Thumbnail Upload */}
+              <div className="space-y-2">
+                <Label>Course Thumbnail</Label>
+                {formData.thumbnail_url ? (
+                  <div className="relative">
+                    <img 
+                      src={formData.thumbnail_url} 
+                      alt="Thumbnail" 
+                      className="w-full h-32 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={() => setFormData({ ...formData, thumbnail_url: '' })}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ) : showMediaUpload ? (
+                  <MediaUpload
+                    bucket="course-media"
+                    accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] }}
+                    maxFiles={1}
+                    maxSize={10 * 1024 * 1024}
+                    onUploadComplete={handleMediaUploadComplete}
+                  />
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowMediaUpload(true)}
+                  >
+                    <Image className="h-4 w-4 mr-2" />
+                    Upload Thumbnail
+                  </Button>
+                )}
+              </div>
+
               <div className="flex items-center gap-2">
                 <Switch
                   id="published"
