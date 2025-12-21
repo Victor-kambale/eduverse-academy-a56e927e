@@ -35,7 +35,7 @@ import { useEnrollment } from "@/hooks/useEnrollment";
 
 // Mock course data
 const courseData = {
-  id: 1,
+  id: "11111111-1111-1111-1111-111111111111",
   title: "Complete Web Development Bootcamp 2025",
   subtitle: "Learn HTML, CSS, JavaScript, React, Node.js, and more. Build real-world projects and become a full-stack developer.",
   instructor: {

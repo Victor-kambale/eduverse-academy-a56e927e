@@ -29,7 +29,7 @@ import {
 
 const allCourses = [
   {
-    id: 1,
+    id: "11111111-1111-1111-1111-111111111111",
     title: "Complete Web Development Bootcamp 2025",
     instructor: "Dr. Sarah Chen",
     image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
@@ -44,7 +44,7 @@ const allCourses = [
     isFree: false,
   },
   {
-    id: 2,
+    id: "22222222-2222-2222-2222-222222222222",
     title: "Machine Learning & AI Masterclass",
     instructor: "Prof. Michael Zhang",
     image: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=250&fit=crop",
@@ -59,7 +59,7 @@ const allCourses = [
     isFree: false,
   },
   {
-    id: 3,
+    id: "33333333-3333-3333-3333-333333333333",
     title: "Business Leadership & Management",
     instructor: "Emma Thompson, MBA",
     image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop",
@@ -74,7 +74,7 @@ const allCourses = [
     isFree: false,
   },
   {
-    id: 4,
+    id: "44444444-4444-4444-4444-444444444444",
     title: "Healthcare Professional Certificate",
     instructor: "Dr. James Williams",
     image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=250&fit=crop",
@@ -89,7 +89,7 @@ const allCourses = [
     isFree: false,
   },
   {
-    id: 5,
+    id: "55555555-5555-5555-5555-555555555555",
     title: "Python for Beginners - Free Course",
     instructor: "Alex Johnson",
     image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=400&h=250&fit=crop",
@@ -104,7 +104,7 @@ const allCourses = [
     isFree: true,
   },
   {
-    id: 6,
+    id: "66666666-6666-6666-6666-666666666666",
     title: "Digital Marketing Fundamentals",
     instructor: "Maria Garcia",
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop",
@@ -119,7 +119,7 @@ const allCourses = [
     isFree: false,
   },
   {
-    id: 7,
+    id: "77777777-7777-7777-7777-777777777777",
     title: "English for Career Development",
     instructor: "Prof. Robert Smith",
     image: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=250&fit=crop",
@@ -134,7 +134,7 @@ const allCourses = [
     isFree: true,
   },
   {
-    id: 8,
+    id: "88888888-8888-8888-8888-888888888888",
     title: "Personal Development Masterclass",
     instructor: "Lisa Anderson",
     image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=250&fit=crop",
@@ -198,7 +198,7 @@ const CoursesPage = () => {
       case "rating":
         return b.rating - a.rating;
       case "newest":
-        return b.id - a.id;
+        return b.id.localeCompare(a.id);
       case "price-low":
         return a.price - b.price;
       case "price-high":
