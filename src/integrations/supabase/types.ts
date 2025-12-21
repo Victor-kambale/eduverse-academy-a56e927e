@@ -123,6 +123,104 @@ export type Database = {
           },
         ]
       }
+      chat_appointments: {
+        Row: {
+          appointment_type: string
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          description: string | null
+          id: string
+          rejection_reason: string | null
+          scheduled_at: string | null
+          status: string
+          subject: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          rejection_reason?: string | null
+          scheduled_at?: string | null
+          status?: string
+          subject: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_type?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          rejection_reason?: string | null
+          scheduled_at?: string | null
+          status?: string
+          subject?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          appointment_id: string
+          attachment_type: string | null
+          attachment_url: string | null
+          created_at: string
+          deleted_by: string | null
+          edited_at: string | null
+          id: string
+          is_deleted: boolean | null
+          is_edited: boolean | null
+          message: string | null
+          message_type: string
+          sender_id: string
+        }
+        Insert: {
+          appointment_id: string
+          attachment_type?: string | null
+          attachment_url?: string | null
+          created_at?: string
+          deleted_by?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          message?: string | null
+          message_type?: string
+          sender_id: string
+        }
+        Update: {
+          appointment_id?: string
+          attachment_type?: string | null
+          attachment_url?: string | null
+          created_at?: string
+          deleted_by?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          message?: string | null
+          message_type?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "chat_appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_creation_fees: {
         Row: {
           amount: number
@@ -416,34 +514,52 @@ export type Database = {
       }
       notifications: {
         Row: {
+          action_url: string | null
+          category: string | null
           created_at: string
+          expires_at: string | null
           id: string
+          is_archived: boolean | null
           link: string | null
           message: string
           metadata: Json | null
+          priority: string | null
           read: boolean | null
+          sender_id: string | null
           title: string
           type: string | null
           user_id: string
         }
         Insert: {
+          action_url?: string | null
+          category?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
+          is_archived?: boolean | null
           link?: string | null
           message: string
           metadata?: Json | null
+          priority?: string | null
           read?: boolean | null
+          sender_id?: string | null
           title: string
           type?: string | null
           user_id: string
         }
         Update: {
+          action_url?: string | null
+          category?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
+          is_archived?: boolean | null
           link?: string | null
           message?: string
           metadata?: Json | null
+          priority?: string | null
           read?: boolean | null
+          sender_id?: string | null
           title?: string
           type?: string | null
           user_id?: string
@@ -881,6 +997,36 @@ export type Database = {
           updated_at?: string
           user_id?: string
           website_url?: string | null
+        }
+        Relationships: []
+      }
+      teacher_credits: {
+        Row: {
+          created_at: string
+          free_messages_remaining: number
+          id: string
+          is_premium: boolean | null
+          premium_expires_at: string | null
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          free_messages_remaining?: number
+          id?: string
+          is_premium?: boolean | null
+          premium_expires_at?: string | null
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          free_messages_remaining?: number
+          id?: string
+          is_premium?: boolean | null
+          premium_expires_at?: string | null
+          teacher_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
