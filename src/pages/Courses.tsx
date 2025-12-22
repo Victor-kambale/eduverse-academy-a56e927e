@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -16,139 +16,28 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
   Search,
-  Filter,
   Star,
   Clock,
-  Users,
-  Play,
   Grid,
   List,
   X,
   SlidersHorizontal,
+  Loader2,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const allCourses = [
-  {
-    id: "11111111-1111-1111-1111-111111111111",
-    title: "Complete Web Development Bootcamp 2025",
-    instructor: "Dr. Sarah Chen",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
-    category: "Technology",
-    level: "Beginner",
-    duration: "42 hours",
-    rating: 4.9,
-    students: 125000,
-    price: 89.99,
-    originalPrice: 199.99,
-    isBestseller: true,
-    isFree: false,
-  },
-  {
-    id: "22222222-2222-2222-2222-222222222222",
-    title: "Machine Learning & AI Masterclass",
-    instructor: "Prof. Michael Zhang",
-    image: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=250&fit=crop",
-    category: "Data Science",
-    level: "Intermediate",
-    duration: "56 hours",
-    rating: 4.8,
-    students: 89000,
-    price: 129.99,
-    originalPrice: 299.99,
-    isBestseller: true,
-    isFree: false,
-  },
-  {
-    id: "33333333-3333-3333-3333-333333333333",
-    title: "Business Leadership & Management",
-    instructor: "Emma Thompson, MBA",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop",
-    category: "Business",
-    level: "Advanced",
-    duration: "28 hours",
-    rating: 4.7,
-    students: 67000,
-    price: 79.99,
-    originalPrice: 149.99,
-    isBestseller: false,
-    isFree: false,
-  },
-  {
-    id: "44444444-4444-4444-4444-444444444444",
-    title: "Healthcare Professional Certificate",
-    instructor: "Dr. James Williams",
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=250&fit=crop",
-    category: "Health",
-    level: "Intermediate",
-    duration: "35 hours",
-    rating: 4.9,
-    students: 45000,
-    price: 99.99,
-    originalPrice: 199.99,
-    isBestseller: false,
-    isFree: false,
-  },
-  {
-    id: "55555555-5555-5555-5555-555555555555",
-    title: "Python for Beginners - Free Course",
-    instructor: "Alex Johnson",
-    image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=400&h=250&fit=crop",
-    category: "Technology",
-    level: "Beginner",
-    duration: "12 hours",
-    rating: 4.6,
-    students: 230000,
-    price: 0,
-    originalPrice: 0,
-    isBestseller: false,
-    isFree: true,
-  },
-  {
-    id: "66666666-6666-6666-6666-666666666666",
-    title: "Digital Marketing Fundamentals",
-    instructor: "Maria Garcia",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop",
-    category: "Business",
-    level: "Beginner",
-    duration: "18 hours",
-    rating: 4.5,
-    students: 78000,
-    price: 49.99,
-    originalPrice: 99.99,
-    isBestseller: false,
-    isFree: false,
-  },
-  {
-    id: "77777777-7777-7777-7777-777777777777",
-    title: "English for Career Development",
-    instructor: "Prof. Robert Smith",
-    image: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=250&fit=crop",
-    category: "Languages",
-    level: "Intermediate",
-    duration: "24 hours",
-    rating: 4.7,
-    students: 156000,
-    price: 0,
-    originalPrice: 0,
-    isBestseller: false,
-    isFree: true,
-  },
-  {
-    id: "88888888-8888-8888-8888-888888888888",
-    title: "Personal Development Masterclass",
-    instructor: "Lisa Anderson",
-    image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=250&fit=crop",
-    category: "Personal Development",
-    level: "Beginner",
-    duration: "15 hours",
-    rating: 4.8,
-    students: 98000,
-    price: 59.99,
-    originalPrice: 129.99,
-    isBestseller: true,
-    isFree: false,
-  },
-];
+interface Course {
+  id: string;
+  title: string;
+  instructor_name: string | null;
+  thumbnail_url: string | null;
+  category: string | null;
+  level: string | null;
+  duration_hours: number | null;
+  price: number;
+  short_description: string | null;
+  is_published: boolean | null;
+}
 
 const categories = [
   "All Categories",
@@ -164,6 +53,8 @@ const levels = ["All Levels", "Beginner", "Intermediate", "Advanced"];
 
 const CoursesPage = () => {
   const [searchParams] = useSearchParams();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams.get("category") || "All Categories"
@@ -174,19 +65,41 @@ const CoursesPage = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredCourses = allCourses.filter((course) => {
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setCourses(data || []);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCourses = courses.filter((course) => {
     const matchesSearch =
       course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.instructor.toLowerCase().includes(searchQuery.toLowerCase());
+      (course.instructor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
     const matchesCategory =
       selectedCategory === "All Categories" ||
-      course.category.toLowerCase() === selectedCategory.toLowerCase();
+      course.category?.toLowerCase() === selectedCategory.toLowerCase();
     const matchesLevel =
-      selectedLevel === "All Levels" || course.level === selectedLevel;
+      selectedLevel === "All Levels" || 
+      course.level?.toLowerCase() === selectedLevel.toLowerCase();
     const matchesPrice =
       priceFilter === "all" ||
-      (priceFilter === "free" && course.isFree) ||
-      (priceFilter === "paid" && !course.isFree);
+      (priceFilter === "free" && course.price === 0) ||
+      (priceFilter === "paid" && course.price > 0);
 
     return matchesSearch && matchesCategory && matchesLevel && matchesPrice;
   });
@@ -194,9 +107,7 @@ const CoursesPage = () => {
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     switch (sortBy) {
       case "popular":
-        return b.students - a.students;
-      case "rating":
-        return b.rating - a.rating;
+        return b.id.localeCompare(a.id);
       case "newest":
         return b.id.localeCompare(a.id);
       case "price-low":
@@ -208,6 +119,16 @@ const CoursesPage = () => {
     }
   });
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       {/* Header */}
@@ -217,7 +138,7 @@ const CoursesPage = () => {
             Explore Courses
           </h1>
           <p className="text-primary-foreground/80 max-w-2xl">
-            Choose from over 6,000+ courses taught by industry experts. Learn at
+            Choose from our courses taught by industry experts. Learn at
             your own pace and earn certificates.
           </p>
         </div>
@@ -253,7 +174,6 @@ const CoursesPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="popular">Most Popular</SelectItem>
-                <SelectItem value="rating">Highest Rated</SelectItem>
                 <SelectItem value="newest">Newest</SelectItem>
                 <SelectItem value="price-low">Price: Low to High</SelectItem>
                 <SelectItem value="price-high">Price: High to Low</SelectItem>
@@ -395,68 +315,48 @@ const CoursesPage = () => {
                       }`}
                     >
                       <img
-                        src={course.image}
+                        src={course.thumbnail_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop"}
                         alt={course.title}
                         className={`w-full object-cover ${
                           viewMode === "list" ? "h-full" : "h-48"
                         }`}
                       />
-                      {course.isBestseller && (
-                        <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
-                          Bestseller
-                        </Badge>
-                      )}
-                      {course.isFree && (
-                        <Badge className="absolute top-3 left-3 bg-success text-success-foreground">
+                      {course.price === 0 && (
+                        <Badge className="absolute top-3 left-3 bg-green-500 text-white">
                           Free
                         </Badge>
                       )}
                     </div>
                     <CardContent className="p-5 flex-1">
                       <Badge variant="secondary" className="mb-2">
-                        {course.category}
+                        {course.category || "General"}
                       </Badge>
                       <h3 className="font-semibold line-clamp-2 mb-2 hover:text-accent transition-colors">
                         {course.title}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-3">
-                        {course.instructor}
+                        {course.instructor_name || "EduVerse Instructor"}
                       </p>
-
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex items-center gap-1 text-accent">
-                          <Star className="w-4 h-4 fill-current" />
-                          <span className="font-semibold">{course.rating}</span>
-                        </div>
-                        <span className="text-muted-foreground text-sm">
-                          ({course.students.toLocaleString()})
-                        </span>
-                      </div>
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                         <span className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          {course.duration}
+                          {course.duration_hours || 0} hours
                         </span>
-                        <Badge variant="outline" className="text-xs">
-                          {course.level}
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {course.level || "All Levels"}
                         </Badge>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {course.isFree ? (
-                          <span className="text-xl font-bold text-success">
+                        {course.price === 0 ? (
+                          <span className="text-xl font-bold text-green-600">
                             Free
                           </span>
                         ) : (
-                          <>
-                            <span className="text-xl font-bold text-foreground">
-                              ${course.price}
-                            </span>
-                            <span className="text-sm text-muted-foreground line-through">
-                              ${course.originalPrice}
-                            </span>
-                          </>
+                          <span className="text-xl font-bold text-foreground">
+                            ${course.price}
+                          </span>
                         )}
                       </div>
                     </CardContent>
