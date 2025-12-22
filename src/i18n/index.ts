@@ -45,6 +45,10 @@ i18n
   .init({
     resources,
     fallbackLng: "en",
+    supportedLngs: Object.keys(resources),
+    nonExplicitSupportedLngs: true,
+    load: "languageOnly",
+    cleanCode: true,
     interpolation: {
       escapeValue: false,
     },
@@ -56,11 +60,14 @@ i18n
 
 // Handle RTL
 const updateDirection = (lng: string) => {
-  const lang = languages.find(l => l.code === lng);
-  document.documentElement.dir = lang?.rtl ? 'rtl' : 'ltr';
+  const normalized = (lng || "en").split("-")[0];
+  const lang = languages.find((l) => l.code === normalized);
+
+  document.documentElement.dir = lang?.rtl ? "rtl" : "ltr";
+  document.documentElement.lang = normalized;
 };
 
-i18n.on('languageChanged', updateDirection);
-updateDirection(i18n.language);
+i18n.on("languageChanged", updateDirection);
+updateDirection(i18n.resolvedLanguage || i18n.language);
 
 export default i18n;

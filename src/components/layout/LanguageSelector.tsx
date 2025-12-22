@@ -30,40 +30,64 @@ export const LanguageSelector = () => {
     fetchLanguages();
   }, []);
 
+  useEffect(() => {
+    if (isOpen) fetchLanguages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const normalizeLng = (lng?: string) => (lng || "en").split("-")[0];
+
   const fetchLanguages = async () => {
     try {
       const { data, error } = await supabase
-        .from('language_settings')
-        .select('*')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
+        .from("language_settings")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
 
       if (error) throw error;
-      setLanguages((data as Language[]) || []);
+      const list = (data as Language[]) || [];
+      setLanguages(list);
+
+      // If user never selected a language, respect the admin's default.
+      const stored = localStorage.getItem("i18nextLng");
+      if (!stored) {
+        const defaultLang = list.find((l) => l.is_default) || list[0];
+        if (defaultLang?.code) i18n.changeLanguage(defaultLang.code);
+      }
     } catch (error) {
-      console.error('Error fetching languages:', error);
+      console.error("Error fetching languages:", error);
       // Fallback to defaults
       setLanguages([
-        { id: '1', code: 'en', name: 'English', native_name: 'English', flag: '🇺🇸', is_rtl: false, is_active: true },
+        {
+          id: "1",
+          code: "en",
+          name: "English",
+          native_name: "English",
+          flag: "🇺🇸",
+          is_rtl: false,
+          is_active: true,
+        },
       ]);
     } finally {
       setLoading(false);
     }
   };
 
-  const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0];
+  const activeLng = normalizeLng(i18n.resolvedLanguage || i18n.language);
+  const currentLanguage =
+    languages.find((lang) => lang.code === activeLng) ||
+    languages.find((lang) => lang.is_default) ||
+    languages[0];
 
   const handleLanguageChange = (code: string) => {
-    const lang = languages.find(l => l.code === code);
+    const lang = languages.find((l) => l.code === code);
     i18n.changeLanguage(code);
-    
+
     // Handle RTL
-    if (lang?.is_rtl) {
-      document.documentElement.dir = 'rtl';
-    } else {
-      document.documentElement.dir = 'ltr';
-    }
-    
+    document.documentElement.dir = lang?.is_rtl ? "rtl" : "ltr";
+    document.documentElement.lang = code;
+
     setIsOpen(false);
   };
 
@@ -91,7 +115,7 @@ export const LanguageSelector = () => {
           <DropdownMenuItem
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
-            className={i18n.language === lang.code ? "bg-accent/10" : ""}
+            className={activeLng === lang.code ? "bg-accent/10" : ""}
           >
             <span className="mr-2">{lang.flag}</span>
             <span className="flex-1">{lang.name}</span>
