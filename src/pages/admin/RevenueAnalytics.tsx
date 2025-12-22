@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -16,11 +16,17 @@ import {
   Download,
   RefreshCw,
   Clock,
-  Percent
+  Percent,
+  Search,
+  FileDown,
+  FileSpreadsheet,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -36,6 +42,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -105,6 +118,9 @@ export default function RevenueAnalytics() {
   const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('month');
   const [chartData, setChartData] = useState<any[]>([]);
   const [breakdown, setBreakdown] = useState<RevenueBreakdown[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isChartsOpen, setIsChartsOpen] = useState(true);
+  const [isStatsOpen, setIsStatsOpen] = useState(true);
 
   useEffect(() => {
     fetchRevenue();
@@ -182,6 +198,56 @@ export default function RevenueAnalytics() {
     setBreakdown(breakdownData.sort((a, b) => b.amount - a.amount));
   };
 
+  // Filter revenue based on search query - checks all fields
+  const filteredRevenue = revenue.filter(item => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    const sourceLabel = sourceTypeLabels[item.source_type] || item.source_type;
+    return (
+      sourceLabel.toLowerCase().includes(query) ||
+      item.source_type.toLowerCase().includes(query) ||
+      item.id.toLowerCase().includes(query) ||
+      (item.course_level && item.course_level.toLowerCase().includes(query)) ||
+      item.total_amount.toString().includes(query) ||
+      item.commission_amount.toString().includes(query)
+    );
+  });
+
+  const exportToCSV = () => {
+    const headers = ['Date', 'Source', 'Level', 'Total Amount', 'Commission %', 'Admin Revenue', 'Teacher Payout'];
+    const rows = filteredRevenue.map(item => [
+      format(new Date(item.created_at), 'MMM d, HH:mm'),
+      sourceTypeLabels[item.source_type] || item.source_type,
+      item.course_level || '',
+      item.total_amount.toFixed(2),
+      item.commission_percentage + '%',
+      item.commission_amount.toFixed(2),
+      item.teacher_amount ? item.teacher_amount.toFixed(2) : ''
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `revenue_${timeRange}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Revenue data exported to CSV');
+  };
+
+  const exportToJSON = () => {
+    const jsonContent = JSON.stringify(filteredRevenue, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `revenue_${timeRange}_${format(new Date(), 'yyyy-MM-dd')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Revenue data exported to JSON');
+  };
+
   const totalRevenue = revenue.reduce((sum, r) => sum + r.total_amount, 0);
   const totalCommission = revenue.reduce((sum, r) => sum + r.commission_amount, 0);
   const totalTeacherPayout = revenue.reduce((sum, r) => sum + (r.teacher_amount || 0), 0);
@@ -212,162 +278,202 @@ export default function RevenueAnalytics() {
           <Button variant="outline" size="icon" onClick={fetchRevenue}>
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={exportToCSV}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportToJSON}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Export as JSON
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      {/* Key Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="bg-gradient-to-br from-accent/10 to-accent/5">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <DollarSign className="h-8 w-8 text-accent" />
-              <Badge variant="secondary">+12.5%</Badge>
-            </div>
-            <p className="text-3xl font-bold mt-2">${totalRevenue.toFixed(2)}</p>
-            <p className="text-sm text-muted-foreground">Total Revenue</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <Percent className="h-8 w-8 text-green-500" />
-              <ArrowUpRight className="h-5 w-5 text-green-500" />
-            </div>
-            <p className="text-3xl font-bold mt-2">${totalCommission.toFixed(2)}</p>
-            <p className="text-sm text-muted-foreground">Admin Commission</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <Users className="h-8 w-8 text-blue-500" />
-            </div>
-            <p className="text-3xl font-bold mt-2">${totalTeacherPayout.toFixed(2)}</p>
-            <p className="text-sm text-muted-foreground">Teacher Payouts</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <BookOpen className="h-8 w-8 text-purple-500" />
-            </div>
-            <p className="text-3xl font-bold mt-2">{courseSales}</p>
-            <p className="text-sm text-muted-foreground">Course Sales</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-red-500/10 to-red-500/5">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <AlertTriangle className="h-8 w-8 text-red-500" />
-            </div>
-            <p className="text-3xl font-bold mt-2">${failedPaymentRevenue.toFixed(2)}</p>
-            <p className="text-sm text-muted-foreground">Failed Payment Fees (20%)</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Over Time */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
+      {/* Collapsible Key Stats */}
+      <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" className="w-full justify-between p-4 h-auto bg-muted/50 rounded-lg">
+            <span className="font-semibold flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Revenue Over Time
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="date" className="text-xs" />
-                  <YAxis className="text-xs" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--background))', 
-                      border: '1px solid hsl(var(--border))' 
-                    }}
-                  />
-                  <Legend />
-                  <Area 
-                    type="monotone" 
-                    dataKey="total" 
-                    stackId="1"
-                    stroke="#8B5CF6" 
-                    fill="#8B5CF6" 
-                    fillOpacity={0.3}
-                    name="Total Revenue"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="commission" 
-                    stackId="2"
-                    stroke="#10B981" 
-                    fill="#10B981" 
-                    fillOpacity={0.3}
-                    name="Admin Commission"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Revenue Breakdown Pie */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
-              Revenue by Category
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsPie>
-                  <Pie
-                    data={breakdown}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={40}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="amount"
-                  >
-                    {breakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
-                </RechartsPie>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-2 mt-4">
-              {breakdown.slice(0, 5).map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: item.color }} 
-                    />
-                    <span className="truncate max-w-32">{item.category}</span>
-                  </div>
-                  <span className="font-medium">{item.percentage.toFixed(1)}%</span>
+              Key Statistics
+            </span>
+            <ChevronRight className={`h-5 w-5 transition-transform ${isStatsOpen ? 'rotate-90' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <Card className="bg-gradient-to-br from-accent/10 to-accent/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <DollarSign className="h-8 w-8 text-accent" />
+                  <Badge variant="secondary">+12.5%</Badge>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                <p className="text-3xl font-bold mt-2">${totalRevenue.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Total Revenue</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <Percent className="h-8 w-8 text-green-500" />
+                  <ArrowUpRight className="h-5 w-5 text-green-500" />
+                </div>
+                <p className="text-3xl font-bold mt-2">${totalCommission.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Admin Commission</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <Users className="h-8 w-8 text-blue-500" />
+                </div>
+                <p className="text-3xl font-bold mt-2">${totalTeacherPayout.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Teacher Payouts</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <BookOpen className="h-8 w-8 text-purple-500" />
+                </div>
+                <p className="text-3xl font-bold mt-2">{courseSales}</p>
+                <p className="text-sm text-muted-foreground">Course Sales</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-red-500/10 to-red-500/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <AlertTriangle className="h-8 w-8 text-red-500" />
+                </div>
+                <p className="text-3xl font-bold mt-2">${failedPaymentRevenue.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Failed Payment Fees (20%)</p>
+              </CardContent>
+            </Card>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Collapsible Charts Row */}
+      <Collapsible open={isChartsOpen} onOpenChange={setIsChartsOpen}>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" className="w-full justify-between p-4 h-auto bg-muted/50 rounded-lg">
+            <span className="font-semibold flex items-center gap-2">
+              <PieChart className="h-5 w-5" />
+              Charts & Visualizations
+            </span>
+            <ChevronRight className={`h-5 w-5 transition-transform ${isChartsOpen ? 'rotate-90' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Revenue Over Time */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Revenue Over Time
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="date" className="text-xs" />
+                      <YAxis className="text-xs" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--background))', 
+                          border: '1px solid hsl(var(--border))' 
+                        }}
+                      />
+                      <Legend />
+                      <Area 
+                        type="monotone" 
+                        dataKey="total" 
+                        stackId="1"
+                        stroke="#8B5CF6" 
+                        fill="#8B5CF6" 
+                        fillOpacity={0.3}
+                        name="Total Revenue"
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="commission" 
+                        stackId="2"
+                        stroke="#10B981" 
+                        fill="#10B981" 
+                        fillOpacity={0.3}
+                        name="Admin Commission"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Revenue Breakdown Pie */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <PieChart className="h-5 w-5" />
+                  Revenue by Category
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsPie>
+                      <Pie
+                        data={breakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={80}
+                        paddingAngle={2}
+                        dataKey="amount"
+                      >
+                        {breakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                    </RechartsPie>
+                  </ResponsiveContainer>
+                </div>
+                <div className="space-y-2 mt-4">
+                  {breakdown.slice(0, 5).map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: item.color }} 
+                        />
+                        <span className="truncate max-w-32">{item.category}</span>
+                      </div>
+                      <span className="font-medium">{item.percentage.toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Commission Rates Reference */}
       <Card>
@@ -421,10 +527,21 @@ export default function RevenueAnalytics() {
         </CardContent>
       </Card>
 
-      {/* Recent Transactions */}
+      {/* Recent Transactions with Search */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Recent Revenue Transactions</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Recent Revenue Transactions</CardTitle>
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -444,14 +561,14 @@ export default function RevenueAnalytics() {
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">Loading...</TableCell>
                 </TableRow>
-              ) : revenue.length === 0 ? (
+              ) : filteredRevenue.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No revenue data found for this period
+                    {searchQuery ? 'No matching transactions found' : 'No revenue data found for this period'}
                   </TableCell>
                 </TableRow>
               ) : (
-                revenue.slice(0, 20).map((item) => (
+                filteredRevenue.slice(0, 20).map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="text-muted-foreground">
                       {format(new Date(item.created_at), 'MMM d, HH:mm')}
@@ -481,27 +598,11 @@ export default function RevenueAnalytics() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
-
-      {/* Notification Preview */}
-      <Card className="bg-gradient-to-br from-accent/5 to-accent/10">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Real-time Notifications
-          </CardTitle>
-          <CardDescription>Auto-generated revenue notifications</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 bg-background rounded-lg border">
-            <p className="text-sm text-muted-foreground mb-2">Latest notification preview:</p>
-            <p className="font-medium">
-              💰 New revenue: ${totalCommission.toFixed(2)} admin commission from {courseSales} course sales 
-              ({timeRange === 'day' ? 'today' : `this ${timeRange}`}). 
-              Current time: {format(new Date(), 'PPpp')}
-            </p>
-          </div>
+          {filteredRevenue.length > 20 && (
+            <div className="text-center py-4 text-sm text-muted-foreground">
+              Showing 20 of {filteredRevenue.length} transactions
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
