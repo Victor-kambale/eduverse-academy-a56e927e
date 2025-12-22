@@ -144,8 +144,18 @@ const navSections: NavSection[] = [
 // Flatten all items for search
 const allNavItems = navSections.flatMap(section => section.items);
 
-export function AdminSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+interface AdminSidebarProps {
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
+}
+
+export function AdminSidebar({ collapsed: collapsedProp, onCollapsedChange }: AdminSidebarProps) {
+  const [collapsedState, setCollapsedState] = useState(false);
+  const collapsed = collapsedProp ?? collapsedState;
+  const setCollapsed = (val: boolean) => {
+    setCollapsedState(val);
+    onCollapsedChange?.(val);
+  };
   const [query, setQuery] = useState('');
   const [openSections, setOpenSections] = useState<string[]>(['main', 'backend']);
   const location = useLocation();
