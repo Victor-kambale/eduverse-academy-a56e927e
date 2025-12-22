@@ -445,6 +445,45 @@ export type Database = {
         }
         Relationships: []
       }
+      earnings_summary: {
+        Row: {
+          available_balance: number | null
+          currency: string | null
+          id: string
+          total_appointments: number | null
+          total_course_fees: number | null
+          total_course_sales: number | null
+          total_other: number | null
+          total_withdrawn: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_balance?: number | null
+          currency?: string | null
+          id?: string
+          total_appointments?: number | null
+          total_course_fees?: number | null
+          total_course_sales?: number | null
+          total_other?: number | null
+          total_withdrawn?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_balance?: number | null
+          currency?: string | null
+          id?: string
+          total_appointments?: number | null
+          total_course_fees?: number | null
+          total_course_sales?: number | null
+          total_other?: number | null
+          total_withdrawn?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           completed_at: string | null
@@ -652,6 +691,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      linked_accounts: {
+        Row: {
+          account_details: Json
+          account_name: string
+          account_type: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          is_verified: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_details?: Json
+          account_name: string
+          account_type: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          is_verified?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_details?: Json
+          account_name?: string
+          account_type?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          is_verified?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       newsletter_subscribers: {
         Row: {
@@ -1316,6 +1391,84 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          amount: number
+          category: string
+          contract_url: string | null
+          created_at: string
+          currency: string
+          id: string
+          id_document_url: string | null
+          payment_details: Json | null
+          payment_method: string
+          phone_verified: boolean | null
+          processed_at: string | null
+          processed_by: string | null
+          receipt_number: string | null
+          receipt_url: string | null
+          rejection_reason: string | null
+          signature_url: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+          user_type: string
+          verification_attempts: number | null
+          verification_code: string | null
+        }
+        Insert: {
+          amount: number
+          category: string
+          contract_url?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          id_document_url?: string | null
+          payment_details?: Json | null
+          payment_method: string
+          phone_verified?: boolean | null
+          processed_at?: string | null
+          processed_by?: string | null
+          receipt_number?: string | null
+          receipt_url?: string | null
+          rejection_reason?: string | null
+          signature_url?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+          user_type: string
+          verification_attempts?: number | null
+          verification_code?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          contract_url?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          id_document_url?: string | null
+          payment_details?: Json | null
+          payment_method?: string
+          phone_verified?: boolean | null
+          processed_at?: string | null
+          processed_by?: string | null
+          receipt_number?: string | null
+          receipt_url?: string | null
+          rejection_reason?: string | null
+          signature_url?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+          user_type?: string
+          verification_attempts?: number | null
+          verification_code?: string | null
         }
         Relationships: []
       }
