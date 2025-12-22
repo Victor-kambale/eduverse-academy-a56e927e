@@ -12,7 +12,8 @@ import {
   Plus,
   MessageSquare,
   CreditCard,
-  Crown
+  Crown,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -25,7 +26,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Layout } from '@/components/layout/Layout';
+import { ChatPaymentPlans } from '@/components/teacher/ChatPaymentPlans';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -67,12 +70,17 @@ const TeacherChat = () => {
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
+  const [paymentPlansOpen, setPaymentPlansOpen] = useState(false);
   const [appointmentForm, setAppointmentForm] = useState({
     subject: '',
     description: '',
     type: 'free',
   });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const canCreateAppointment = credits && (credits.is_premium || credits.free_messages_remaining > 0);
+  const messagesRemaining = credits?.free_messages_remaining || 0;
+  const isPremium = credits?.is_premium || false;
 
   useEffect(() => {
     if (user) {
@@ -131,6 +139,28 @@ const TeacherChat = () => {
         .maybeSingle();
 
       setCredits(creditsData);
+      
+      // Check if user exhausted free messages - show upgrade prompt
+      if (creditsData && !creditsData.is_premium && creditsData.free_messages_remaining <= 0) {
+        // Auto notify user to upgrade
+        const existingNotification = await supabase
+          .from('notifications')
+          .select('id')
+          .eq('user_id', user?.id)
+          .eq('title', 'Upgrade Required')
+          .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .maybeSingle();
+        
+        if (!existingNotification.data) {
+          await supabase.from('notifications').insert({
+            user_id: user?.id,
+            title: 'Upgrade Required',
+            message: 'You have used all your free messages. Upgrade to continue chatting with the admin team. Choose from $10/unlimited or $20/premium plans!',
+            type: 'warning',
+            priority: 'high',
+          });
+        }
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -160,9 +190,10 @@ const TeacherChat = () => {
       return;
     }
 
-    // Check credits for free appointments
-    if (appointmentForm.type === 'free' && credits && credits.free_messages_remaining <= 0) {
-      toast.error('No free messages remaining. Please upgrade to premium.');
+    // Check if user can create appointment
+    if (!canCreateAppointment) {
+      toast.error('No messages remaining. Please upgrade your plan.');
+      setPaymentPlansOpen(true);
       return;
     }
 
@@ -171,13 +202,13 @@ const TeacherChat = () => {
         teacher_id: user?.id,
         subject: appointmentForm.subject,
         description: appointmentForm.description,
-        appointment_type: appointmentForm.type,
+        appointment_type: isPremium ? 'premium' : 'free',
       });
 
       if (error) throw error;
 
       // Deduct free message if applicable
-      if (appointmentForm.type === 'free' && credits) {
+      if (!isPremium && credits) {
         await supabase
           .from('teacher_credits')
           .update({ free_messages_remaining: credits.free_messages_remaining - 1 })
@@ -216,6 +247,11 @@ const TeacherChat = () => {
     }
   };
 
+  const handlePlanSelected = (plan: string) => {
+    fetchData();
+    toast.success(`${plan} plan activated! You can now create appointments.`);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
@@ -227,6 +263,18 @@ const TeacherChat = () => {
       default:
         return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
     }
+  };
+
+  const getPlanLabel = () => {
+    if (isPremium) {
+      const expiresAt = credits?.premium_expires_at;
+      if (expiresAt) {
+        const daysLeft = Math.ceil((new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        return `Premium (${daysLeft} days left)`;
+      }
+      return 'Premium Member';
+    }
+    return 'Free Tier';
   };
 
   if (loading) {
@@ -247,40 +295,52 @@ const TeacherChat = () => {
           <p className="text-muted-foreground">Request appointments and communicate with the platform team</p>
         </div>
 
+        {/* Upgrade Alert for exhausted free messages */}
+        {!isPremium && messagesRemaining <= 0 && (
+          <Alert className="mb-6 border-accent bg-accent/10">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>
+                You've used all 5 free messages. Upgrade to continue chatting!
+              </span>
+              <Button size="sm" onClick={() => setPaymentPlansOpen(true)}>
+                View Plans
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Credits Card */}
         <Card className="mb-6 border-accent/50">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
-                  {credits?.is_premium ? (
+                  {isPremium ? (
                     <Crown className="w-6 h-6 text-accent" />
                   ) : (
                     <CreditCard className="w-6 h-6 text-muted-foreground" />
                   )}
                   <div>
-                    <p className="font-medium">
-                      {credits?.is_premium ? 'Premium Member' : 'Free Tier'}
-                    </p>
+                    <p className="font-medium">{getPlanLabel()}</p>
                     <p className="text-sm text-muted-foreground">
-                      {credits?.is_premium 
+                      {isPremium 
                         ? 'Unlimited priority messages'
-                        : `${credits?.free_messages_remaining || 0}/5 free messages remaining`
+                        : `${messagesRemaining}/5 free messages remaining`
                       }
                     </p>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {!credits?.is_premium && (
-                  <Button variant="accent">
-                    <Crown className="w-4 h-4 mr-2" />
-                    Upgrade - $10/month
-                  </Button>
-                )}
+                <Button variant="outline" onClick={() => setPaymentPlansOpen(true)}>
+                  <Crown className="w-4 h-4 mr-2" />
+                  {isPremium ? 'Manage Plan' : 'Upgrade Plan'}
+                </Button>
+                
                 <Dialog open={appointmentDialogOpen} onOpenChange={setAppointmentDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button disabled={!canCreateAppointment}>
                       <Plus className="w-4 h-4 mr-2" />
                       New Appointment
                     </Button>
@@ -290,25 +350,13 @@ const TeacherChat = () => {
                       <DialogTitle>Request Appointment</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <div>
-                        <Label>Appointment Type</Label>
-                        <Select 
-                          value={appointmentForm.type} 
-                          onValueChange={(value) => setAppointmentForm({ ...appointmentForm, type: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="free">
-                              Free ({credits?.free_messages_remaining || 0} remaining)
-                            </SelectItem>
-                            <SelectItem value="premium">
-                              Premium (Priority - 99% approval rate)
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      {!isPremium && (
+                        <div className="p-3 bg-muted rounded-lg text-sm">
+                          <p className="text-muted-foreground">
+                            This will use 1 of your {messagesRemaining} remaining free messages.
+                          </p>
+                        </div>
+                      )}
                       <div>
                         <Label>Subject</Label>
                         <Input
@@ -350,6 +398,15 @@ const TeacherChat = () => {
                     <div className="text-center py-8">
                       <MessageSquare className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
                       <p className="text-sm text-muted-foreground">No appointments yet</p>
+                      {canCreateAppointment && (
+                        <Button 
+                          variant="link" 
+                          className="mt-2"
+                          onClick={() => setAppointmentDialogOpen(true)}
+                        >
+                          Create your first appointment
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     appointments.map((apt) => (
@@ -482,6 +539,14 @@ const TeacherChat = () => {
           </Card>
         </div>
       </div>
+
+      {/* Payment Plans Modal */}
+      <ChatPaymentPlans
+        open={paymentPlansOpen}
+        onOpenChange={setPaymentPlansOpen}
+        onPlanSelected={handlePlanSelected}
+        currentPlan={isPremium ? 'premium' : undefined}
+      />
     </Layout>
   );
 };
