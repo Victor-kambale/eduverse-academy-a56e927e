@@ -12,7 +12,10 @@ import {
   Phone,
   MapPin,
   Calendar,
-  GraduationCap
+  GraduationCap,
+  ZoomIn,
+  ZoomOut,
+  RotateCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,6 +87,12 @@ export default function TeacherApplications() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
+  
+  // Document preview state
+  const [isDocPreviewOpen, setIsDocPreviewOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<{ label: string; url: string } | null>(null);
+  const [docZoom, setDocZoom] = useState(100);
+  const [docRotation, setDocRotation] = useState(0);
 
   useEffect(() => {
     fetchApplications();
@@ -106,7 +115,6 @@ export default function TeacherApplications() {
 
   const handleApprove = async (application: TeacherApplication) => {
     try {
-      // Update application status
       const { error: updateError } = await supabase
         .from('teacher_applications')
         .update({
@@ -118,7 +126,6 @@ export default function TeacherApplications() {
 
       if (updateError) throw updateError;
 
-      // Add instructor role
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
@@ -130,7 +137,6 @@ export default function TeacherApplications() {
         throw roleError;
       }
 
-      // Create notification
       await supabase.from('notifications').insert({
         user_id: application.user_id,
         title: 'Application Approved!',
@@ -162,7 +168,6 @@ export default function TeacherApplications() {
 
       if (error) throw error;
 
-      // Create notification
       await supabase.from('notifications').insert({
         user_id: selectedApp.user_id,
         title: 'Application Update',
@@ -179,6 +184,13 @@ export default function TeacherApplications() {
       console.error('Error rejecting application:', error);
       toast.error('Failed to reject application');
     }
+  };
+
+  const openDocumentPreview = (label: string, url: string) => {
+    setPreviewDoc({ label, url });
+    setDocZoom(100);
+    setDocRotation(0);
+    setIsDocPreviewOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -203,6 +215,11 @@ export default function TeacherApplications() {
   const pendingCount = applications.filter(a => a.status === 'pending').length;
   const approvedCount = applications.filter(a => a.status === 'approved').length;
   const rejectedCount = applications.filter(a => a.status === 'rejected').length;
+
+  const isPdfOrImage = (url: string) => {
+    const lower = url.toLowerCase();
+    return lower.endsWith('.pdf') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.webp');
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -471,11 +488,21 @@ export default function TeacherApplications() {
                           <span>{doc.label}</span>
                         </div>
                         {doc.url ? (
-                          <Button variant="ghost" size="sm" asChild>
-                            <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => openDocumentPreview(doc.label, doc.url!)}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <Button variant="ghost" size="sm" asChild>
+                              <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          </div>
                         ) : (
                           <Badge variant="secondary">Not uploaded</Badge>
                         )}
@@ -514,6 +541,69 @@ export default function TeacherApplications() {
               <p className="text-sm text-muted-foreground">{selectedApp.rejection_reason}</p>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={isDocPreviewOpen} onOpenChange={setIsDocPreviewOpen}>
+        <DialogContent className="max-w-5xl max-h-[95vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{previewDoc?.label}</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setDocZoom(Math.max(25, docZoom - 25))}
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <span className="text-sm w-16 text-center">{docZoom}%</span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setDocZoom(Math.min(200, docZoom + 25))}
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setDocRotation((docRotation + 90) % 360)}
+                >
+                  <RotateCw className="h-4 w-4" />
+                </Button>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-auto max-h-[75vh] flex items-center justify-center bg-muted rounded-lg p-4">
+            {previewDoc?.url && (
+              previewDoc.url.toLowerCase().endsWith('.pdf') ? (
+                <iframe
+                  src={previewDoc.url}
+                  className="w-full h-[70vh] border-0 rounded-lg"
+                  title={previewDoc.label}
+                />
+              ) : (
+                <img
+                  src={previewDoc.url}
+                  alt={previewDoc.label}
+                  className="max-w-full transition-transform duration-200"
+                  style={{
+                    transform: `scale(${docZoom / 100}) rotate(${docRotation}deg)`,
+                  }}
+                />
+              )
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" asChild>
+              <a href={previewDoc?.url} download target="_blank" rel="noopener noreferrer">
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </a>
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

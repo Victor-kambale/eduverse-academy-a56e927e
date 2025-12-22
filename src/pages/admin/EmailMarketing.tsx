@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -19,7 +20,8 @@ import {
   XCircle,
   Plus,
   Trash2,
-  Eye
+  Eye,
+  Calendar
 } from 'lucide-react';
 import { StatsCard } from '@/components/admin/StatsCard';
 
@@ -71,6 +73,9 @@ export default function EmailMarketing() {
   const [emailContent, setEmailContent] = useState('');
   const [targetAudience, setTargetAudience] = useState('all');
   const [isSending, setIsSending] = useState(false);
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('09:00');
 
   const emailTemplates = {
     welcome: {
@@ -318,13 +323,17 @@ export default function EmailMarketing() {
                 <div className="flex gap-2">
                   <Button 
                     onClick={handleSendCampaign} 
-                    disabled={isSending}
+                    disabled={isSending || !emailSubject || !emailContent}
                     className="flex-1"
                   >
                     <Send className="w-4 h-4 mr-2" />
                     {isSending ? 'Sending...' : 'Send Campaign'}
                   </Button>
-                  <Button variant="outline">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setIsScheduleDialogOpen(true)}
+                    disabled={!emailSubject || !emailContent}
+                  >
                     <Clock className="w-4 h-4 mr-2" />
                     Schedule
                   </Button>
@@ -444,6 +453,77 @@ export default function EmailMarketing() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Schedule Dialog */}
+      <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Schedule Campaign
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <Input 
+                type="date" 
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Time</Label>
+              <Input 
+                type="time" 
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+              />
+            </div>
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong>Subject:</strong> {emailSubject}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                <strong>Audience:</strong> {targetAudience}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsScheduleDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                if (!scheduleDate) {
+                  toast.error('Please select a date');
+                  return;
+                }
+                const scheduledAt = `${scheduleDate}T${scheduleTime}:00Z`;
+                const newCampaign: Campaign = {
+                  id: Date.now().toString(),
+                  name: emailSubject.slice(0, 30),
+                  subject: emailSubject,
+                  status: 'scheduled',
+                  recipients: 0,
+                  openRate: 0,
+                  scheduledAt
+                };
+                setCampaigns([newCampaign, ...campaigns]);
+                toast.success(`Campaign scheduled for ${new Date(scheduledAt).toLocaleString()}`);
+                setIsScheduleDialogOpen(false);
+                setEmailSubject('');
+                setEmailContent('');
+              }}
+              disabled={!scheduleDate}
+            >
+              <Clock className="w-4 h-4 mr-2" />
+              Schedule Campaign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

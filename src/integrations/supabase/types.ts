@@ -519,6 +519,48 @@ export type Database = {
         }
         Relationships: []
       }
+      language_settings: {
+        Row: {
+          code: string
+          created_at: string
+          flag: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          is_rtl: boolean | null
+          name: string
+          native_name: string | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          flag?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          is_rtl?: boolean | null
+          name: string
+          native_name?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          flag?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          is_rtl?: boolean | null
+          name?: string
+          native_name?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lesson_progress: {
         Row: {
           completed: boolean | null

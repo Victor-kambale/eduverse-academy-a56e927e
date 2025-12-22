@@ -108,16 +108,30 @@ export function Navbar() {
 
         {/* Search Bar */}
         <div className="flex-1 max-w-md hidden md:block">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search courses, topics, instructors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-secondary border-0 focus-visible:ring-2 focus-visible:ring-accent"
-            />
-          </div>
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (searchQuery.trim()) {
+                window.location.href = `/courses?search=${encodeURIComponent(searchQuery.trim())}`;
+              }
+            }}
+          >
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search courses, topics, instructors..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-secondary border-0 focus-visible:ring-2 focus-visible:ring-accent"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    window.location.href = `/courses?search=${encodeURIComponent(searchQuery.trim())}`;
+                  }
+                }}
+              />
+            </div>
+          </form>
         </div>
 
         {/* Right Side Actions */}
