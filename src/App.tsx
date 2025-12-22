@@ -38,6 +38,11 @@ import StudentDashboardControl from "./pages/admin/StudentDashboardControl";
 import FooterLinksManagement from "./pages/admin/FooterLinksManagement";
 import WithdrawalManagement from "./pages/admin/WithdrawalManagement";
 import RevenueAnalytics from "./pages/admin/RevenueAnalytics";
+import PaymentTesting from "./pages/admin/PaymentTesting";
+import CertificatesManagement from "./pages/admin/CertificatesManagement";
+import TransfersManagement from "./pages/admin/TransfersManagement";
+import MaintenanceManagement from "./pages/admin/MaintenanceManagement";
+import SecurityManagement from "./pages/admin/SecurityManagement";
 import TeacherRegistration from "./pages/TeacherRegistration";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherChat from "./pages/teacher/TeacherChat";
@@ -168,6 +173,11 @@ const App = () => (
               <Route path="footer-links" element={<FooterLinksManagement />} />
               <Route path="withdrawals" element={<WithdrawalManagement />} />
               <Route path="revenue" element={<RevenueAnalytics />} />
+              <Route path="payment-testing" element={<PaymentTesting />} />
+              <Route path="certificates" element={<CertificatesManagement />} />
+              <Route path="transfers" element={<TransfersManagement />} />
+              <Route path="maintenance" element={<MaintenanceManagement />} />
+              <Route path="security" element={<SecurityManagement />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
