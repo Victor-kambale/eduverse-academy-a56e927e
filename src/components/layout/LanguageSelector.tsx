@@ -14,10 +14,11 @@ interface Language {
   id: string;
   code: string;
   name: string;
-  native_name: string;
-  flag: string;
-  is_rtl: boolean;
-  is_active: boolean;
+  native_name: string | null;
+  flag: string | null;
+  is_rtl: boolean | null;
+  is_active: boolean | null;
+  is_default?: boolean | null;
 }
 
 export const LanguageSelector = () => {
@@ -52,7 +53,7 @@ export const LanguageSelector = () => {
       // If user never selected a language, respect the admin's default.
       const stored = localStorage.getItem("i18nextLng");
       if (!stored) {
-        const defaultLang = list.find((l) => l.is_default) || list[0];
+        const defaultLang = list.find((l) => l.is_default === true) || list[0];
         if (defaultLang?.code) i18n.changeLanguage(defaultLang.code);
       }
     } catch (error) {
@@ -77,7 +78,7 @@ export const LanguageSelector = () => {
   const activeLng = normalizeLng(i18n.resolvedLanguage || i18n.language);
   const currentLanguage =
     languages.find((lang) => lang.code === activeLng) ||
-    languages.find((lang) => lang.is_default) ||
+    languages.find((lang) => lang.is_default === true) ||
     languages[0];
 
   const handleLanguageChange = (code: string) => {
@@ -85,7 +86,7 @@ export const LanguageSelector = () => {
     i18n.changeLanguage(code);
 
     // Handle RTL
-    document.documentElement.dir = lang?.is_rtl ? "rtl" : "ltr";
+    document.documentElement.dir = lang?.is_rtl === true ? "rtl" : "ltr";
     document.documentElement.lang = code;
 
     setIsOpen(false);
@@ -117,9 +118,9 @@ export const LanguageSelector = () => {
             onClick={() => handleLanguageChange(lang.code)}
             className={activeLng === lang.code ? "bg-accent/10" : ""}
           >
-            <span className="mr-2">{lang.flag}</span>
+            <span className="mr-2">{lang.flag || '🌐'}</span>
             <span className="flex-1">{lang.name}</span>
-            {lang.native_name !== lang.name && (
+            {lang.native_name && lang.native_name !== lang.name && (
               <span className="text-xs text-muted-foreground">{lang.native_name}</span>
             )}
           </DropdownMenuItem>
