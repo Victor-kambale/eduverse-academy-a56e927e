@@ -15,6 +15,7 @@ import {
   Newspaper,
   TestTube,
   Link as LinkIcon,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,7 @@ const navItems = [
   { title: 'Student Control', url: '/admin/student-control', icon: Users },
   { title: 'Promos', url: '/admin/promos', icon: Newspaper },
   { title: 'Footer Links', url: '/admin/footer-links', icon: LinkIcon },
+  { title: 'Withdrawals', url: '/admin/withdrawals', icon: Wallet },
   { title: 'Languages', url: '/admin/languages', icon: Settings },
   { title: 'Content Approvals', url: '/admin/content-approvals', icon: FileCheck },
   { title: 'Email Marketing', url: '/admin/email-marketing', icon: Mail },

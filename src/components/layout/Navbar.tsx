@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchAutocomplete } from "@/components/search/SearchAutocomplete";
 import {
   NavigationMenu,
   NavigationMenuContent,
