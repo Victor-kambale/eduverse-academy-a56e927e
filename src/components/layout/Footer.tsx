@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   GraduationCap, 
@@ -16,9 +16,40 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface FooterLink {
+  id: string;
+  section: string;
+  title: string;
+  url: string;
+  is_external: boolean | null;
+}
+
 export function Footer() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [footerLinks, setFooterLinks] = useState<FooterLink[]>([]);
+
+  useEffect(() => {
+    fetchFooterLinks();
+  }, []);
+
+  const fetchFooterLinks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('footer_links')
+        .select('id, section, title, url, is_external')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setFooterLinks(data || []);
+    } catch (error) {
+      console.error('Error fetching footer links:', error);
+    }
+  };
+
+  const getLinksBySection = (section: string) => 
+    footerLinks.filter(link => link.section === section);
 
   const handleSubscribe = async () => {
     if (!email || !email.includes("@")) {
@@ -48,6 +79,30 @@ export function Footer() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderLink = (link: FooterLink) => {
+    if (link.is_external) {
+      return (
+        <li key={link.id}>
+          <a 
+            href={link.url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-accent transition-colors"
+          >
+            {link.title}
+          </a>
+        </li>
+      );
+    }
+    return (
+      <li key={link.id}>
+        <Link to={link.url} className="hover:text-accent transition-colors">
+          {link.title}
+        </Link>
+      </li>
+    );
   };
 
   return (
@@ -114,50 +169,74 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Courses */}
+          {/* Courses - Dynamic from DB */}
           <div>
             <h4 className="font-semibold mb-4">Courses</h4>
             <ul className="space-y-3 text-primary-foreground/70">
-              <li><Link to="/courses?category=technology" className="hover:text-accent transition-colors">Technology</Link></li>
-              <li><Link to="/courses?category=business" className="hover:text-accent transition-colors">Business</Link></li>
-              <li><Link to="/courses?category=data-science" className="hover:text-accent transition-colors">Data Science</Link></li>
-              <li><Link to="/courses?category=health" className="hover:text-accent transition-colors">Health</Link></li>
-              <li><Link to="/courses?category=languages" className="hover:text-accent transition-colors">Languages</Link></li>
+              {getLinksBySection('courses').length > 0 ? (
+                getLinksBySection('courses').map(renderLink)
+              ) : (
+                <>
+                  <li><Link to="/courses?category=technology" className="hover:text-accent transition-colors">Technology</Link></li>
+                  <li><Link to="/courses?category=business" className="hover:text-accent transition-colors">Business</Link></li>
+                  <li><Link to="/courses?category=data-science" className="hover:text-accent transition-colors">Data Science</Link></li>
+                  <li><Link to="/courses?category=health" className="hover:text-accent transition-colors">Health</Link></li>
+                  <li><Link to="/courses?category=languages" className="hover:text-accent transition-colors">Languages</Link></li>
+                </>
+              )}
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Resources - Dynamic from DB */}
           <div>
             <h4 className="font-semibold mb-4">Resources</h4>
             <ul className="space-y-3 text-primary-foreground/70">
-              <li><Link to="/help" className="hover:text-accent transition-colors">Help Center</Link></li>
-              <li><Link to="/blog" className="hover:text-accent transition-colors">Blog</Link></li>
-              <li><Link to="/community" className="hover:text-accent transition-colors">Community</Link></li>
-              <li><Link to="/certificates" className="hover:text-accent transition-colors">Certificates</Link></li>
-              <li><Link to="/careers" className="hover:text-accent transition-colors">Careers</Link></li>
+              {getLinksBySection('resources').length > 0 ? (
+                getLinksBySection('resources').map(renderLink)
+              ) : (
+                <>
+                  <li><Link to="/help" className="hover:text-accent transition-colors">Help Center</Link></li>
+                  <li><Link to="/blog" className="hover:text-accent transition-colors">Blog</Link></li>
+                  <li><Link to="/community" className="hover:text-accent transition-colors">Community</Link></li>
+                  <li><Link to="/certificates" className="hover:text-accent transition-colors">Certificates</Link></li>
+                  <li><Link to="/careers" className="hover:text-accent transition-colors">Careers</Link></li>
+                </>
+              )}
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Company - Dynamic from DB */}
           <div>
             <h4 className="font-semibold mb-4">Company</h4>
             <ul className="space-y-3 text-primary-foreground/70">
-              <li><Link to="/about" className="hover:text-accent transition-colors">About Us</Link></li>
-              <li><Link to="/instructors" className="hover:text-accent transition-colors">Become an Instructor</Link></li>
-              <li><Link to="/enterprise" className="hover:text-accent transition-colors">For Enterprise</Link></li>
-              <li><Link to="/press" className="hover:text-accent transition-colors">Press</Link></li>
-              <li><Link to="/contact" className="hover:text-accent transition-colors">Contact</Link></li>
+              {getLinksBySection('company').length > 0 ? (
+                getLinksBySection('company').map(renderLink)
+              ) : (
+                <>
+                  <li><Link to="/about" className="hover:text-accent transition-colors">About Us</Link></li>
+                  <li><Link to="/teacher/register" className="hover:text-accent transition-colors">Become an Instructor</Link></li>
+                  <li><Link to="/enterprise" className="hover:text-accent transition-colors">For Enterprise</Link></li>
+                  <li><Link to="/press" className="hover:text-accent transition-colors">Press</Link></li>
+                  <li><Link to="/contact" className="hover:text-accent transition-colors">Contact</Link></li>
+                </>
+              )}
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Legal - Dynamic from DB */}
           <div>
             <h4 className="font-semibold mb-4">Legal</h4>
             <ul className="space-y-3 text-primary-foreground/70">
-              <li><Link to="/terms" className="hover:text-accent transition-colors">Terms of Service</Link></li>
-              <li><Link to="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/cookies" className="hover:text-accent transition-colors">Cookie Policy</Link></li>
-              <li><Link to="/accessibility" className="hover:text-accent transition-colors">Accessibility</Link></li>
+              {getLinksBySection('legal').length > 0 ? (
+                getLinksBySection('legal').map(renderLink)
+              ) : (
+                <>
+                  <li><Link to="/terms" className="hover:text-accent transition-colors">Terms of Service</Link></li>
+                  <li><Link to="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link></li>
+                  <li><Link to="/cookies" className="hover:text-accent transition-colors">Cookie Policy</Link></li>
+                  <li><Link to="/accessibility" className="hover:text-accent transition-colors">Accessibility</Link></li>
+                </>
+              )}
             </ul>
           </div>
         </div>

@@ -35,6 +35,7 @@ import PromoManagement from "./pages/admin/PromoManagement";
 import LanguageManagement from "./pages/admin/LanguageManagement";
 import TeacherDashboardControl from "./pages/admin/TeacherDashboardControl";
 import StudentDashboardControl from "./pages/admin/StudentDashboardControl";
+import FooterLinksManagement from "./pages/admin/FooterLinksManagement";
 import TeacherRegistration from "./pages/TeacherRegistration";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherChat from "./pages/teacher/TeacherChat";
@@ -144,6 +145,7 @@ const App = () => (
               <Route path="languages" element={<LanguageManagement />} />
               <Route path="teacher-control" element={<TeacherDashboardControl />} />
               <Route path="student-control" element={<StudentDashboardControl />} />
+              <Route path="footer-links" element={<FooterLinksManagement />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
