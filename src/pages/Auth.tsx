@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { CookieConsent } from "@/components/auth/CookieConsent";
+import { notifyLogin, notifySignUp, playSound } from "@/hooks/useNotifications";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -82,6 +83,12 @@ const AuthPage = () => {
         return;
       }
       
+      // Get user info for notification
+      const { data: { user: newUser } } = await supabase.auth.getUser();
+      if (newUser) {
+        await notifySignUp(newUser.id, formData.name);
+        playSound('success');
+      }
       toast.success("Account created successfully! Welcome to EduVerse!");
     } else {
       const { error } = await signIn(formData.email, formData.password);
@@ -95,7 +102,12 @@ const AuthPage = () => {
         setIsLoading(false);
         return;
       }
-      
+      // Get user info for login notification
+      const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+      if (loggedInUser) {
+        await notifyLogin(loggedInUser.id);
+        playSound('info');
+      }
       toast.success("Welcome back! Redirecting to dashboard...");
     }
 
