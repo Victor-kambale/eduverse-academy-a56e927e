@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Plus, 
   Edit, 
@@ -43,6 +43,7 @@ export default function FooterLinksManagement() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<FooterLink | null>(null);
+  const [draggedItem, setDraggedItem] = useState<FooterLink | null>(null);
   const [formData, setFormData] = useState({
     section: 'resources',
     title: '',
@@ -175,14 +176,80 @@ export default function FooterLinksManagement() {
     }
   };
 
-  const getLinksBySection = (section: string) => links.filter(l => l.section === section);
+  // Drag and Drop handlers
+  const handleDragStart = (e: React.DragEvent, link: FooterLink) => {
+    setDraggedItem(link);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', link.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetLink: FooterLink) => {
+    e.preventDefault();
+    
+    if (!draggedItem || draggedItem.id === targetLink.id) {
+      setDraggedItem(null);
+      return;
+    }
+
+    // Only allow reordering within the same section
+    if (draggedItem.section !== targetLink.section) {
+      toast.error('Cannot move links between sections');
+      setDraggedItem(null);
+      return;
+    }
+
+    const sectionLinks = links.filter(l => l.section === draggedItem.section);
+    const draggedIndex = sectionLinks.findIndex(l => l.id === draggedItem.id);
+    const targetIndex = sectionLinks.findIndex(l => l.id === targetLink.id);
+
+    // Reorder the array
+    const newSectionLinks = [...sectionLinks];
+    newSectionLinks.splice(draggedIndex, 1);
+    newSectionLinks.splice(targetIndex, 0, draggedItem);
+
+    // Update sort_order for all affected links
+    const updates = newSectionLinks.map((link, index) => ({
+      id: link.id,
+      sort_order: index,
+    }));
+
+    try {
+      // Update each link's sort_order
+      for (const update of updates) {
+        await supabase
+          .from('footer_links')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id);
+      }
+
+      toast.success('Order updated');
+      fetchLinks();
+    } catch (error) {
+      console.error('Error updating order:', error);
+      toast.error('Failed to update order');
+    }
+
+    setDraggedItem(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+  };
+
+  const getLinksBySection = (section: string) => 
+    links.filter(l => l.section === section).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Footer Links Management</h1>
-          <p className="text-muted-foreground">Manage footer navigation links and sections</p>
+          <p className="text-muted-foreground">Manage footer navigation links - drag to reorder</p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(open) => {
           setDialogOpen(open);
@@ -292,10 +359,10 @@ export default function FooterLinksManagement() {
       ) : (
         <Tabs defaultValue="resources" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="resources">Resources</TabsTrigger>
-            <TabsTrigger value="company">Company</TabsTrigger>
-            <TabsTrigger value="legal">Legal</TabsTrigger>
-            <TabsTrigger value="courses">Courses</TabsTrigger>
+            <TabsTrigger value="resources">Resources ({getLinksBySection('resources').length})</TabsTrigger>
+            <TabsTrigger value="company">Company ({getLinksBySection('company').length})</TabsTrigger>
+            <TabsTrigger value="legal">Legal ({getLinksBySection('legal').length})</TabsTrigger>
+            <TabsTrigger value="courses">Courses ({getLinksBySection('courses').length})</TabsTrigger>
           </TabsList>
 
           {sections.map((section) => (
@@ -315,11 +382,25 @@ export default function FooterLinksManagement() {
                   </CardContent>
                 </Card>
               ) : (
-                getLinksBySection(section).map((link) => (
-                  <Card key={link.id} className={!link.is_active ? 'opacity-60' : ''}>
+                getLinksBySection(section).map((link, index) => (
+                  <Card 
+                    key={link.id} 
+                    className={`transition-all ${!link.is_active ? 'opacity-60' : ''} ${draggedItem?.id === link.id ? 'opacity-50 ring-2 ring-primary' : ''}`}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, link)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, link)}
+                    onDragEnd={handleDragEnd}
+                  >
                     <CardContent className="py-4">
                       <div className="flex items-center gap-4">
-                        <GripVertical className="w-5 h-5 text-muted-foreground cursor-grab" />
+                        <div className="cursor-grab active:cursor-grabbing">
+                          <GripVertical className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm font-bold text-primary">
+                          {index + 1}
+                        </div>
                         
                         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                           <LinkIcon className="w-5 h-5 text-primary" />
