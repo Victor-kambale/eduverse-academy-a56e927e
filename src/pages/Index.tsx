@@ -3,21 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Layout } from "@/components/layout/Layout";
-import { 
-  GraduationCap, 
-  Users, 
-  Globe, 
-  Award, 
-  Play, 
-  Star, 
-  Clock, 
+import {
+  GraduationCap,
+  Users,
+  Globe,
+  Award,
+  Play,
+  Star,
+  Clock,
   BookOpen,
   ArrowRight,
   CheckCircle,
   TrendingUp,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import { PromoCarousel } from "@/components/home/PromoCarousel";
+import { useSmartTranslation } from "@/hooks/useSmartTranslation";
 
 const featuredCourses = [
   {
@@ -99,6 +100,20 @@ const partners = [
 ];
 
 const Index = () => {
+  const { tSmart } = useSmartTranslation();
+
+  const splitLastWord = (text: string) => {
+    const parts = text.trim().split(" ");
+    if (parts.length <= 1) return { rest: "", last: text.trim() };
+    const last = parts.pop() || "";
+    return { rest: parts.join(" "), last };
+  };
+
+  const heroTitle = tSmart(["hero.title", "home.hero.title"], {
+    defaultValue: "Learn Without Limits",
+  });
+  const { rest: heroTitleRest, last: heroTitleLast } = splitLastWord(heroTitle);
+
   return (
     <Layout>
       {/* Promo Carousel */}
@@ -117,34 +132,49 @@ const Index = () => {
         
         <div className="container relative py-20 lg:py-32">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 animate-fade-in">
-              <div className="inline-flex items-center gap-2 bg-accent/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm">
-                <Sparkles className="w-4 h-4 text-accent" />
-                <span>Join 50 million learners worldwide</span>
-              </div>
-              
-              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                Learn Without <span className="text-gradient">Limits</span>
-              </h1>
-              
-              <p className="text-lg md:text-xl text-primary-foreground/80 max-w-xl">
-                Access world-class education from top universities and industry leaders. 
-                Earn certificates and degrees that advance your career.
-              </p>
-              
-              <div className="flex flex-wrap gap-4">
-                <Link to="/courses">
-                  <Button variant="hero" size="lg">
-                    Explore Courses
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </Link>
-                <Link to="/auth?mode=signup">
-                  <Button variant="hero-outline" size="lg">
-                    Start Free Trial
-                  </Button>
-                </Link>
-              </div>
+              <div className="space-y-8 animate-fade-in">
+                <div className="inline-flex items-center gap-2 bg-accent/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm">
+                  <Sparkles className="w-4 h-4 text-accent" />
+                  <span>
+                    {tSmart(["hero.joinLearners", "home.hero.joinLearners"], {
+                      defaultValue: "Join 50 million learners worldwide",
+                    })}
+                  </span>
+                </div>
+
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                  {heroTitleRest ? <span>{heroTitleRest} </span> : null}
+                  <span className="text-gradient">{heroTitleLast}</span>
+                </h1>
+
+                <p className="text-lg md:text-xl text-primary-foreground/80 max-w-xl">
+                  {tSmart(["hero.subtitle", "home.hero.subtitle"], {
+                    defaultValue:
+                      "Access world-class education from top universities and industry leaders. Earn certificates and degrees that advance your career.",
+                  })}
+                </p>
+
+                <div className="flex flex-wrap gap-4">
+                  <Link to="/courses">
+                    <Button variant="hero" size="lg">
+                      {tSmart(["hero.exploreCourses", "home.hero.exploreCourses"], {
+                        defaultValue: "Explore Courses",
+                      })}
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link to="/auth?mode=signup">
+                    <Button variant="hero-outline" size="lg">
+                      {tSmart([
+                        "hero.startFreeTrial",
+                        "home.hero.cta",
+                        "common.getStarted",
+                      ], {
+                        defaultValue: "Start Free Trial",
+                      })}
+                    </Button>
+                  </Link>
+                </div>
               
               <div className="flex items-center gap-6 pt-4">
                 <div className="flex -space-x-3">
@@ -229,7 +259,11 @@ const Index = () => {
       {/* Partners Section - Infinite Carousel */}
       <section className="py-12 border-b border-border overflow-hidden">
         <div className="container">
-          <p className="text-center text-muted-foreground mb-8">Trusted by learners from leading companies</p>
+          <p className="text-center text-muted-foreground mb-8">
+            {tSmart(["home.trustedBy"], {
+              defaultValue: "Trusted by learners from leading companies",
+            })}
+          </p>
         </div>
         <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,white_10%,white_90%,transparent)]">
           <div className="flex gap-16 animate-scroll hover:[animation-play-state:paused]">
@@ -250,10 +284,13 @@ const Index = () => {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-              Explore Top Categories
+              {tSmart(["home.categories"], { defaultValue: "Explore Top Categories" })}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Browse courses from our extensive catalog across all major fields
+              {tSmart(["home.whyChooseUs"], {
+                defaultValue:
+                  "Browse courses from our extensive catalog across all major fields",
+              })}
             </p>
           </div>
           
@@ -286,15 +323,21 @@ const Index = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
             <div>
               <h2 className="font-display text-3xl md:text-4xl font-bold mb-2">
-                Featured Courses
+                {tSmart(["courses.featured", "home.featured"], {
+                  defaultValue: "Featured Courses",
+                })}
               </h2>
               <p className="text-muted-foreground">
-                Start learning from our most popular courses
+                {tSmart(["home.popular"], {
+                  defaultValue: "Start learning from our most popular courses",
+                })}
               </p>
             </div>
             <Link to="/courses">
               <Button variant="outline">
-                View All Courses
+                {tSmart(["common.viewAll", "courses.all"], {
+                  defaultValue: "View All Courses",
+                })}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -317,12 +360,17 @@ const Index = () => {
                     />
                     {course.isBestseller && (
                       <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">
-                        Bestseller
+                        {tSmart(["courses.bestseller", "courses.bestsellerLabel"], {
+                          defaultValue: "Bestseller",
+                        })}
                       </Badge>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                       <Button variant="accent" size="sm" className="w-full">
-                        <Play className="w-4 h-4 mr-2" /> Preview
+                        <Play className="w-4 h-4 mr-2" />
+                        {tSmart(["courses.preview", "courses.viewCourse"], {
+                          defaultValue: "Preview",
+                        })}
                       </Button>
                     </div>
                   </div>
