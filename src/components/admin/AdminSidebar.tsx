@@ -29,6 +29,8 @@ import {
   Award,
   FileText,
   Wrench,
+  ArrowRightLeft,
+  FlaskConical,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,6 +72,7 @@ const navSections: NavSection[] = [
       { title: 'Content Approvals', url: '/admin/content-approvals', icon: FileCheck },
       { title: 'Withdrawals', url: '/admin/withdrawals', icon: Wallet },
       { title: 'Testing', url: '/admin/testing', icon: TestTube },
+      { title: 'Payment Testing', url: '/admin/payment-testing', icon: FlaskConical },
     ],
   },
   {
@@ -125,7 +128,7 @@ const navSections: NavSection[] = [
     icon: CreditCard,
     items: [
       { title: 'Payment Methods', url: '/admin/payment-methods', icon: CreditCard },
-      { title: 'Transfers', url: '/admin/transfers', icon: Wallet },
+      { title: 'Transfers', url: '/admin/transfers', icon: ArrowRightLeft },
       { title: 'History', url: '/admin/history', icon: History },
     ],
   },
@@ -163,7 +166,11 @@ export function AdminSidebar({ collapsed: collapsedProp, onCollapsedChange }: Ad
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return null;
-    return allNavItems.filter((item) => item.title.toLowerCase().includes(q));
+    // Filter items that start with query OR contain query
+    return allNavItems.filter((item) => {
+      const titleLower = item.title.toLowerCase();
+      return titleLower.startsWith(q) || titleLower.includes(q);
+    });
   }, [query]);
 
   const toggleSection = (id: string) => {
