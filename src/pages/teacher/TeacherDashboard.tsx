@@ -36,6 +36,8 @@ import { toast } from 'sonner';
 import { Layout } from '@/components/layout/Layout';
 import { InfiniteCarousel } from '@/components/ui/infinite-carousel';
 import { Link } from 'react-router-dom';
+import { WithdrawalForm } from '@/components/withdrawal/WithdrawalForm';
+import { Wallet } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -458,6 +460,10 @@ const TeacherDashboard = () => {
                 <Award className="w-4 h-4 mr-2" />
                 Certificates
               </TabsTrigger>
+              <TabsTrigger value="withdrawals" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+                <Wallet className="w-4 h-4 mr-2" />
+                Withdrawals
+              </TabsTrigger>
               <TabsTrigger value="analytics" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Analytics
@@ -691,6 +697,13 @@ const TeacherDashboard = () => {
                   )}
                 </div>
               </ScrollArea>
+            </TabsContent>
+
+            {/* Withdrawals Tab */}
+            <TabsContent value="withdrawals" className="space-y-4">
+              <div className="bg-slate-800/30 rounded-xl p-6 border border-purple-500/20">
+                <WithdrawalForm userType="teacher" />
+              </div>
             </TabsContent>
 
             <TabsContent value="analytics" className="space-y-4">

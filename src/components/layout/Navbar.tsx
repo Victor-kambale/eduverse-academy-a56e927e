@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { SearchAutocomplete } from "@/components/search/SearchAutocomplete";
 import {
   NavigationMenu,
@@ -34,7 +33,6 @@ const categories = [
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -107,32 +105,9 @@ export function Navbar() {
           </NavigationMenuList>
         </NavigationMenu>
 
-        {/* Search Bar */}
+        {/* Search Bar with Autocomplete */}
         <div className="flex-1 max-w-md hidden md:block">
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (searchQuery.trim()) {
-                window.location.href = `/courses?search=${encodeURIComponent(searchQuery.trim())}`;
-              }
-            }}
-          >
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search courses, topics, instructors..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-secondary border-0 focus-visible:ring-2 focus-visible:ring-accent"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && searchQuery.trim()) {
-                    window.location.href = `/courses?search=${encodeURIComponent(searchQuery.trim())}`;
-                  }
-                }}
-              />
-            </div>
-          </form>
+          <SearchAutocomplete />
         </div>
 
         {/* Right Side Actions */}
@@ -167,15 +142,8 @@ export function Navbar() {
       {isMenuOpen && (
         <div className="lg:hidden border-t border-border bg-background animate-fade-in">
           <div className="container py-4 space-y-4">
-            {/* Mobile Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search courses..."
-                className="pl-10"
-              />
-            </div>
+            {/* Mobile Search with Autocomplete */}
+            <SearchAutocomplete />
 
             {/* Mobile Nav Links */}
             <nav className="space-y-2">
