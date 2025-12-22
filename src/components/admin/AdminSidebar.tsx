@@ -31,6 +31,7 @@ const navItems = [
   { title: 'Promos', url: '/admin/promos', icon: Newspaper },
   { title: 'Footer Links', url: '/admin/footer-links', icon: LinkIcon },
   { title: 'Withdrawals', url: '/admin/withdrawals', icon: Wallet },
+  { title: 'Revenue Analytics', url: '/admin/revenue', icon: BarChart3 },
   { title: 'Languages', url: '/admin/languages', icon: Settings },
   { title: 'Content Approvals', url: '/admin/content-approvals', icon: FileCheck },
   { title: 'Email Marketing', url: '/admin/email-marketing', icon: Mail },

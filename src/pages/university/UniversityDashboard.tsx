@@ -4,26 +4,12 @@ import {
   Users,
   BookOpen,
   DollarSign,
-  Plus,
-  Settings,
   BarChart3,
   Wallet,
-  Upload,
-  UserPlus,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -33,11 +19,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/layout/Layout';
 import { WithdrawalForm } from '@/components/withdrawal/WithdrawalForm';
 import { TransactionHistory } from '@/components/withdrawal/TransactionHistory';
+import { InstructorInvitation } from '@/components/university/InstructorInvitation';
+import { BulkCourseImport } from '@/components/university/BulkCourseImport';
 
 interface Instructor {
   id: string;
@@ -62,9 +49,6 @@ export default function UniversityDashboard() {
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddInstructor, setShowAddInstructor] = useState(false);
-  const [showBulkUpload, setShowBulkUpload] = useState(false);
-  const [newInstructor, setNewInstructor] = useState({ name: '', email: '' });
 
   const [stats, setStats] = useState({
     totalInstructors: 0,
@@ -116,39 +100,6 @@ export default function UniversityDashboard() {
     }
   };
 
-  const handleAddInstructor = async () => {
-    if (!newInstructor.name || !newInstructor.email) {
-      toast.error('Please fill all fields');
-      return;
-    }
-
-    // In a real implementation, this would send an invitation email
-    setInstructors([
-      ...instructors,
-      {
-        id: Date.now().toString(),
-        name: newInstructor.name,
-        email: newInstructor.email,
-        courses: 0,
-        earnings: 0,
-        status: 'Pending Invitation',
-      },
-    ]);
-
-    toast.success('Instructor invitation sent!');
-    setShowAddInstructor(false);
-    setNewInstructor({ name: '', email: '' });
-  };
-
-  const handleBulkCourseUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Parse CSV and create courses
-      toast.success('Bulk upload started. Courses will be created shortly.');
-      setShowBulkUpload(false);
-    }
-  };
-
   return (
     <Layout>
       <div className="container py-8">
@@ -162,20 +113,10 @@ export default function UniversityDashboard() {
               Manage your organization's courses and instructors
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowBulkUpload(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              Bulk Upload
-            </Button>
-            <Button onClick={() => setShowAddInstructor(true)}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Instructor
-            </Button>
-          </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
@@ -244,9 +185,9 @@ export default function UniversityDashboard() {
               <Wallet className="h-4 w-4" />
               Withdrawals
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TabsTrigger value="bulk-import" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
-              Analytics
+              Bulk Import
             </TabsTrigger>
           </TabsList>
 
@@ -298,46 +239,53 @@ export default function UniversityDashboard() {
           </TabsContent>
 
           <TabsContent value="instructors">
-            <Card>
-              <CardHeader>
-                <CardTitle>Team Instructors</CardTitle>
-                <CardDescription>
-                  Manage instructors in your organization
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {instructors.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No instructors yet. Add your first instructor!
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Courses</TableHead>
-                        <TableHead>Earnings</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {instructors.map((instructor) => (
-                        <TableRow key={instructor.id}>
-                          <TableCell className="font-medium">{instructor.name}</TableCell>
-                          <TableCell>{instructor.email}</TableCell>
-                          <TableCell>{instructor.courses}</TableCell>
-                          <TableCell>${instructor.earnings.toFixed(2)}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{instructor.status}</Badge>
-                          </TableCell>
+            <div className="space-y-6">
+              <InstructorInvitation 
+                universityId={user?.id || ''} 
+                universityName="Your University" 
+              />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Team Instructors</CardTitle>
+                  <CardDescription>
+                    Instructors who have joined your organization
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {instructors.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No instructors yet. Send invitations to grow your team!
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Courses</TableHead>
+                          <TableHead>Earnings</TableHead>
+                          <TableHead>Status</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+                      </TableHeader>
+                      <TableBody>
+                        {instructors.map((instructor) => (
+                          <TableRow key={instructor.id}>
+                            <TableCell className="font-medium">{instructor.name}</TableCell>
+                            <TableCell>{instructor.email}</TableCell>
+                            <TableCell>{instructor.courses}</TableCell>
+                            <TableCell>${instructor.earnings.toFixed(2)}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{instructor.status}</Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="withdrawals">
@@ -347,92 +295,10 @@ export default function UniversityDashboard() {
             </div>
           </TabsContent>
 
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle>Analytics</CardTitle>
-                <CardDescription>Performance overview</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <BarChart3 className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p>Analytics dashboard coming soon</p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="bulk-import">
+            <BulkCourseImport universityId={user?.id || ''} />
           </TabsContent>
         </Tabs>
-
-        {/* Add Instructor Dialog */}
-        <Dialog open={showAddInstructor} onOpenChange={setShowAddInstructor}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Instructor</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Full Name</Label>
-                <Input
-                  placeholder="John Doe"
-                  value={newInstructor.name}
-                  onChange={(e) => setNewInstructor({ ...newInstructor, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  placeholder="john@university.edu"
-                  value={newInstructor.email}
-                  onChange={(e) => setNewInstructor({ ...newInstructor, email: e.target.value })}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddInstructor(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddInstructor}>Send Invitation</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Bulk Upload Dialog */}
-        <Dialog open={showBulkUpload} onOpenChange={setShowBulkUpload}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Bulk Course Upload</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Upload a CSV file with course details to create multiple courses at once.
-              </p>
-              <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground mb-2">
-                  Drag and drop or click to upload
-                </p>
-                <Input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleBulkCourseUpload}
-                  className="max-w-xs mx-auto"
-                />
-              </div>
-              <div className="text-sm">
-                <p className="font-medium">CSV Format:</p>
-                <code className="text-xs bg-muted p-2 block rounded mt-1">
-                  title,description,price,instructor_email,category
-                </code>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowBulkUpload(false)}>
-                Cancel
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </Layout>
   );

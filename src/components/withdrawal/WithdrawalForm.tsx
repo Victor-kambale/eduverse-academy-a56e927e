@@ -10,7 +10,8 @@ import {
   Check,
   AlertTriangle,
   FileText,
-  Signature
+  Signature,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { PaymentProcessFlow } from './PaymentProcessFlow';
 
 interface EarningsSummary {
   total_course_sales: number;
@@ -90,6 +92,10 @@ export const WithdrawalForm = ({ userType, onSuccess }: WithdrawalFormProps) => 
   const [codeSent, setCodeSent] = useState(false);
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
+  // Payment process flow state
+  const [showPaymentFlow, setShowPaymentFlow] = useState(false);
+  const [withdrawalId, setWithdrawalId] = useState<string | null>(null);
   
   // Dialog state
   const [showReceiptDialog, setShowReceiptDialog] = useState(false);
@@ -170,6 +176,23 @@ export const WithdrawalForm = ({ userType, onSuccess }: WithdrawalFormProps) => 
     return urlData?.publicUrl || null;
   };
 
+  const calculateFee = (amt: number, method: string): number => {
+    // Fee calculation based on method and amount
+    const feeRates: Record<string, number> = {
+      paypal: 0.029,
+      stripe: 0.029,
+      bank_transfer: 0.015,
+      mobile_money: 0.035,
+      google_pay: 0.025,
+      apple_pay: 0.025,
+      wechat: 0.03,
+      alipay: 0.03,
+      payoneer: 0.02,
+    };
+    const rate = feeRates[method] || 0.025;
+    return Math.max(amt * rate, 0.50); // Minimum $0.50 fee
+  };
+
   const handleSubmit = async () => {
     if (!user?.id) return;
 
@@ -239,19 +262,25 @@ export const WithdrawalForm = ({ userType, onSuccess }: WithdrawalFormProps) => 
 
       if (error) throw error;
 
-      // Show receipt
-      setReceiptData({
-        id: data.id,
-        amount: parseFloat(amount),
-        category,
-        paymentMethod,
-        date: new Date().toISOString(),
-        status: 'Pending Review',
-      });
-      setShowReceiptDialog(true);
-
-      toast.success('Withdrawal request submitted successfully!');
-      onSuccess?.();
+      setWithdrawalId(data.id);
+      
+      // Show payment process flow for mobile money or direct payment
+      if (paymentMethod === 'mobile_money') {
+        setShowPaymentFlow(true);
+      } else {
+        // Show receipt directly for other methods
+        setReceiptData({
+          id: data.id,
+          amount: parseFloat(amount),
+          category,
+          paymentMethod,
+          date: new Date().toISOString(),
+          status: 'Pending Review',
+        });
+        setShowReceiptDialog(true);
+        toast.success('Withdrawal request submitted successfully!');
+        onSuccess?.();
+      }
 
     } catch (error) {
       console.error('Withdrawal error:', error);
@@ -259,6 +288,25 @@ export const WithdrawalForm = ({ userType, onSuccess }: WithdrawalFormProps) => 
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePaymentFlowComplete = () => {
+    setShowPaymentFlow(false);
+    toast.success('Payment processed successfully!');
+    // Reset form
+    setStep(1);
+    setCategory('');
+    setAmount('');
+    setPaymentMethod('');
+    setPaymentDetails({});
+    setIdDocument(null);
+    setSignature(null);
+    setContract(null);
+    setPhoneNumber('');
+    setPhoneVerified(false);
+    setCodeSent(false);
+    setAgreedToTerms(false);
+    onSuccess?.();
   };
 
   const renderPaymentDetailsFields = () => {
@@ -367,6 +415,25 @@ export const WithdrawalForm = ({ userType, onSuccess }: WithdrawalFormProps) => 
         );
     }
   };
+
+  // Show Payment Process Flow
+  if (showPaymentFlow) {
+    return (
+      <PaymentProcessFlow
+        transactionData={{
+          id: withdrawalId || '',
+          amount: parseFloat(amount),
+          fee: calculateFee(parseFloat(amount), paymentMethod),
+          paymentMethod,
+          mobileNumber: paymentDetails.mobileNumber,
+          category,
+          userEmail: user?.email,
+        }}
+        onComplete={handlePaymentFlowComplete}
+        onCancel={() => setShowPaymentFlow(false)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
