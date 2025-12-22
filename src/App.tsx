@@ -44,6 +44,8 @@ import Quiz from "./pages/Quiz";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyCertificate from "./pages/VerifyCertificate";
+import UniversityRegistration from "./pages/UniversityRegistration";
+import UniversityDashboard from "./pages/university/UniversityDashboard";
 import { CopyProtection } from "./components/security/CopyProtection";
 
 const queryClient = new QueryClient();
@@ -121,7 +123,23 @@ const App = () => (
               }
             />
             
-            {/* Admin Routes */}
+            {/* University Routes */}
+            <Route
+              path="/university/register"
+              element={
+                <ProtectedRoute>
+                  <UniversityRegistration />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/university/dashboard"
+              element={
+                <ProtectedRoute>
+                  <UniversityDashboard />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin"
               element={

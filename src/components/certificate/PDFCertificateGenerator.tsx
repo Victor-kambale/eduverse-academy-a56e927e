@@ -4,6 +4,7 @@ import { Download, Loader2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
+import { CPDBadge, defaultCPDBadges } from './CPDBadges';
 
 interface CertificateData {
   studentName: string;
@@ -12,6 +13,10 @@ interface CertificateData {
   credentialId: string;
   instructorName?: string;
   courseDuration?: string;
+  cpdHours?: number;
+  badges?: string[];
+  grade?: string;
+  institutionName?: string;
 }
 
 interface PDFCertificateGeneratorProps {
@@ -143,6 +148,56 @@ export function PDFCertificateGenerator({ data, onDownload }: PDFCertificateGene
         if (data.instructorName) details.push(`Instructor: ${data.instructorName}`);
         if (data.courseDuration) details.push(`Duration: ${data.courseDuration}`);
         doc.text(details.join('  |  '), pageWidth / 2, yPosition + 5, { align: 'center' });
+        yPosition += 10;
+      }
+
+      // CPD Badge Section
+      if (data.badges && data.badges.length > 0) {
+        const badgeY = yPosition + 10;
+        const badgeSize = 12;
+        const badgeSpacing = 35;
+        const startX = pageWidth / 2 - ((data.badges.length - 1) * badgeSpacing) / 2;
+
+        data.badges.forEach((badgeId, index) => {
+          const badge = defaultCPDBadges.find(b => b.id === badgeId);
+          if (badge) {
+            const badgeX = startX + (index * badgeSpacing);
+            
+            // Draw badge circle
+            doc.setFillColor(parseInt(badge.color.slice(1, 3), 16), parseInt(badge.color.slice(3, 5), 16), parseInt(badge.color.slice(5, 7), 16));
+            doc.circle(badgeX, badgeY, badgeSize / 2, 'F');
+            
+            // Badge border
+            doc.setDrawColor(218, 165, 32);
+            doc.setLineWidth(0.5);
+            doc.circle(badgeX, badgeY, badgeSize / 2 + 1, 'S');
+            
+            // Badge text
+            doc.setFontSize(6);
+            doc.setTextColor(255, 255, 255);
+            doc.text(badge.name.charAt(0), badgeX, badgeY + 1, { align: 'center' });
+            
+            // Badge label below
+            doc.setFontSize(5);
+            doc.setTextColor(80, 80, 80);
+            doc.text(badge.name, badgeX, badgeY + badgeSize / 2 + 4, { align: 'center' });
+          }
+        });
+      }
+
+      // CPD Hours if provided
+      if (data.cpdHours) {
+        doc.setFontSize(9);
+        doc.setTextColor(26, 54, 93);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${data.cpdHours} CPD Hours`, pageWidth / 2, yPosition + 30, { align: 'center' });
+      }
+
+      // Grade if provided
+      if (data.grade) {
+        doc.setFontSize(11);
+        doc.setTextColor(218, 165, 32);
+        doc.text(`Grade: ${data.grade}`, pageWidth / 2, yPosition + 38, { align: 'center' });
       }
 
       // Date and signature section
@@ -151,6 +206,7 @@ export function PDFCertificateGenerator({ data, onDownload }: PDFCertificateGene
       // Date
       doc.setFontSize(10);
       doc.setTextColor(80, 80, 80);
+      doc.setFont('helvetica', 'normal');
       doc.text('Date of Issue', 60, bottomY);
       doc.setLineWidth(0.3);
       doc.line(40, bottomY - 8, 80, bottomY - 8);
@@ -165,7 +221,7 @@ export function PDFCertificateGenerator({ data, onDownload }: PDFCertificateGene
       doc.line(pageWidth / 2 - 30, bottomY - 8, pageWidth / 2 + 30, bottomY - 8);
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(12);
-      doc.text('EduVerse Team', pageWidth / 2, bottomY - 12, { align: 'center' });
+      doc.text(data.institutionName || 'EduVerse Team', pageWidth / 2, bottomY - 12, { align: 'center' });
 
       // Credential ID
       doc.setFont('helvetica', 'normal');
