@@ -55,7 +55,7 @@ const CoursesPage = () => {
   const [searchParams] = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [selectedCategory, setSelectedCategory] = useState(
     searchParams.get("category") || "All Categories"
   );
@@ -68,6 +68,14 @@ const CoursesPage = () => {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  // Update search from URL params
+  useEffect(() => {
+    const search = searchParams.get("search");
+    if (search) {
+      setSearchQuery(search);
+    }
+  }, [searchParams]);
 
   const fetchCourses = async () => {
     try {

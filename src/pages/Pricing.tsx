@@ -169,6 +169,15 @@ const PricingPage = () => {
                   variant={plan.ctaVariant}
                   className="w-full"
                   size="lg"
+                  onClick={() => {
+                    if (plan.name === 'Free') {
+                      window.location.href = '/auth?mode=signup';
+                    } else if (plan.name === 'Enterprise') {
+                      window.location.href = '/contact';
+                    } else {
+                      window.location.href = '/auth?mode=signup&plan=pro';
+                    }
+                  }}
                 >
                   {plan.cta}
                 </Button>
