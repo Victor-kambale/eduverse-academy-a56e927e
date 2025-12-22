@@ -186,11 +186,32 @@ export default function TeacherApplications() {
     }
   };
 
-  const openDocumentPreview = (label: string, url: string) => {
-    setPreviewDoc({ label, url });
-    setDocZoom(100);
-    setDocRotation(0);
-    setIsDocPreviewOpen(true);
+  const openDocumentPreview = async (label: string, url: string) => {
+    try {
+      // If the URL is a Supabase storage URL, we need to get a signed/public URL
+      let previewUrl = url;
+      
+      // Check if it's a storage path (not a full URL)
+      if (url && !url.startsWith('http')) {
+        // Try to get public URL from storage
+        const { data } = supabase.storage
+          .from('teacher-documents')
+          .getPublicUrl(url);
+        previewUrl = data?.publicUrl || url;
+      }
+      
+      setPreviewDoc({ label, url: previewUrl });
+      setDocZoom(100);
+      setDocRotation(0);
+      setIsDocPreviewOpen(true);
+    } catch (error) {
+      console.error('Error opening document:', error);
+      // Still try to open with original URL
+      setPreviewDoc({ label, url });
+      setDocZoom(100);
+      setDocRotation(0);
+      setIsDocPreviewOpen(true);
+    }
   };
 
   const getStatusBadge = (status: string) => {

@@ -31,6 +31,7 @@ import { ProfilePhotoUpload } from "@/components/profile/ProfilePhotoUpload";
 import { PurchaseHistory } from "@/components/dashboard/PurchaseHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { CopyProtection } from "@/components/security/CopyProtection";
 
 const enrolledCourses = [
   {
@@ -135,6 +136,7 @@ const DashboardPage = () => {
   };
 
   return (
+    <CopyProtection>
     <Layout>
       <div className="bg-primary text-primary-foreground py-8">
         <div className="container">
@@ -429,6 +431,7 @@ const DashboardPage = () => {
         </div>
       </div>
     </Layout>
+    </CopyProtection>
   );
 };
 

@@ -9,17 +9,21 @@ export function useSmartTranslation() {
 
   const tSmart = (
     keys: string | string[],
-    options?: Parameters<typeof t>[1] & { defaultValue?: string }
-  ) => {
+    options?: { defaultValue?: string; [key: string]: any }
+  ): string => {
     const list = Array.isArray(keys) ? keys : [keys];
 
     for (const key of list) {
-      if (i18n.exists(key)) return t(key, options as any);
+      if (i18n.exists(key)) {
+        const result = t(key, options as any);
+        return typeof result === 'string' ? result : String(result);
+      }
     }
 
     // Fall back: prefer explicit defaultValue if provided, otherwise return translation of first key.
     if (options?.defaultValue != null) return options.defaultValue;
-    return t(list[0], options as any);
+    const result = t(list[0], options as any);
+    return typeof result === 'string' ? result : String(result);
   };
 
   return { t, tSmart, i18n };
