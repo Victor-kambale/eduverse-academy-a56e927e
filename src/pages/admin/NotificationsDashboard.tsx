@@ -376,6 +376,40 @@ const NotificationsDashboard = () => {
               />
               <span className="text-sm text-muted-foreground">Voice Alerts</span>
             </div>
+            <Button 
+              onClick={() => {
+                // Test payment notification
+                notifyPayment('Victor', 'Advanced React Course', 99.99, 'John Doe', 'Advanced');
+                toast.success('Test payment notification triggered!');
+              }} 
+              variant="outline"
+              className="bg-green-500/10 hover:bg-green-500/20 text-green-600"
+            >
+              <DollarSign className="w-4 h-4 mr-2" />
+              Test Payment
+            </Button>
+            <Button 
+              onClick={() => {
+                notifyAppointment('Victor', 'Sarah Smith', 'United States', '10 messages ($10)');
+                toast.success('Test appointment notification triggered!');
+              }} 
+              variant="outline"
+              className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-600"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Test Appointment
+            </Button>
+            <Button 
+              onClick={() => {
+                notifyTeacherRegistration('Victor', 'Dr. James Wilson');
+                toast.success('Test registration notification triggered!');
+              }} 
+              variant="outline"
+              className="bg-purple-500/10 hover:bg-purple-500/20 text-purple-600"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Test Registration
+            </Button>
             <Button onClick={fetchNotifications} variant="outline">
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh

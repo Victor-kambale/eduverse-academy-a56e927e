@@ -73,7 +73,7 @@ export default function PromoManagement() {
         .order('sort_order', { ascending: true });
 
       if (error) throw error;
-      setPromos((data as PromoItem[]) || []);
+      setPromos((data as unknown as PromoItem[]) || []);
     } catch (error) {
       console.error('Error fetching promos:', error);
       toast.error('Failed to load promotional banners');
@@ -200,13 +200,29 @@ export default function PromoManagement() {
     if (!file) return;
 
     setUploading(true);
-    // Simulate upload - in real app, upload to Supabase storage
-    setTimeout(() => {
-      const fakeUrl = URL.createObjectURL(file);
-      setFormData({ ...formData, mediaUrl: fakeUrl });
-      setUploading(false);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `promo-banners/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('course-media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('course-media')
+        .getPublicUrl(filePath);
+
+      setFormData({ ...formData, media_url: publicUrl });
       toast.success('File uploaded');
-    }, 1500);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload file');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -237,8 +253,8 @@ export default function PromoManagement() {
                 <div className="space-y-2">
                   <Label>Content Type</Label>
                   <Select 
-                    value={formData.type} 
-                    onValueChange={(v: 'image' | 'video') => setFormData({ ...formData, type: v })}
+                    value={formData.media_type} 
+                    onValueChange={(v: 'image' | 'video') => setFormData({ ...formData, media_type: v })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -261,10 +277,10 @@ export default function PromoManagement() {
                   <Label>Status</Label>
                   <div className="flex items-center gap-2 h-10">
                     <Switch 
-                      checked={formData.isActive} 
-                      onCheckedChange={(v) => setFormData({ ...formData, isActive: v })}
+                      checked={formData.is_active} 
+                      onCheckedChange={(v) => setFormData({ ...formData, is_active: v })}
                     />
-                    <span className="text-sm">{formData.isActive ? 'Active' : 'Inactive'}</span>
+                    <span className="text-sm">{formData.is_active ? 'Active' : 'Inactive'}</span>
                   </div>
                 </div>
               </div>
@@ -290,17 +306,17 @@ export default function PromoManagement() {
               <div className="space-y-2">
                 <Label>Media Upload *</Label>
                 <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                  {formData.mediaUrl ? (
+                  {formData.media_url ? (
                     <div className="space-y-2">
-                      {formData.type === 'image' ? (
+                      {formData.media_type === 'image' ? (
                         <img 
-                          src={formData.mediaUrl} 
+                          src={formData.media_url} 
                           alt="Preview" 
                           className="max-h-40 mx-auto rounded-lg object-cover"
                         />
                       ) : (
                         <video 
-                          src={formData.mediaUrl} 
+                          src={formData.media_url} 
                           className="max-h-40 mx-auto rounded-lg"
                           controls
                         />
@@ -308,7 +324,7 @@ export default function PromoManagement() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => setFormData({ ...formData, mediaUrl: '' })}
+                        onClick={() => setFormData({ ...formData, media_url: '' })}
                       >
                         Remove
                       </Button>
@@ -321,7 +337,7 @@ export default function PromoManagement() {
                       </p>
                       <Input 
                         type="file" 
-                        accept={formData.type === 'image' ? 'image/*' : 'video/*'}
+                        accept={formData.media_type === 'image' ? 'image/*' : 'video/*'}
                         onChange={handleFileUpload}
                         className="max-w-xs mx-auto"
                         disabled={uploading}
@@ -337,8 +353,8 @@ export default function PromoManagement() {
                 </div>
                 <p className="text-xs text-muted-foreground">Or enter URL directly:</p>
                 <Input 
-                  value={formData.mediaUrl}
-                  onChange={(e) => setFormData({ ...formData, mediaUrl: e.target.value })}
+                  value={formData.media_url}
+                  onChange={(e) => setFormData({ ...formData, media_url: e.target.value })}
                   placeholder="https://..."
                 />
               </div>
@@ -346,8 +362,8 @@ export default function PromoManagement() {
               <div className="space-y-2">
                 <Label>Link URL</Label>
                 <Input 
-                  value={formData.linkUrl}
-                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                  value={formData.link_url}
+                  onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
                   placeholder="/courses or https://..."
                 />
               </div>
@@ -358,9 +374,9 @@ export default function PromoManagement() {
                     <Calendar className="w-4 h-4" /> Start Date
                   </Label>
                   <Input 
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    type="datetime-local"
+                    value={formData.start_date}
+                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -368,9 +384,9 @@ export default function PromoManagement() {
                     <Calendar className="w-4 h-4" /> End Date
                   </Label>
                   <Input 
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    type="datetime-local"
+                    value={formData.end_date}
+                    onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                   />
                 </div>
               </div>
@@ -390,7 +406,14 @@ export default function PromoManagement() {
 
       {/* Promo List */}
       <div className="grid gap-4">
-        {promos.length === 0 ? (
+        {loading ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary" />
+              <p className="text-muted-foreground mt-2">Loading banners...</p>
+            </CardContent>
+          </Card>
+        ) : promos.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Image className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -403,15 +426,15 @@ export default function PromoManagement() {
           </Card>
         ) : (
           promos.map((promo) => (
-            <Card key={promo.id} className={!promo.isActive ? 'opacity-60' : ''}>
+            <Card key={promo.id} className={!promo.is_active ? 'opacity-60' : ''}>
               <CardContent className="py-4">
                 <div className="flex items-center gap-4">
                   <GripVertical className="w-5 h-5 text-muted-foreground cursor-grab" />
                   
                   <div className="w-24 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                    {promo.type === 'image' ? (
+                    {promo.media_type === 'image' && promo.media_url ? (
                       <img 
-                        src={promo.mediaUrl} 
+                        src={promo.media_url} 
                         alt={promo.title}
                         className="w-full h-full object-cover"
                       />
@@ -425,10 +448,10 @@ export default function PromoManagement() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold truncate">{promo.title}</h3>
-                      <Badge variant={promo.type === 'image' ? 'secondary' : 'outline'}>
-                        {promo.type}
+                      <Badge variant={promo.media_type === 'image' ? 'secondary' : 'outline'}>
+                        {promo.media_type}
                       </Badge>
-                      {promo.isActive ? (
+                      {promo.is_active ? (
                         <Badge className="bg-green-500/10 text-green-600">Active</Badge>
                       ) : (
                         <Badge variant="secondary">Inactive</Badge>
@@ -438,8 +461,8 @@ export default function PromoManagement() {
                       {promo.description}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {promo.startDate && promo.endDate 
-                        ? `${promo.startDate} - ${promo.endDate}`
+                      {promo.start_date && promo.end_date 
+                        ? `${format(new Date(promo.start_date), 'PP')} - ${format(new Date(promo.end_date), 'PP')}`
                         : 'No schedule set'
                       }
                     </p>
@@ -449,9 +472,9 @@ export default function PromoManagement() {
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => toggleActive(promo.id)}
+                      onClick={() => toggleActive(promo.id, promo.is_active)}
                     >
-                      {promo.isActive ? (
+                      {promo.is_active ? (
                         <Eye className="w-4 h-4" />
                       ) : (
                         <EyeOff className="w-4 h-4" />
