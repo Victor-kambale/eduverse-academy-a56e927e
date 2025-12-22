@@ -129,27 +129,84 @@ export const WithdrawalForm = ({ userType, onSuccess }: WithdrawalFormProps) => 
     }
   };
 
+  const [smsLoading, setSmsLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [attemptsRemaining, setAttemptsRemaining] = useState(2);
+  const [demoCode, setDemoCode] = useState<string | null>(null);
+
   const sendVerificationCode = async () => {
     if (!phoneNumber) {
       toast.error('Please enter a phone number');
       return;
     }
     
-    // In production, this would call an SMS API
-    const code = Math.random().toString().slice(2, 8);
-    toast.success(`Verification code sent to ${phoneNumber}`);
-    setCodeSent(true);
-    // For demo, we'll store the code (in production, this would be server-side)
-    setVerificationCode(code);
+    setSmsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-sms-verification', {
+        body: {
+          phoneNumber,
+          action: 'send',
+          amount: parseFloat(amount),
+          fee: calculateFee(parseFloat(amount), paymentMethod),
+          companyName: 'EDUVERSE COMPANY'
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data.success) {
+        setCodeSent(true);
+        toast.success(`Verification code sent to ${phoneNumber}`);
+        // Demo mode: show code if Twilio not configured
+        if (data.demoCode) {
+          setDemoCode(data.demoCode);
+          toast.info(`Demo mode - Code: ${data.demoCode}`, { duration: 10000 });
+        }
+      } else {
+        toast.error(data.error || 'Failed to send verification code');
+      }
+    } catch (error) {
+      console.error('SMS error:', error);
+      toast.error('Failed to send verification code');
+    } finally {
+      setSmsLoading(false);
+    }
   };
 
-  const verifyCode = (inputCode: string) => {
-    // In production, this would verify against server
-    if (inputCode === verificationCode || inputCode === '123456') {
-      setPhoneVerified(true);
-      toast.success('Phone number verified!');
-    } else {
-      toast.error('Invalid verification code');
+  const verifyCode = async (inputCode: string) => {
+    if (inputCode.length !== 6) return;
+    
+    setVerifyLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-sms-verification', {
+        body: {
+          phoneNumber,
+          action: 'verify',
+          code: inputCode
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data.success && data.verified) {
+        setPhoneVerified(true);
+        toast.success('Phone number verified!');
+        // Play success sound
+        const audio = new Audio('/sounds/success.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+      } else if (data.penaltyApplied) {
+        toast.error('Too many failed attempts! 20% fee will be applied.');
+        setAttemptsRemaining(0);
+      } else {
+        setAttemptsRemaining(data.attemptsRemaining ?? 1);
+        toast.error(data.error || 'Invalid verification code');
+      }
+    } catch (error) {
+      console.error('Verify error:', error);
+      toast.error('Verification failed');
+    } finally {
+      setVerifyLoading(false);
     }
   };
 
@@ -664,27 +721,36 @@ export const WithdrawalForm = ({ userType, onSuccess }: WithdrawalFormProps) => 
                     placeholder="+1234567890"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    disabled={phoneVerified}
+                    disabled={phoneVerified || smsLoading}
                   />
                   <Button 
                     variant="outline" 
                     onClick={sendVerificationCode}
-                    disabled={!phoneNumber || phoneVerified}
+                    disabled={!phoneNumber || phoneVerified || smsLoading}
                   >
-                    {codeSent ? 'Resend' : 'Send Code'}
+                    {smsLoading ? (
+                      <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Sending...</>
+                    ) : codeSent ? 'Resend' : 'Send Code'}
                   </Button>
                 </div>
+                {demoCode && !phoneVerified && (
+                  <p className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
+                    Demo mode - Use code: <span className="font-mono font-bold">{demoCode}</span>
+                  </p>
+                )}
                 {codeSent && !phoneVerified && (
                   <div className="flex gap-2">
                     <Input
                       placeholder="Enter 6-digit code"
                       maxLength={6}
+                      disabled={verifyLoading}
                       onChange={(e) => {
                         if (e.target.value.length === 6) {
                           verifyCode(e.target.value);
                         }
                       }}
                     />
+                    {verifyLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
                   </div>
                 )}
                 {phoneVerified && (

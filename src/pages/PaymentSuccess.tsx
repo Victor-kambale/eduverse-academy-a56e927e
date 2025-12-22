@@ -7,6 +7,7 @@ import { CheckCircle, BookOpen, Play, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { notifyEnrollment, notifyPayment } from "@/hooks/useNotifications";
 
 const PaymentSuccess = () => {
   const { id } = useParams();
@@ -30,6 +31,21 @@ const PaymentSuccess = () => {
         // Give webhook time to process
         await new Promise(resolve => setTimeout(resolve, 2000));
 
+        // Get course details for notification
+        let courseTitle = "Course";
+        let coursePrice = 0;
+        if (id) {
+          const { data: courseData } = await supabase
+            .from("courses")
+            .select("title, price")
+            .eq("id", id)
+            .single();
+          if (courseData) {
+            courseTitle = courseData.title;
+            coursePrice = courseData.price;
+          }
+        }
+
         if (user && id) {
           // Check if enrollment exists
           const { data: enrollment } = await supabase
@@ -42,6 +58,13 @@ const PaymentSuccess = () => {
           if (enrollment) {
             setPaymentVerified(true);
             toast.success("Payment successful! You now have access to the course.");
+            // Send notifications
+            await notifyEnrollment(user.id, courseTitle, id);
+            await notifyPayment(user.id, coursePrice, courseTitle);
+            // Play success sound
+            const audio = new Audio('/sounds/success.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
           } else {
             // Enrollment may still be processing via webhook
             // Create enrollment directly as fallback
@@ -55,6 +78,13 @@ const PaymentSuccess = () => {
             if (!enrollError) {
               setPaymentVerified(true);
               toast.success("Payment successful! You now have access to the course.");
+              // Send notifications
+              await notifyEnrollment(user.id, courseTitle, id);
+              await notifyPayment(user.id, coursePrice, courseTitle);
+              // Play success sound
+              const audio = new Audio('/sounds/success.mp3');
+              audio.volume = 0.5;
+              audio.play().catch(() => {});
             } else if (enrollError.code === "23505") {
               // Already enrolled
               setPaymentVerified(true);
