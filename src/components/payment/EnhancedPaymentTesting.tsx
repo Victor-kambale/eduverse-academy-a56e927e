@@ -33,6 +33,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { toast } from 'sonner';
 import { QRPaymentModal } from './QRPaymentModal';
 import { MobileMoneyPayment } from './MobileMoneyPayment';
+import { WithdrawalTestingPanel } from './WithdrawalTestingPanel';
 
 interface PaymentMethodConfig {
   id: string;
@@ -445,11 +446,12 @@ export function EnhancedPaymentTesting() {
 
       {/* Payment Methods Tabs */}
       <Tabs defaultValue="all">
-        <TabsList className="grid grid-cols-5 w-full max-w-2xl">
+        <TabsList className="grid grid-cols-6 w-full max-w-3xl">
           <TabsTrigger value="all">All Methods</TabsTrigger>
           <TabsTrigger value="cards">Cards</TabsTrigger>
           <TabsTrigger value="wallets">Wallets</TabsTrigger>
           <TabsTrigger value="qr">QR Payments</TabsTrigger>
+          <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
           <TabsTrigger value="results">Results</TabsTrigger>
         </TabsList>
 
@@ -599,6 +601,18 @@ export function EnhancedPaymentTesting() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="withdrawals" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Withdrawal Process Testing</CardTitle>
+              <CardDescription>Test complete withdrawal flows for Admin, Teacher, and Universities</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <WithdrawalTestingPanel />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="results" className="mt-6">
