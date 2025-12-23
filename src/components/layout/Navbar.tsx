@@ -21,6 +21,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LanguageSelector } from "./LanguageSelector";
+import { ThemeToggle } from "./ThemeToggle";
+import { UserProfileDropdown } from "./UserProfileDropdown";
+import { useAuth } from "@/hooks/useAuth";
 
 const categories = [
   { name: "Technology", icon: "💻", courses: 450 },
@@ -34,6 +37,7 @@ const categories = [
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -112,19 +116,29 @@ export function Navbar() {
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+          
           {/* Language Selector */}
           <LanguageSelector />
 
-          <Link to="/auth">
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              Log In
-            </Button>
-          </Link>
-          <Link to="/auth?mode=signup">
-            <Button variant="accent" size="sm" className="hidden sm:flex">
-              Sign Up Free
-            </Button>
-          </Link>
+          {/* Auth Section */}
+          {user ? (
+            <UserProfileDropdown />
+          ) : (
+            <>
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                  Log In
+                </Button>
+              </Link>
+              <Link to="/auth?mode=signup">
+                <Button variant="accent" size="sm" className="hidden sm:flex">
+                  Sign Up Free
+                </Button>
+              </Link>
+            </>
+          )}
 
           {/* Mobile Menu Toggle */}
           <Button
@@ -174,14 +188,16 @@ export function Navbar() {
             </nav>
 
             {/* Mobile Auth Buttons */}
-            <div className="flex gap-2 pt-2 border-t border-border">
-              <Link to="/auth" className="flex-1">
-                <Button variant="outline" className="w-full">Log In</Button>
-              </Link>
-              <Link to="/auth?mode=signup" className="flex-1">
-                <Button variant="accent" className="w-full">Sign Up</Button>
-              </Link>
-            </div>
+            {!user && (
+              <div className="flex gap-2 pt-2 border-t border-border">
+                <Link to="/auth" className="flex-1">
+                  <Button variant="outline" className="w-full">Log In</Button>
+                </Link>
+                <Link to="/auth?mode=signup" className="flex-1">
+                  <Button variant="accent" className="w-full">Sign Up</Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
