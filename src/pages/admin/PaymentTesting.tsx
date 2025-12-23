@@ -1,34 +1,15 @@
-import { useState } from 'react';
-import {
-  CreditCard,
-  Wallet,
-  Smartphone,
-  Globe,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  Play,
-  AlertTriangle,
-  Copy,
-  Phone,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
+import { EnhancedPaymentTesting } from '@/components/payment/EnhancedPaymentTesting';
 
-interface PaymentMethod {
-  id: string;
-  name: string;
-  icon: React.ReactNode;
-  description: string;
-  testCard: string;
-  testExpiry: string;
-  testCVC: string;
-  additionalInfo?: string;
+export default function PaymentTesting() {
+  return (
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Payment Testing</h1>
+        <p className="text-muted-foreground">Test all payment methods with sandbox/test credentials</p>
+      </div>
+      <EnhancedPaymentTesting />
+    </div>
+  );
 }
 
 const paymentMethods: PaymentMethod[] = [
