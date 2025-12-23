@@ -91,7 +91,7 @@ export function UserProfileDropdown() {
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80 p-0" align="end" sideOffset={8}>
+      <DropdownMenuContent className="w-80 p-0 z-[100] max-h-[80vh] overflow-y-auto scrollbar-hide" align="end" sideOffset={8}>
         {/* Profile Header */}
         <div className="p-4 bg-gradient-to-br from-primary/5 to-accent/5">
           <div className="flex items-start gap-3">

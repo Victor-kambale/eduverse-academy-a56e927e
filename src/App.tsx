@@ -52,8 +52,8 @@ import ResetPassword from "./pages/ResetPassword";
 import VerifyCertificate from "./pages/VerifyCertificate";
 import UniversityRegistration from "./pages/UniversityRegistration";
 import UniversityDashboard from "./pages/university/UniversityDashboard";
+import GiftCards from "./pages/GiftCards";
 import { CopyProtection } from "./components/security/CopyProtection";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -92,6 +92,7 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/gift-cards" element={<GiftCards />} />
             <Route path="/degrees" element={<Courses />} />
             <Route path="/careers" element={<About />} />
             <Route
