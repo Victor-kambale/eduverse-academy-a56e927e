@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { 
   Bell, 
   Check, 
@@ -47,6 +47,29 @@ const notificationIcons: Record<string, any> = {
   warning: Bell,
   info: Bell,
 };
+
+// Trigger button wrapped in forwardRef to fix ref warning
+const NotificationTriggerButton = forwardRef<HTMLButtonElement, { unreadCount: number }>(
+  ({ unreadCount, ...props }, ref) => (
+    <Button ref={ref} variant="hero-outline" size="sm" className="relative" {...props}>
+      <Bell className="w-4 h-4 mr-2" />
+      Notifications
+      <AnimatePresence>
+        {unreadCount > 0 && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0 }}
+            className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full"
+          >
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </Button>
+  )
+);
+NotificationTriggerButton.displayName = "NotificationTriggerButton";
 
 export function StudentNotifications() {
   const { user } = useAuth();
@@ -159,22 +182,7 @@ export function StudentNotifications() {
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="hero-outline" size="sm" className="relative">
-            <Bell className="w-4 h-4 mr-2" />
-            Notifications
-            <AnimatePresence>
-              {unreadCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full"
-                >
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </Button>
+          <NotificationTriggerButton unreadCount={unreadCount} />
         </PopoverTrigger>
         <PopoverContent className="w-96 p-0" align="end">
           <div className="flex items-center justify-between p-4 border-b">

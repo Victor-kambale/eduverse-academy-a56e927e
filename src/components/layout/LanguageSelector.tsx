@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Globe, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
 interface Language {
   id: string;
   code: string;
@@ -20,6 +19,18 @@ interface Language {
   is_active: boolean | null;
   is_default?: boolean | null;
 }
+
+// Trigger button wrapped in forwardRef to fix ref warning
+const LanguageTriggerButton = forwardRef<HTMLButtonElement, { currentLanguage?: Language }>(
+  ({ currentLanguage, ...props }, ref) => (
+    <Button ref={ref} variant="ghost" size="sm" className="gap-2" {...props}>
+      <Globe className="w-4 h-4" />
+      <span className="hidden sm:inline">{currentLanguage?.flag}</span>
+      <span className="hidden md:inline">{currentLanguage?.name}</span>
+    </Button>
+  )
+);
+LanguageTriggerButton.displayName = "LanguageTriggerButton";
 
 export const LanguageSelector = () => {
   const { i18n } = useTranslation();
@@ -105,11 +116,7 @@ export const LanguageSelector = () => {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <Globe className="w-4 h-4" />
-          <span className="hidden sm:inline">{currentLanguage?.flag}</span>
-          <span className="hidden md:inline">{currentLanguage?.name}</span>
-        </Button>
+        <LanguageTriggerButton currentLanguage={currentLanguage} />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {languages.map((lang) => (
