@@ -21,7 +21,8 @@ import {
   FileDown,
   FileSpreadsheet,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  GraduationCap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -297,6 +298,81 @@ export default function RevenueAnalytics() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+      </div>
+
+      {/* Revenue by User Type */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Users className="h-6 w-6 text-blue-500" />
+                <span className="font-semibold">Student Revenue</span>
+              </div>
+              <Badge variant="secondary" className="text-blue-600">Students</Badge>
+            </div>
+            <p className="text-3xl font-bold text-blue-600">${totalRevenue.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground mt-1">From course enrollments</p>
+            <div className="flex gap-2 mt-3">
+              <Button size="sm" variant="outline" onClick={fetchRevenue}>
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Refresh
+              </Button>
+              <Button size="sm" variant="outline" onClick={exportToCSV}>
+                <Download className="h-3 w-3 mr-1" />
+                Export
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-6 w-6 text-green-500" />
+                <span className="font-semibold">Teacher Revenue</span>
+              </div>
+              <Badge variant="secondary" className="text-green-600">Teachers</Badge>
+            </div>
+            <p className="text-3xl font-bold text-green-600">${totalTeacherPayout.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Course creation & sales share</p>
+            <div className="flex gap-2 mt-3">
+              <Button size="sm" variant="outline" onClick={fetchRevenue}>
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Refresh
+              </Button>
+              <Button size="sm" variant="outline" onClick={exportToCSV}>
+                <Download className="h-3 w-3 mr-1" />
+                Export
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <GraduationCap className="h-6 w-6 text-purple-500" />
+                <span className="font-semibold">University Revenue</span>
+              </div>
+              <Badge variant="secondary" className="text-purple-600">Universities</Badge>
+            </div>
+            <p className="text-3xl font-bold text-purple-600">$0.00</p>
+            <p className="text-sm text-muted-foreground mt-1">Partnership & certifications</p>
+            <div className="flex gap-2 mt-3">
+              <Button size="sm" variant="outline" onClick={fetchRevenue}>
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Refresh
+              </Button>
+              <Button size="sm" variant="outline" onClick={exportToCSV}>
+                <Download className="h-3 w-3 mr-1" />
+                Export
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Collapsible Key Stats */}
