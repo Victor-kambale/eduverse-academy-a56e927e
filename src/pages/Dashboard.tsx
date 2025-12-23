@@ -22,7 +22,9 @@ import {
   FileText,
   LogOut,
   Shield,
+  Eye,
 } from "lucide-react";
+import { SecureCertificateSystem } from "@/components/certificate/SecureCertificateSystem";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { ProfilePhotoUpload } from "@/components/profile/ProfilePhotoUpload";
@@ -417,25 +419,69 @@ const DashboardPage = () => {
 
               <TabsContent value="certificates" className="mt-6">
                 {certificates.length > 0 ? (
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {certificates.map((cert) => (
-                      <Card key={cert.id}>
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <Award className="w-10 h-10 text-accent mb-3" />
-                              <h3 className="font-semibold mb-1">{cert.title}</h3>
-                              <p className="text-sm text-muted-foreground">Issued: {cert.issueDate}</p>
-                              <p className="text-xs text-muted-foreground mt-1">ID: {cert.credentialId}</p>
+                  <div className="space-y-6">
+                    {/* Certificate Cards */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {certificates.map((cert) => (
+                        <Card key={cert.id} className="hover:shadow-lg transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Award className="w-10 h-10 text-accent" />
+                                  <Badge variant="secondary" className="text-xs">CDP Certified</Badge>
+                                </div>
+                                <h3 className="font-semibold mb-1">{cert.title}</h3>
+                                <p className="text-sm text-muted-foreground">Issued: {cert.issueDate}</p>
+                                <p className="text-xs text-muted-foreground mt-1">ID: {cert.credentialId}</p>
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <Link to={`/verify-certificate/${cert.credentialId}`}>
+                                  <Button variant="outline" size="sm" className="w-full gap-1">
+                                    <Eye className="w-3 h-3" />
+                                    View
+                                  </Button>
+                                </Link>
+                                <Button variant="ghost" size="sm" className="gap-1">
+                                  <Shield className="w-3 h-3" />
+                                  Claim
+                                </Button>
+                              </div>
                             </div>
-                            <div className="flex flex-col gap-2">
-                              <Button variant="outline" size="sm">View</Button>
-                              <Button variant="ghost" size="sm">Share</Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    
+                    {/* Secure Certificate System for claiming */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Shield className="w-5 h-5 text-accent" />
+                          Claim Your Certificates
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <SecureCertificateSystem 
+                          certificates={certificates.map(cert => ({
+                            studentName: getUserName(),
+                            courseName: cert.title,
+                            instructorName: 'Eduverse Instructor',
+                            completionDate: cert.issueDate,
+                            credentialId: cert.credentialId,
+                            grade: 'A',
+                            institutionName: 'Eduverse Academy',
+                            courseDuration: '40 hours',
+                            cpdHours: 40,
+                            skills: ['Critical Thinking', 'Problem Solving'],
+                          }))}
+                          userRole="student"
+                          onClaim={(claimedCerts) => {
+                            toast.success(`Successfully claimed ${claimedCerts.length} certificate(s)!`);
+                          }}
+                        />
+                      </CardContent>
+                    </Card>
                   </div>
                 ) : (
                   <Card>

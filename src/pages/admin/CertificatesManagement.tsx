@@ -9,6 +9,7 @@ import {
   QrCode,
   FileText,
   Shield,
+  Edit,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { SecureCertificateSystem } from '@/components/certificate/SecureCertificateSystem';
 
 interface StudentCertificate {
   id: string;
@@ -41,6 +43,13 @@ interface StudentCertificate {
   credential_id: string;
   issued_at: string;
   certificate_url: string | null;
+  courses?: {
+    title: string;
+    instructor_name: string;
+  };
+  profiles?: {
+    full_name: string;
+  };
 }
 
 interface CertificateTemplate {
@@ -60,6 +69,7 @@ export default function CertificatesManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCertificate, setSelectedCertificate] = useState<StudentCertificate | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [showSecurePreview, setShowSecurePreview] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -67,7 +77,7 @@ export default function CertificatesManagement() {
 
   const fetchData = async () => {
     const [certRes, templateRes] = await Promise.all([
-      supabase.from('student_certificates').select('*').order('issued_at', { ascending: false }),
+      supabase.from('student_certificates').select('*, courses:course_id (title, instructor_name)').order('issued_at', { ascending: false }),
       supabase.from('certificates').select('*').order('created_at', { ascending: false }),
     ]);
 
@@ -90,6 +100,33 @@ export default function CertificatesManagement() {
     }
   };
 
+  const handlePreviewCertificate = (cert: StudentCertificate) => {
+    setSelectedCertificate(cert);
+    setShowSecurePreview(true);
+  };
+
+  const getCertificateData = (cert: StudentCertificate) => ({
+    studentName: 'Student Name', // Would come from profiles table in real implementation
+    courseName: cert.courses?.title || 'Course Title',
+    instructorName: cert.courses?.instructor_name || 'Instructor',
+    completionDate: format(new Date(cert.issued_at), 'MMMM d, yyyy'),
+    credentialId: cert.credential_id,
+    grade: 'A',
+    institutionName: 'Eduverse Academy',
+    courseDuration: '40 hours',
+    cpdHours: 40,
+    skills: ['Critical Thinking', 'Problem Solving', 'Technical Skills'],
+    transcript: [
+      {
+        courseName: cert.courses?.title || 'Course',
+        completionDate: format(new Date(cert.issued_at), 'MMM d, yyyy'),
+        grade: 'A',
+        credits: 3,
+        instructor: cert.courses?.instructor_name || 'Instructor'
+      }
+    ]
+  });
+
   const stats = {
     total: studentCertificates.length,
     templates: templates.length,
@@ -101,7 +138,7 @@ export default function CertificatesManagement() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Certificates Management</h1>
-        <p className="text-muted-foreground">Manage certificate templates and issued certificates</p>
+        <p className="text-muted-foreground">Manage certificate templates and issued certificates with secure features</p>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
@@ -140,6 +177,7 @@ export default function CertificatesManagement() {
           <TabsTrigger value="issued">Issued Certificates</TabsTrigger>
           <TabsTrigger value="templates">Templates</TabsTrigger>
           <TabsTrigger value="verify">Verification</TabsTrigger>
+          <TabsTrigger value="preview">Secure Preview</TabsTrigger>
         </TabsList>
 
         <TabsContent value="issued" className="space-y-4">
@@ -160,8 +198,8 @@ export default function CertificatesManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Credential ID</TableHead>
+                  <TableHead>Course</TableHead>
                   <TableHead>Student ID</TableHead>
-                  <TableHead>Course ID</TableHead>
                   <TableHead>Issued Date</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -183,11 +221,11 @@ export default function CertificatesManagement() {
                     .map((cert) => (
                       <TableRow key={cert.id}>
                         <TableCell className="font-mono">{cert.credential_id}</TableCell>
+                        <TableCell>{cert.courses?.title || 'N/A'}</TableCell>
                         <TableCell>{cert.student_id.slice(0, 8)}...</TableCell>
-                        <TableCell>{cert.course_id.slice(0, 8)}...</TableCell>
                         <TableCell>{format(new Date(cert.issued_at), 'MMM d, yyyy')}</TableCell>
                         <TableCell className="text-right space-x-2">
-                          <Button variant="ghost" size="icon" onClick={() => { setSelectedCertificate(cert); setPreviewOpen(true); }}>
+                          <Button variant="ghost" size="icon" onClick={() => handlePreviewCertificate(cert)}>
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="icon">
@@ -195,6 +233,9 @@ export default function CertificatesManagement() {
                           </Button>
                           <Button variant="ghost" size="icon">
                             <QrCode className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon">
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -276,30 +317,57 @@ export default function CertificatesManagement() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="preview">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-accent" />
+                Secure Certificate Preview (Admin Mode)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <SecureCertificateSystem 
+                certificates={[{
+                  studentName: 'John Doe',
+                  courseName: 'Introduction to Web Development',
+                  instructorName: 'Dr. Sarah Johnson',
+                  completionDate: format(new Date(), 'MMMM d, yyyy'),
+                  credentialId: 'EDV-DEMO-2024-001',
+                  grade: 'A+',
+                  institutionName: 'Eduverse Academy',
+                  courseDuration: '40 hours',
+                  cpdHours: 40,
+                  skills: ['HTML', 'CSS', 'JavaScript', 'React'],
+                  transcript: [
+                    { courseName: 'HTML Fundamentals', completionDate: 'Dec 1, 2024', grade: 'A', credits: 1, instructor: 'Dr. Sarah Johnson' },
+                    { courseName: 'CSS Styling', completionDate: 'Dec 8, 2024', grade: 'A+', credits: 1, instructor: 'Dr. Sarah Johnson' },
+                    { courseName: 'JavaScript Basics', completionDate: 'Dec 15, 2024', grade: 'A', credits: 1, instructor: 'Dr. Sarah Johnson' },
+                  ]
+                }]}
+                isAdmin={true}
+                userRole="admin"
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl">
+      {/* Secure Certificate Preview Dialog */}
+      <Dialog open={showSecurePreview} onOpenChange={setShowSecurePreview}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Certificate Preview</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-accent" />
+              Secure Certificate Preview
+            </DialogTitle>
           </DialogHeader>
           {selectedCertificate && (
-            <div className="p-8 bg-gradient-to-br from-amber-50 to-orange-50 border-4 border-amber-600 rounded-lg">
-              <div className="text-center space-y-4">
-                <Award className="w-16 h-16 mx-auto text-amber-600" />
-                <h2 className="text-3xl font-serif font-bold text-amber-900">Certificate of Completion</h2>
-                <p className="text-lg text-amber-800">This is to certify that</p>
-                <p className="text-2xl font-bold text-amber-900">[Student Name]</p>
-                <p className="text-amber-800">has successfully completed the course</p>
-                <p className="text-xl font-semibold text-amber-900">[Course Title]</p>
-                <div className="pt-4">
-                  <p className="text-sm text-amber-700">Credential ID: {selectedCertificate.credential_id}</p>
-                  <p className="text-sm text-amber-700">
-                    Issued: {format(new Date(selectedCertificate.issued_at), 'MMMM d, yyyy')}
-                  </p>
-                </div>
-              </div>
-            </div>
+            <SecureCertificateSystem 
+              certificates={[getCertificateData(selectedCertificate)]}
+              isAdmin={true}
+              userRole="admin"
+            />
           )}
         </DialogContent>
       </Dialog>
