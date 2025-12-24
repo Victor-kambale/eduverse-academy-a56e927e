@@ -1480,6 +1480,86 @@ const TestingDashboard = () => {
                     </Button>
                   </CardContent>
                 </Card>
+
+                <Separator />
+
+                {/* Role Management & Audit Logs Tests */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      Role Management & Audit Logs Testing
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid gap-4 md:grid-cols-2">
+                    <Button 
+                      onClick={() => {
+                        navigate('/admin/roles');
+                        addTestResult('Role Management', 'success', 'Navigated to role management');
+                      }}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Test Role Management
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        navigate('/admin/audit-logs');
+                        addTestResult('Audit Logs', 'success', 'Navigated to audit logs');
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Test Audit Logs
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={async () => {
+                        const { error } = await supabase.from('audit_logs').insert({
+                          action: 'test_log',
+                          entity_type: 'test',
+                          metadata: { test: true }
+                        });
+                        if (error) {
+                          toast.error(`Audit log test failed: ${error.message}`);
+                          addTestResult('Audit Log Insert', 'error', error.message);
+                        } else {
+                          toast.success('Test audit log created');
+                          addTestResult('Audit Log Insert', 'success', 'Log created successfully');
+                        }
+                      }}
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Create Test Audit Log
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={async () => {
+                        const { data, error } = await supabase.functions.invoke('send-payment-notification', {
+                          body: {
+                            paymentId: 'test-' + Date.now(),
+                            courseId: '11111111-1111-1111-1111-111111111111',
+                            studentEmail: user?.email || 'test@example.com',
+                            studentName: 'Test Student',
+                            courseTitle: 'Test Course',
+                            amount: 99.99,
+                            currency: 'usd'
+                          }
+                        });
+                        if (error) {
+                          toast.error(`Email notification test failed: ${error.message}`);
+                          addTestResult('Payment Email', 'error', error.message);
+                        } else {
+                          toast.success('Payment notification email sent');
+                          addTestResult('Payment Email', 'success', 'Email sent successfully');
+                        }
+                      }}
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Test Payment Email
+                    </Button>
+                  </CardContent>
+                </Card>
               </CardContent>
             </Card>
           </TabsContent>
