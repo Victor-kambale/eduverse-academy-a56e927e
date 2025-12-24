@@ -34,6 +34,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Layout } from '@/components/layout/Layout';
+import { TestimonialsSection } from '@/components/testimonials/TestimonialsSection';
 import { toast } from 'sonner';
 
 interface GiftCardDesign {
