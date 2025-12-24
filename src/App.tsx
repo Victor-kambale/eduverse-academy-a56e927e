@@ -48,6 +48,8 @@ import TransfersManagement from "./pages/admin/TransfersManagement";
 import MaintenanceManagement from "./pages/admin/MaintenanceManagement";
 import SecurityManagement from "./pages/admin/SecurityManagement";
 import WithdrawalProcess from "./pages/admin/WithdrawalProcess";
+import RoleManagement from "./pages/admin/RoleManagement";
+import AuditLogs from "./pages/admin/AuditLogs";
 import TeacherRegistration from "./pages/TeacherRegistration";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherChat from "./pages/teacher/TeacherChat";
@@ -195,6 +197,8 @@ const App = () => (
               <Route path="withdrawal-process" element={<WithdrawalProcess />} />
               <Route path="promo-banner" element={<PromoBannerManagement />} />
               <Route path="payment-methods" element={<PaymentMethodsAdmin />} />
+              <Route path="roles" element={<RoleManagement />} />
+              <Route path="audit-logs" element={<AuditLogs />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
