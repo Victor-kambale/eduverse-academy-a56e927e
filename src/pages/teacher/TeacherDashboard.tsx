@@ -38,6 +38,8 @@ import { InfiniteCarousel } from '@/components/ui/infinite-carousel';
 import { Link } from 'react-router-dom';
 import { WithdrawalForm } from '@/components/withdrawal/WithdrawalForm';
 import { Wallet } from 'lucide-react';
+import DashboardChatbot from '@/components/chatbot/DashboardChatbot';
+import RealtimeRevenue from '@/components/dashboard/RealtimeRevenue';
 
 interface Course {
   id: string;
@@ -738,6 +740,9 @@ const TeacherDashboard = () => {
           </Tabs>
         </div>
       </div>
+      
+      {/* Dashboard Chatbot */}
+      <DashboardChatbot dashboardType="teacher" userId={user?.id} />
     </Layout>
   );
 };

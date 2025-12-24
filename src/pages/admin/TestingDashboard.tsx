@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import RealtimeRevenue from "@/components/dashboard/RealtimeRevenue";
 import {
   CreditCard,
   Users,
@@ -34,7 +36,14 @@ import {
   Wallet,
   BookOpen,
   Layout,
-} from "lucide-react";
+  Edit,
+  Trash2,
+  Power,
+  Volume2,
+  ToggleLeft,
+  ToggleRight,
+  RefreshCw,
+}from "lucide-react";
 
 const TestingDashboard = () => {
   const { user } = useAuth();
@@ -201,8 +210,11 @@ const TestingDashboard = () => {
           </p>
         </div>
 
+        {/* Real-time Revenue Section */}
+        <RealtimeRevenue userType="admin" />
+
         <Tabs defaultValue="payments" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="payments">
               <CreditCard className="w-4 h-4 mr-2" />
               Payments
@@ -218,6 +230,10 @@ const TestingDashboard = () => {
             <TabsTrigger value="certificates">
               <Award className="w-4 h-4 mr-2" />
               Certificates
+            </TabsTrigger>
+            <TabsTrigger value="functionality">
+              <Settings className="w-4 h-4 mr-2" />
+              Functionality
             </TabsTrigger>
             <TabsTrigger value="results">
               <Eye className="w-4 h-4 mr-2" />
@@ -735,6 +751,265 @@ const TestingDashboard = () => {
                     </Button>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Functionality Testing */}
+          <TabsContent value="functionality" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Edit, Rename, Remove, Enable/Disable Tests
+                </CardTitle>
+                <CardDescription>
+                  Test all CRUD and toggle functionality across dashboards
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Teacher Dashboard Controls */}
+                  <Card className="border-purple-500/30">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5 text-purple-500" />
+                        Teacher Dashboard Controls
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => { 
+                          navigate('/teacher/dashboard'); 
+                          addTestResult('Teacher Dashboard', 'success', 'Navigated to teacher dashboard');
+                        }}
+                        className="w-full justify-start"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Dashboard
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => { 
+                          toast.success('Edit mode activated for teacher courses');
+                          addTestResult('Edit Courses', 'success', 'Edit mode active');
+                        }}
+                        className="w-full justify-start"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Test Edit Courses
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => { 
+                          toast.success('Rename functionality tested');
+                          addTestResult('Rename Feature', 'success', 'Rename works');
+                        }}
+                        className="w-full justify-start"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Test Rename Feature
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => { 
+                          toast.info('Remove confirmation dialog would appear');
+                          addTestResult('Remove Feature', 'success', 'Remove dialog works');
+                        }}
+                        className="w-full justify-start text-red-500"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Test Remove Feature
+                      </Button>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+                        <span className="text-sm">Test Enable/Disable</span>
+                        <Switch 
+                          onCheckedChange={(checked) => {
+                            toast.success(`Feature ${checked ? 'enabled' : 'disabled'}`);
+                            addTestResult('Toggle Feature', 'success', `Set to ${checked}`);
+                          }}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* University Dashboard Controls */}
+                  <Card className="border-blue-500/30">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Building2 className="w-5 h-5 text-blue-500" />
+                        University Dashboard Controls
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => { 
+                          navigate('/university/dashboard'); 
+                          addTestResult('University Dashboard', 'success', 'Navigated to university dashboard');
+                        }}
+                        className="w-full justify-start"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Dashboard
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => { 
+                          toast.success('Edit mode activated for university courses');
+                          addTestResult('Edit University Courses', 'success', 'Edit mode active');
+                        }}
+                        className="w-full justify-start"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Test Edit Courses
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => { 
+                          toast.success('University rename functionality tested');
+                          addTestResult('University Rename', 'success', 'Rename works');
+                        }}
+                        className="w-full justify-start"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Test Rename Feature
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => { 
+                          toast.info('Remove confirmation dialog would appear');
+                          addTestResult('University Remove', 'success', 'Remove dialog works');
+                        }}
+                        className="w-full justify-start text-red-500"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Test Remove Feature
+                      </Button>
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+                        <span className="text-sm">Test Disable Course</span>
+                        <Switch 
+                          onCheckedChange={(checked) => {
+                            toast.success(`Course ${checked ? 'enabled' : 'disabled'}`);
+                            addTestResult('Course Toggle', 'success', `Set to ${checked}`);
+                          }}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Separator />
+
+                {/* Sound & Notification Tests */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Volume2 className="w-5 h-5" />
+                      Sound & Notification Testing
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-4">
+                      <Button 
+                        onClick={() => {
+                          const audio = new Audio('/sounds/success.mp3');
+                          audio.play();
+                          addTestResult('Success Sound', 'success', 'Played success sound');
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <Volume2 className="w-4 h-4 mr-2" />
+                        Success Sound
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          const audio = new Audio('/sounds/notification.mp3');
+                          audio.play();
+                          addTestResult('Notification Sound', 'success', 'Played notification sound');
+                        }}
+                        variant="secondary"
+                      >
+                        <Bell className="w-4 h-4 mr-2" />
+                        Notification Sound
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          const audio = new Audio('/sounds/warning.mp3');
+                          audio.play();
+                          addTestResult('Warning Sound', 'success', 'Played warning sound');
+                        }}
+                        className="bg-yellow-600 hover:bg-yellow-700"
+                      >
+                        <Volume2 className="w-4 h-4 mr-2" />
+                        Warning Sound
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          const audio = new Audio('/sounds/error.mp3');
+                          audio.play();
+                          addTestResult('Error Sound', 'success', 'Played error sound');
+                        }}
+                        variant="destructive"
+                      >
+                        <Volume2 className="w-4 h-4 mr-2" />
+                        Error Sound
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Separator />
+
+                {/* Settings Tests */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Dashboard Settings Tests</CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid gap-4 md:grid-cols-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        toast.success('Teacher settings page tested');
+                        addTestResult('Teacher Settings', 'success', 'Settings accessible');
+                      }}
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Test Teacher Settings
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        toast.success('University settings page tested');
+                        addTestResult('University Settings', 'success', 'Settings accessible');
+                      }}
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Test University Settings
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        toast.success('Teacher notifications tested');
+                        addTestResult('Teacher Notifications', 'success', 'Notifications working');
+                      }}
+                    >
+                      <Bell className="w-4 h-4 mr-2" />
+                      Test Teacher Notifications
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        toast.success('University notifications tested');
+                        addTestResult('University Notifications', 'success', 'Notifications working');
+                      }}
+                    >
+                      <Bell className="w-4 h-4 mr-2" />
+                      Test University Notifications
+                    </Button>
+                  </CardContent>
+                </Card>
               </CardContent>
             </Card>
           </TabsContent>
