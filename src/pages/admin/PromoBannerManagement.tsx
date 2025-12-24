@@ -16,7 +16,9 @@ import {
   Loader2,
   Upload,
   Image as ImageIcon,
-  BarChart3
+  BarChart3,
+  Copy,
+  GitBranch
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,6 +59,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useDropzone } from 'react-dropzone';
 import { Link } from 'react-router-dom';
+import { EmailTemplatePreview } from '@/components/admin/EmailTemplatePreview';
 
 interface PromoBanner {
   id: string;
@@ -71,6 +74,10 @@ interface PromoBanner {
   media_type: string;
   target_audience: string | null;
   sort_order: number | null;
+  email_template?: string | null;
+  variant_name?: string | null;
+  is_ab_test?: boolean;
+  ab_parent_id?: string | null;
 }
 
 // Holiday templates for quick promo creation
@@ -211,6 +218,10 @@ export default function PromoBannerManagement() {
         media_type: editingBanner.media_type,
         target_audience: editingBanner.target_audience,
         sort_order: editingBanner.sort_order,
+        email_template: editingBanner.email_template || 'default',
+        variant_name: editingBanner.variant_name,
+        is_ab_test: editingBanner.is_ab_test || false,
+        ab_parent_id: editingBanner.ab_parent_id,
       };
 
       if (banners.find(b => b.id === editingBanner.id)) {
@@ -347,10 +358,32 @@ export default function PromoBannerManagement() {
       media_type: 'image',
       target_audience: 'all',
       sort_order: 0,
+      email_template: 'default',
+      variant_name: null,
+      is_ab_test: false,
+      ab_parent_id: null,
     };
     setEditingBanner(newBanner);
     setHasChanges(true);
     setShowEditDialog(true);
+  };
+
+  // Create A/B test variant
+  const handleCreateVariant = async (parentBanner: PromoBanner) => {
+    const variantCount = banners.filter(b => b.ab_parent_id === parentBanner.id).length + 1;
+    const variant: PromoBanner = {
+      ...parentBanner,
+      id: '',
+      title: parentBanner.title + ' (Variant)',
+      variant_name: `Variant ${String.fromCharCode(65 + variantCount)}`, // A, B, C...
+      is_ab_test: true,
+      ab_parent_id: parentBanner.id,
+      is_active: false,
+    };
+    setEditingBanner(variant);
+    setHasChanges(true);
+    setShowEditDialog(true);
+    toast.info('Creating A/B test variant - modify the content and save');
   };
 
   const handleEdit = (banner: PromoBanner) => {
@@ -492,11 +525,17 @@ export default function PromoBannerManagement() {
                       </div>
                     )}
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant={banner.is_active ? 'default' : 'secondary'}>
                           {banner.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                         <Badge variant="outline">{banner.target_audience || 'all'}</Badge>
+                        {banner.is_ab_test && (
+                          <Badge variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                            <GitBranch className="h-3 w-3 mr-1" />
+                            {banner.variant_name || 'A/B Test'}
+                          </Badge>
+                        )}
                       </div>
                       <p className="font-medium">{banner.title}</p>
                       {banner.description && (
@@ -542,6 +581,16 @@ export default function PromoBannerManagement() {
                       <TestTube className="h-4 w-4 mr-1" />
                       Test
                     </Button>
+                    {!banner.is_ab_test && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCreateVariant(banner)}
+                      >
+                        <Copy className="h-4 w-4 mr-1" />
+                        A/B Test
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
@@ -610,11 +659,12 @@ export default function PromoBannerManagement() {
           {editingBanner && (
             <ScrollArea className="max-h-[70vh] pr-4">
               <Tabs defaultValue="content" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="content">Content</TabsTrigger>
                   <TabsTrigger value="media">Media</TabsTrigger>
                   <TabsTrigger value="schedule">Schedule</TabsTrigger>
                   <TabsTrigger value="templates">Templates</TabsTrigger>
+                  <TabsTrigger value="email">Email</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="content" className="space-y-4 mt-4">
@@ -783,6 +833,23 @@ export default function PromoBannerManagement() {
                       </Button>
                     ))}
                   </div>
+                </TabsContent>
+
+                <TabsContent value="email" className="space-y-4 mt-4">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Customize the email template that will be sent to users when you activate this promo
+                  </p>
+                  <EmailTemplatePreview 
+                    data={{
+                      title: editingBanner.title,
+                      description: editingBanner.description || undefined,
+                      linkUrl: editingBanner.link_url || '/courses',
+                      linkText: editingBanner.link_text || 'Shop Now',
+                      endDate: editingBanner.end_date || undefined,
+                      template: editingBanner.email_template || 'default',
+                    }}
+                    onTemplateChange={(template) => handleFieldChange('email_template', template)}
+                  />
                 </TabsContent>
               </Tabs>
 
