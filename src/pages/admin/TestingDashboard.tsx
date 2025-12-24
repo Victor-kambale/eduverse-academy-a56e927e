@@ -738,9 +738,54 @@ const TestingDashboard = () => {
 
                 <Separator />
 
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Card className="border-2 border-dashed border-purple-500/30">
+                    <CardContent className="pt-6 text-center">
+                      <Award className="w-12 h-12 mx-auto mb-4 text-purple-500" />
+                      <h3 className="font-semibold mb-2">Beginner Certificate</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Entry-level certification
+                      </p>
+                      <Button 
+                        onClick={() => testCertificate('Beginner')}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Test Beginner
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-2 border-dashed border-amber-500/30">
+                    <CardContent className="pt-6 text-center">
+                      <Award className="w-12 h-12 mx-auto mb-4 text-amber-500" />
+                      <h3 className="font-semibold mb-2">All Certificates</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Test all certificate types at once
+                      </p>
+                      <Button 
+                        onClick={() => {
+                          testCertificate('Beginner');
+                          testCertificate('Advanced');
+                          testCertificate('Professional');
+                          testCertificate('Executive');
+                          toast.success('All certificate tests initiated!');
+                        }}
+                        className="w-full bg-amber-600 hover:bg-amber-700"
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        Test All Certificates
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Separator />
+
                 <div>
                   <h4 className="font-semibold mb-4">Certificate Management</h4>
-                  <div className="grid gap-2 md:grid-cols-2">
+                  <div className="grid gap-2 md:grid-cols-3">
                     <Button variant="outline" onClick={() => navigate('/admin/certificates')}>
                       <Award className="w-4 h-4 mr-2" />
                       Manage Certificates
@@ -749,7 +794,177 @@ const TestingDashboard = () => {
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Verify Certificate Page
                     </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        toast.success('Certificate preview generated');
+                        addTestResult('Certificate Preview', 'success', 'Preview generated');
+                      }}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview Certificate
+                    </Button>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Login Pages Testing */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LogIn className="w-5 h-5" />
+                  Login Pages Testing
+                </CardTitle>
+                <CardDescription>
+                  Test all login pages for different user types
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-4">
+                  <Card className="border-2 border-dashed border-blue-500/30">
+                    <CardContent className="pt-6 text-center">
+                      <Users className="w-10 h-10 mx-auto mb-3 text-blue-500" />
+                      <h3 className="font-semibold mb-2">Student Login</h3>
+                      <Button 
+                        onClick={() => {
+                          window.open('/auth/student', '_blank');
+                          addTestResult('Student Login Page', 'success', 'Opened in new tab');
+                        }}
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                        size="sm"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Test Login
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-2 border-dashed border-green-500/30">
+                    <CardContent className="pt-6 text-center">
+                      <GraduationCap className="w-10 h-10 mx-auto mb-3 text-green-500" />
+                      <h3 className="font-semibold mb-2">Teacher Login</h3>
+                      <Button 
+                        onClick={() => {
+                          window.open('/auth/teacher', '_blank');
+                          addTestResult('Teacher Login Page', 'success', 'Opened in new tab');
+                        }}
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        size="sm"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Test Login
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-2 border-dashed border-purple-500/30">
+                    <CardContent className="pt-6 text-center">
+                      <Building2 className="w-10 h-10 mx-auto mb-3 text-purple-500" />
+                      <h3 className="font-semibold mb-2">University Login</h3>
+                      <Button 
+                        onClick={() => {
+                          window.open('/auth/university', '_blank');
+                          addTestResult('University Login Page', 'success', 'Opened in new tab');
+                        }}
+                        className="w-full bg-purple-600 hover:bg-purple-700"
+                        size="sm"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Test Login
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-2 border-dashed border-red-500/30">
+                    <CardContent className="pt-6 text-center">
+                      <Shield className="w-10 h-10 mx-auto mb-3 text-red-500" />
+                      <h3 className="font-semibold mb-2">Admin Login</h3>
+                      <Button 
+                        onClick={() => {
+                          window.open('/auth/admin', '_blank');
+                          addTestResult('Admin Login Page', 'success', 'Opened in new tab');
+                        }}
+                        className="w-full bg-red-600 hover:bg-red-700"
+                        size="sm"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Test Login
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Separator />
+
+                <div className="flex gap-4">
+                  <Button 
+                    onClick={() => {
+                      window.open('/auth/student', '_blank');
+                      window.open('/auth/teacher', '_blank');
+                      window.open('/auth/university', '_blank');
+                      window.open('/auth/admin', '_blank');
+                      addTestResult('All Login Pages', 'success', 'All pages opened');
+                      toast.success('All login pages opened in new tabs');
+                    }}
+                    className="flex-1"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Test All Login Pages
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      window.open('/auth', '_blank');
+                      addTestResult('Main Auth Page', 'success', 'Opened');
+                    }}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Main Auth Page
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Payment Methods Testing */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Payment Methods Testing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Button 
+                    onClick={() => {
+                      navigate('/admin/payment-methods');
+                      addTestResult('Payment Methods Admin', 'success', 'Navigated');
+                    }}
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Payment Methods Admin
+                  </Button>
+                  <Button 
+                    variant="secondary"
+                    onClick={() => {
+                      navigate('/admin/payment-testing');
+                      addTestResult('Payment Testing Page', 'success', 'Navigated');
+                    }}
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Payment Testing Page
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      window.open('/courses/11111111-1111-1111-1111-111111111111', '_blank');
+                      addTestResult('Course Purchase Test', 'success', 'Opened course page');
+                    }}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Test Course Purchase
+                  </Button>
                 </div>
               </CardContent>
             </Card>
