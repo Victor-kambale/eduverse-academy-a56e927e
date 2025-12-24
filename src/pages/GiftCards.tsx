@@ -68,29 +68,6 @@ const giftCardDesigns: GiftCardDesign[] = [
   { id: 'womens-day', name: "Women's Day Gift Card", gradient: 'from-pink-200 to-pink-400', category: 'celebration' },
 ];
 
-const testimonials = [
-  {
-    name: 'Ayesha J.',
-    role: 'Eduverse Graduate',
-    country: '🇵🇰',
-    rating: 5,
-    text: 'Each course on Eduverse has contributed to enhancing my career confidence and professional toolkit. The certifications I\'ve earned not only validate my skills but also catch the attention of employers.',
-  },
-  {
-    name: 'Allan K.',
-    role: 'Eduverse Graduate',
-    country: '🇺🇬',
-    rating: 5,
-    text: 'Eduverse has truly changed my life! Through the platform, I completed a Diploma in Supervision and a Diploma in Logistics, which provided me with a solid platform for self-education and professional development.',
-  },
-  {
-    name: 'Gilbert N.',
-    role: 'Eduverse Graduate',
-    country: '🇰🇪',
-    rating: 5,
-    text: 'The flexibility of online learning allowed me to study at my own pace, and the valuable skills I gained helped me transition from bartending to a management role.',
-  },
-];
 
 export default function GiftCards() {
   const [activeTab, setActiveTab] = useState<'purchase' | 'howto'>('purchase');
@@ -599,35 +576,10 @@ export default function GiftCards() {
             </div>
           </div>
 
-          {/* Testimonials Carousel */}
+          {/* Testimonials Section - Dynamic from Database */}
           <div className="mt-16">
             <h2 className="text-3xl font-bold text-center mb-8">What Eduverse's Graduates Have to Say</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {testimonials.map((testimonial, index) => (
-                <Card key={index} className="relative">
-                  <CardContent className="p-6">
-                    <div className="absolute top-4 right-4 text-4xl text-muted-foreground/20">"</div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                        <span className="text-lg font-bold">{testimonial.name.charAt(0)}</span>
-                      </div>
-                      <div>
-                        <p className="font-semibold">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {testimonial.role} {testimonial.country}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-1 mb-3">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-amber-500 fill-amber-500" />
-                      ))}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{testimonial.text}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <TestimonialsSection />
           </div>
 
           {/* Craft Custom Card CTA */}
