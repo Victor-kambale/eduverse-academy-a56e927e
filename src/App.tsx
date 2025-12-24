@@ -50,6 +50,8 @@ import SecurityManagement from "./pages/admin/SecurityManagement";
 import WithdrawalProcess from "./pages/admin/WithdrawalProcess";
 import RoleManagement from "./pages/admin/RoleManagement";
 import AuditLogs from "./pages/admin/AuditLogs";
+import TestimonialsManagement from "./pages/admin/TestimonialsManagement";
+import Admin2FASettings from "./pages/admin/Admin2FASettings";
 import TeacherRegistration from "./pages/TeacherRegistration";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherChat from "./pages/teacher/TeacherChat";
@@ -199,6 +201,8 @@ const App = () => (
               <Route path="payment-methods" element={<PaymentMethodsAdmin />} />
               <Route path="roles" element={<RoleManagement />} />
               <Route path="audit-logs" element={<AuditLogs />} />
+              <Route path="testimonials" element={<TestimonialsManagement />} />
+              <Route path="2fa-settings" element={<Admin2FASettings />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

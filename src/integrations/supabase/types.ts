@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_2fa: {
+        Row: {
+          backup_codes: string[] | null
+          created_at: string
+          id: string
+          is_enabled: boolean
+          totp_secret: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          totp_secret: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          backup_codes?: string[] | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          totp_secret?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_revenue: {
         Row: {
           commission_amount: number
@@ -1365,6 +1395,51 @@ export type Database = {
           is_premium?: boolean | null
           premium_expires_at?: string | null
           teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          country_code: string
+          country_emoji: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          photo_url: string | null
+          rating: number
+          role: string
+          sort_order: number
+          testimonial_text: string
+          updated_at: string
+        }
+        Insert: {
+          country_code?: string
+          country_emoji?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          photo_url?: string | null
+          rating?: number
+          role?: string
+          sort_order?: number
+          testimonial_text: string
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string
+          country_emoji?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          photo_url?: string | null
+          rating?: number
+          role?: string
+          sort_order?: number
+          testimonial_text?: string
           updated_at?: string
         }
         Relationships: []
