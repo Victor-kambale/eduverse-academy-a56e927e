@@ -56,6 +56,10 @@ import VerifyCertificate from "./pages/VerifyCertificate";
 import UniversityRegistration from "./pages/UniversityRegistration";
 import UniversityDashboard from "./pages/university/UniversityDashboard";
 import GiftCards from "./pages/GiftCards";
+import StudentAuth from "./pages/auth/StudentAuth";
+import TeacherAuth from "./pages/auth/TeacherAuth";
+import UniversityAuth from "./pages/auth/UniversityAuth";
+import AdminAuth from "./pages/auth/AdminAuth";
 import { CopyProtection } from "./components/security/CopyProtection";
 const queryClient = new QueryClient();
 
@@ -69,6 +73,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/student" element={<StudentAuth />} />
+            <Route path="/auth/teacher" element={<TeacherAuth />} />
+            <Route path="/auth/university" element={<UniversityAuth />} />
+            <Route path="/auth/admin" element={<AdminAuth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-certificate/:credentialId" element={<VerifyCertificate />} />
