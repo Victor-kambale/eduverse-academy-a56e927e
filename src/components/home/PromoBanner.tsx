@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Gift, Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -21,10 +21,38 @@ export function PromoBanner() {
   const [banner, setBanner] = useState<PromoBannerData | null>(null);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [loading, setLoading] = useState(true);
+  const [hasTrackedView, setHasTrackedView] = useState(false);
+
+  // Track view event
+  const trackEvent = useCallback(async (eventType: 'view' | 'click' | 'conversion', bannerId: string) => {
+    try {
+      const sessionId = sessionStorage.getItem('promo_session') || 
+        `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      sessionStorage.setItem('promo_session', sessionId);
+
+      await supabase.from('promo_analytics').insert({
+        banner_id: bannerId,
+        event_type: eventType,
+        session_id: sessionId,
+        user_agent: navigator.userAgent,
+        referrer: document.referrer || null,
+      });
+    } catch (error) {
+      console.error('Error tracking promo event:', error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchActiveBanner();
   }, []);
+
+  // Track view when banner is shown
+  useEffect(() => {
+    if (banner && show && !hasTrackedView) {
+      trackEvent('view', banner.id);
+      setHasTrackedView(true);
+    }
+  }, [banner, show, hasTrackedView, trackEvent]);
 
   const fetchActiveBanner = async () => {
     try {
@@ -51,6 +79,13 @@ export function PromoBanner() {
       setShow(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle click tracking
+  const handleClick = () => {
+    if (banner) {
+      trackEvent('click', banner.id);
     }
   };
 
@@ -125,7 +160,7 @@ export function PromoBanner() {
           </div>
 
           {/* Animated Button */}
-          <Link to={linkUrl}>
+          <Link to={linkUrl} onClick={handleClick}>
             <motion.div
               animate={{ 
                 scale: [1, 1.05, 1],

@@ -1013,12 +1013,15 @@ export type Database = {
       }
       promotional_banners: {
         Row: {
+          ab_parent_id: string | null
           created_at: string
           description: string | null
           email_sent_at: string | null
           email_sent_count: number | null
+          email_template: string | null
           end_date: string | null
           id: string
+          is_ab_test: boolean | null
           is_active: boolean | null
           link_text: string | null
           link_url: string | null
@@ -1029,14 +1032,18 @@ export type Database = {
           target_audience: string | null
           title: string
           updated_at: string
+          variant_name: string | null
         }
         Insert: {
+          ab_parent_id?: string | null
           created_at?: string
           description?: string | null
           email_sent_at?: string | null
           email_sent_count?: number | null
+          email_template?: string | null
           end_date?: string | null
           id?: string
+          is_ab_test?: boolean | null
           is_active?: boolean | null
           link_text?: string | null
           link_url?: string | null
@@ -1047,14 +1054,18 @@ export type Database = {
           target_audience?: string | null
           title: string
           updated_at?: string
+          variant_name?: string | null
         }
         Update: {
+          ab_parent_id?: string | null
           created_at?: string
           description?: string | null
           email_sent_at?: string | null
           email_sent_count?: number | null
+          email_template?: string | null
           end_date?: string | null
           id?: string
+          is_ab_test?: boolean | null
           is_active?: boolean | null
           link_text?: string | null
           link_url?: string | null
@@ -1065,8 +1076,17 @@ export type Database = {
           target_audience?: string | null
           title?: string
           updated_at?: string
+          variant_name?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "promotional_banners_ab_parent_id_fkey"
+            columns: ["ab_parent_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_banners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiz_answers: {
         Row: {

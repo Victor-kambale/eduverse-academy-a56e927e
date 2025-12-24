@@ -13,6 +13,7 @@ interface PromoEmailRequest {
   linkUrl?: string;
   linkText?: string;
   endDate?: string;
+  emailTemplate?: string;
 }
 
 serve(async (req) => {
@@ -27,9 +28,9 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { bannerId, promoTitle, promoDescription, linkUrl, linkText, endDate }: PromoEmailRequest = await req.json();
+    const { bannerId, promoTitle, promoDescription, linkUrl, linkText, endDate, emailTemplate }: PromoEmailRequest = await req.json();
 
-    console.log(`Sending promo notification emails for banner: ${bannerId}`);
+    console.log(`Sending promo notification emails for banner: ${bannerId}, template: ${emailTemplate || 'default'}`);
 
     // Get all active newsletter subscribers
     const { data: subscribers, error: subscribersError } = await supabase
@@ -60,13 +61,17 @@ serve(async (req) => {
     const emailList = Array.from(allEmails);
     console.log(`Found ${emailList.length} recipients for promo notification`);
 
-    // Generate email HTML
+    // Get template colors based on template name
+    const templateStyles = getTemplateStyles(emailTemplate || 'default');
+
+    // Generate email HTML with selected template
     const emailHtml = generatePromoEmailHtml({
       title: promoTitle,
       description: promoDescription,
       linkUrl: linkUrl || '/courses',
       linkText: linkText || 'Shop Now',
       endDate,
+      ...templateStyles,
     });
 
     let sentCount = 0;
@@ -123,18 +128,50 @@ serve(async (req) => {
   }
 });
 
+// Template styles based on template name
+function getTemplateStyles(templateName: string): { headerGradient: string; ctaGradient: string } {
+  const templates: Record<string, { headerGradient: string; ctaGradient: string }> = {
+    default: {
+      headerGradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f97316 100%)',
+      ctaGradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+    },
+    christmas: {
+      headerGradient: 'linear-gradient(135deg, #dc2626 0%, #16a34a 100%)',
+      ctaGradient: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+    },
+    newyear: {
+      headerGradient: 'linear-gradient(135deg, #fbbf24 0%, #9333ea 50%, #1d4ed8 100%)',
+      ctaGradient: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+    },
+    minimal: {
+      headerGradient: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+      ctaGradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+    },
+    summer: {
+      headerGradient: 'linear-gradient(135deg, #f97316 0%, #fbbf24 50%, #84cc16 100%)',
+      ctaGradient: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+    },
+  };
+  return templates[templateName] || templates.default;
+}
+
 interface EmailTemplateData {
   title: string;
   description?: string;
   linkUrl: string;
   linkText: string;
   endDate?: string;
+  headerGradient?: string;
+  ctaGradient?: string;
 }
 
 function generatePromoEmailHtml(data: EmailTemplateData): string {
   const endDateText = data.endDate 
     ? `Hurry! This offer ends on ${new Date(data.endDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
     : 'Limited time offer - act now!';
+
+  const headerGradient = data.headerGradient || 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f97316 100%)';
+  const ctaGradient = data.ctaGradient || 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)';
 
   return `
     <!DOCTYPE html>
@@ -147,7 +184,7 @@ function generatePromoEmailHtml(data: EmailTemplateData): string {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: #ffffff;">
         <!-- Header with gradient -->
         <tr>
-          <td style="background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f97316 100%); padding: 40px 24px; text-align: center;">
+          <td style="background: ${headerGradient}; padding: 40px 24px; text-align: center;">
             <h1 style="margin: 0; color: #ffffff; font-size: 32px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
               🎉 Special Offer!
             </h1>
@@ -175,7 +212,7 @@ function generatePromoEmailHtml(data: EmailTemplateData): string {
 
             <!-- CTA Button -->
             <a href="${data.linkUrl}" 
-               style="display: inline-block; background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); color: #ffffff; padding: 18px 40px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 18px; margin: 16px 0; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);">
+               style="display: inline-block; background: ${ctaGradient}; color: #ffffff; padding: 18px 40px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 18px; margin: 16px 0; box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);">
               ${data.linkText} →
             </a>
           </td>
