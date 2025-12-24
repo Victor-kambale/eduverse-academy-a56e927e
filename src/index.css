@@ -289,6 +289,24 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Enhanced smooth scroll for all scrollable elements */
+* {
+  scroll-behavior: smooth;
+}
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Scroll snap for carousels */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+}
+
+.scroll-snap-item {
+  scroll-snap-align: start;
+}
+
 /* Infinite scroll animation */
 @keyframes scroll {
   from {
