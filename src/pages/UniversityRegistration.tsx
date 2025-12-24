@@ -133,6 +133,9 @@ export default function UniversityRegistration() {
     description: '',
     mission_statement: '',
     specializations: [] as string[],
+    
+    // Payment
+    paymentMethod: '',
   });
 
   const [documents, setDocuments] = useState({
@@ -1217,12 +1220,11 @@ export default function UniversityRegistration() {
             <Separator />
 
             <PaymentMethodSelector
-              amount={299}
-              onPaymentComplete={(method) => {
-                toast.success(`Payment successful via ${method}`);
-                handleSubmit();
+              selectedMethod={formData.paymentMethod || ''}
+              onSelect={(method) => {
+                setFormData({ ...formData, paymentMethod: method });
+                toast.success(`Payment method selected: ${method}`);
               }}
-              userType="university"
             />
           </div>
         );

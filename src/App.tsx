@@ -32,6 +32,7 @@ import EmailMarketing from "./pages/admin/EmailMarketing";
 import NewsletterManagement from "./pages/admin/NewsletterManagement";
 import TestingDashboard from "./pages/admin/TestingDashboard";
 import PromoManagement from "./pages/admin/PromoManagement";
+import PromoBannerManagement from "./pages/admin/PromoBannerManagement";
 import LanguageManagement from "./pages/admin/LanguageManagement";
 import TeacherDashboardControl from "./pages/admin/TeacherDashboardControl";
 import StudentDashboardControl from "./pages/admin/StudentDashboardControl";
@@ -39,6 +40,7 @@ import FooterLinksManagement from "./pages/admin/FooterLinksManagement";
 import WithdrawalManagement from "./pages/admin/WithdrawalManagement";
 import RevenueAnalytics from "./pages/admin/RevenueAnalytics";
 import PaymentTesting from "./pages/admin/PaymentTesting";
+import PaymentMethodsAdmin from "./pages/admin/PaymentMethodsAdmin";
 import CertificatesManagement from "./pages/admin/CertificatesManagement";
 import TransfersManagement from "./pages/admin/TransfersManagement";
 import MaintenanceManagement from "./pages/admin/MaintenanceManagement";
@@ -181,6 +183,8 @@ const App = () => (
               <Route path="maintenance" element={<MaintenanceManagement />} />
               <Route path="security" element={<SecurityManagement />} />
               <Route path="withdrawal-process" element={<WithdrawalProcess />} />
+              <Route path="promo-banner" element={<PromoBannerManagement />} />
+              <Route path="payment-methods" element={<PaymentMethodsAdmin />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
