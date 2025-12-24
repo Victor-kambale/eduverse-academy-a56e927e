@@ -16,7 +16,8 @@ import {
   Percent,
   TestTube,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +41,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -54,7 +54,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 // Timezone data
 const timezones = [
@@ -79,25 +80,17 @@ const timezones = [
 
 interface PromoBanner {
   id: string;
-  message: string;
-  discountPercent: number;
-  linkUrl: string;
-  linkText: string;
-  startDate: string;
-  startTime: string;
-  endDate: string;
-  endTime: string;
-  timezone: string;
-  isActive: boolean;
-  sendEmails: boolean;
-  emailSubject: string;
-  emailBody: string;
-  promoType: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'holiday' | 'custom';
-  holidayName?: string;
-  promoCode?: string;
-  backgroundColor?: string;
-  iconEmoji?: string;
-  createdAt: string;
+  title: string;
+  description: string | null;
+  link_url: string | null;
+  link_text: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  is_active: boolean;
+  media_url: string | null;
+  media_type: string;
+  target_audience: string | null;
+  sort_order: number | null;
 }
 
 // Holiday templates for quick promo creation
@@ -117,54 +110,47 @@ const holidayTemplates = [
   { name: 'Holidays', emoji: '🎁', message: 'Holiday Special! Get {discount}% OFF with code', defaultCode: 'HOLIDAYS', bgColor: 'from-red-800 via-green-800 to-red-800' },
 ];
 
-const defaultBanner: Omit<PromoBanner, 'id' | 'createdAt'> = {
-  message: '20% off all Gift Cards for December! 💌 Treat yourself or a loved one this month!',
-  discountPercent: 20,
-  linkUrl: '/gift-cards',
-  linkText: 'Get Your Discount!',
-  startDate: new Date().toISOString().split('T')[0],
-  startTime: '00:00',
-  endDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  endTime: '23:59',
-  timezone: 'UTC',
-  isActive: false,
-  sendEmails: false,
-  emailSubject: '🎁 Special Promotion Just For You!',
-  emailBody: 'Dear Student,\n\nWe have an exciting promotion for you! Don\'t miss out on this limited-time offer.\n\nClick the link below to claim your discount!\n\nBest regards,\nEDUVERSE ACADEMY',
-  promoType: 'custom',
-  holidayName: '',
-  promoCode: '',
-  backgroundColor: 'from-primary via-purple-600 to-accent',
-  iconEmoji: '🎁',
-};
-
 export default function PromoBannerManagement() {
-  const [banners, setBanners] = useState<PromoBanner[]>([
-    {
-      id: '1',
-      ...defaultBanner,
-      createdAt: new Date().toISOString(),
-    },
-  ]);
+  const [banners, setBanners] = useState<PromoBanner[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingBanner, setEditingBanner] = useState<PromoBanner | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [testMode, setTestMode] = useState(false);
   const [livePreview, setLivePreview] = useState<PromoBanner | null>(null);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
+  // Fetch banners from database
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  const fetchBanners = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('promotional_banners')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setBanners(data || []);
+    } catch (error) {
+      console.error('Error fetching banners:', error);
+      toast.error('Failed to load banners');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Calculate countdown for active banner
   useEffect(() => {
-    const activeBanner = banners.find(b => b.isActive);
-    if (!activeBanner) return;
+    const activeBanner = banners.find(b => b.is_active);
+    if (!activeBanner || !activeBanner.end_date) return;
 
     const calculateTimeLeft = () => {
-      const endDateTime = new Date(`${activeBanner.endDate}T${activeBanner.endTime}`);
-      const tz = timezones.find(t => t.code === activeBanner.timezone);
-      const offset = tz ? tz.offset * 60 * 60 * 1000 : 0;
-      const targetTime = endDateTime.getTime() - offset;
-      const difference = targetTime - Date.now();
+      const endDateTime = new Date(activeBanner.end_date!);
+      const difference = endDateTime.getTime() - Date.now();
 
       if (difference > 0) {
         setTimeLeft({
@@ -174,9 +160,7 @@ export default function PromoBannerManagement() {
           seconds: Math.floor((difference / 1000) % 60),
         });
       } else {
-        // Promo ended
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        handlePromoEnd(activeBanner);
       }
     };
 
@@ -185,68 +169,159 @@ export default function PromoBannerManagement() {
     return () => clearInterval(timer);
   }, [banners]);
 
-  const handlePromoEnd = (banner: PromoBanner) => {
-    if (banner.sendEmails) {
-      toast.success('Promotion ended! Sending completion emails to users...');
-    }
-    setBanners(prev => prev.map(b => b.id === banner.id ? { ...b, isActive: false } : b));
-  };
-
   const handleSave = async () => {
+    if (!editingBanner) return;
+    
     setSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setSaving(false);
-    setSaved(true);
-    toast.success('Promo banner saved successfully!');
-    setTimeout(() => setSaved(false), 3000);
-    setShowEditDialog(false);
-    setEditingBanner(null);
-  };
+    try {
+      const bannerData = {
+        title: editingBanner.title,
+        description: editingBanner.description,
+        link_url: editingBanner.link_url,
+        link_text: editingBanner.link_text,
+        start_date: editingBanner.start_date,
+        end_date: editingBanner.end_date,
+        is_active: editingBanner.is_active,
+        media_url: editingBanner.media_url,
+        media_type: editingBanner.media_type,
+        target_audience: editingBanner.target_audience,
+        sort_order: editingBanner.sort_order,
+      };
 
-  const handleToggleActive = (banner: PromoBanner) => {
-    setBanners(prev => prev.map(b => {
-      if (b.id === banner.id) {
-        const newActive = !b.isActive;
-        if (newActive && b.sendEmails) {
-          toast.success('Promotion activated! Sending notification emails to all users...');
-        }
-        return { ...b, isActive: newActive };
+      if (banners.find(b => b.id === editingBanner.id)) {
+        // Update existing
+        const { error } = await supabase
+          .from('promotional_banners')
+          .update(bannerData)
+          .eq('id', editingBanner.id);
+
+        if (error) throw error;
+        
+        // Log audit
+        await supabase.from('audit_logs').insert({
+          action: 'promo_banner_updated',
+          entity_type: 'promotional_banner',
+          entity_id: editingBanner.id,
+          new_value: bannerData,
+        });
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from('promotional_banners')
+          .insert(bannerData);
+
+        if (error) throw error;
+
+        // Log audit
+        await supabase.from('audit_logs').insert({
+          action: 'promo_banner_created',
+          entity_type: 'promotional_banner',
+          new_value: bannerData,
+        });
       }
-      return b;
-    }));
+
+      toast.success('Promo banner saved successfully!');
+      setHasChanges(false);
+      setShowEditDialog(false);
+      setEditingBanner(null);
+      fetchBanners();
+    } catch (error) {
+      console.error('Error saving banner:', error);
+      toast.error('Failed to save banner');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setBanners(prev => prev.filter(b => b.id !== id));
-    toast.success('Promo banner deleted');
+  const handleToggleActive = async (banner: PromoBanner) => {
+    try {
+      const newActive = !banner.is_active;
+      const { error } = await supabase
+        .from('promotional_banners')
+        .update({ is_active: newActive })
+        .eq('id', banner.id);
+
+      if (error) throw error;
+
+      // Log audit
+      await supabase.from('audit_logs').insert({
+        action: newActive ? 'promo_banner_activated' : 'promo_banner_deactivated',
+        entity_type: 'promotional_banner',
+        entity_id: banner.id,
+      });
+
+      toast.success(newActive ? 'Banner activated!' : 'Banner deactivated');
+      fetchBanners();
+    } catch (error) {
+      console.error('Error toggling banner:', error);
+      toast.error('Failed to update banner');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('promotional_banners')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Log audit
+      await supabase.from('audit_logs').insert({
+        action: 'promo_banner_deleted',
+        entity_type: 'promotional_banner',
+        entity_id: id,
+      });
+
+      toast.success('Promo banner deleted');
+      fetchBanners();
+    } catch (error) {
+      console.error('Error deleting banner:', error);
+      toast.error('Failed to delete banner');
+    }
   };
 
   const handleAddNew = () => {
     const newBanner: PromoBanner = {
-      id: Date.now().toString(),
-      ...defaultBanner,
-      createdAt: new Date().toISOString(),
+      id: '',
+      title: '20% off all Gift Cards for December! 💌',
+      description: 'Treat yourself or a loved one this month!',
+      link_url: '/gift-cards',
+      link_text: 'Get Your Discount!',
+      start_date: new Date().toISOString(),
+      end_date: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
+      is_active: false,
+      media_url: null,
+      media_type: 'image',
+      target_audience: 'all',
+      sort_order: 0,
     };
     setEditingBanner(newBanner);
+    setHasChanges(true);
     setShowEditDialog(true);
   };
 
   const handleEdit = (banner: PromoBanner) => {
     setEditingBanner({ ...banner });
+    setHasChanges(false);
     setShowEditDialog(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleFieldChange = (field: keyof PromoBanner, value: any) => {
     if (!editingBanner) return;
-    
-    setBanners(prev => {
-      const exists = prev.find(b => b.id === editingBanner.id);
-      if (exists) {
-        return prev.map(b => b.id === editingBanner.id ? editingBanner : b);
-      }
-      return [...prev, editingBanner];
+    setEditingBanner({ ...editingBanner, [field]: value });
+    setHasChanges(true);
+  };
+
+  const applyHolidayTemplate = (template: typeof holidayTemplates[0], discount: number = 20) => {
+    if (!editingBanner) return;
+    setEditingBanner({
+      ...editingBanner,
+      title: template.message.replace('{discount}', discount.toString()) + ' ' + template.defaultCode,
+      description: `${template.emoji} Use code ${template.defaultCode} at checkout!`,
     });
-    handleSave();
+    setHasChanges(true);
   };
 
   const handleTestPromo = (banner: PromoBanner) => {
@@ -256,6 +331,14 @@ export default function PromoBannerManagement() {
   };
 
   const formatTime = (value: number) => value.toString().padStart(2, '0');
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -271,7 +354,7 @@ export default function PromoBannerManagement() {
       </div>
 
       {/* Live Preview */}
-      {(livePreview || banners.find(b => b.isActive)) && (
+      {(livePreview || banners.find(b => b.is_active)) && (
         <Card className="border-2 border-green-500">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -299,7 +382,7 @@ export default function PromoBannerManagement() {
                 <div className="flex items-center gap-2">
                   <Gift className="h-5 w-5 animate-bounce" />
                   <span className="font-medium">
-                    {(livePreview || banners.find(b => b.isActive))?.message}
+                    {(livePreview || banners.find(b => b.is_active))?.title}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-xs md:text-sm bg-white/20 rounded-full px-3 py-1">
@@ -311,7 +394,7 @@ export default function PromoBannerManagement() {
                 </div>
                 <Button size="sm" className="bg-white text-primary hover:bg-white/90 font-bold">
                   <Gift className="h-4 w-4 mr-1" />
-                  {(livePreview || banners.find(b => b.isActive))?.linkText}
+                  {(livePreview || banners.find(b => b.is_active))?.link_text || 'Get Your Discount!'}
                 </Button>
               </div>
             </motion.div>
@@ -321,102 +404,110 @@ export default function PromoBannerManagement() {
 
       {/* Banner List */}
       <div className="grid gap-4">
-        {banners.map((banner) => (
-          <Card key={banner.id} className={banner.isActive ? 'border-green-500' : ''}>
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Badge variant={banner.isActive ? 'default' : 'secondary'}>
-                      {banner.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                    <Badge variant="outline">{banner.promoType}</Badge>
-                    {banner.sendEmails && (
-                      <Badge variant="outline" className="gap-1">
-                        <Mail className="h-3 w-3" /> Emails Enabled
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="font-medium">{banner.message}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Percent className="h-4 w-4" />
-                      {banner.discountPercent}% off
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {banner.startDate} - {banner.endDate}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {banner.startTime} - {banner.endTime}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Globe className="h-4 w-4" />
-                      {banner.timezone}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleTestPromo(banner)}
-                  >
-                    <TestTube className="h-4 w-4 mr-1" />
-                    Test
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(banner)}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant={banner.isActive ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleToggleActive(banner)}
-                  >
-                    {banner.isActive ? (
-                      <>
-                        <EyeOff className="h-4 w-4 mr-1" />
-                        Turn Off
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4 mr-1" />
-                        Turn On
-                      </>
-                    )}
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Promo Banner?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. The promotional banner will be permanently deleted.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(banner.id)}>
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
+        {banners.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Gift className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-lg font-medium">No promotional banners yet</p>
+              <p className="text-muted-foreground mb-4">Create your first banner to display on the platform</p>
+              <Button onClick={handleAddNew}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Promo
+              </Button>
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          banners.map((banner) => (
+            <Card key={banner.id} className={banner.is_active ? 'border-green-500' : ''}>
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={banner.is_active ? 'default' : 'secondary'}>
+                        {banner.is_active ? 'Active' : 'Inactive'}
+                      </Badge>
+                      <Badge variant="outline">{banner.target_audience || 'all'}</Badge>
+                    </div>
+                    <p className="font-medium">{banner.title}</p>
+                    {banner.description && (
+                      <p className="text-sm text-muted-foreground">{banner.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      {banner.start_date && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(banner.start_date).toLocaleDateString()}
+                        </span>
+                      )}
+                      {banner.end_date && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          Until {new Date(banner.end_date).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleTestPromo(banner)}
+                    >
+                      <TestTube className="h-4 w-4 mr-1" />
+                      Test
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(banner)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant={banner.is_active ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleToggleActive(banner)}
+                    >
+                      {banner.is_active ? (
+                        <>
+                          <EyeOff className="h-4 w-4 mr-1" />
+                          Turn Off
+                        </>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4 mr-1" />
+                          Turn On
+                        </>
+                      )}
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Promo Banner?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. The promotional banner will be permanently deleted.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(banner.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       {/* Edit Dialog */}
@@ -433,346 +524,166 @@ export default function PromoBannerManagement() {
           {editingBanner && (
             <ScrollArea className="max-h-[70vh] pr-4">
               <Tabs defaultValue="content" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="content">Content</TabsTrigger>
-                  <TabsTrigger value="timing">Timing</TabsTrigger>
-                  <TabsTrigger value="email">Email Settings</TabsTrigger>
-                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                  <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                  <TabsTrigger value="templates">Holiday Templates</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="content" className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label>Promo Message</Label>
+                    <Label>Banner Title/Message</Label>
                     <Textarea
-                      value={editingBanner.message}
-                      onChange={(e) => setEditingBanner({ ...editingBanner, message: e.target.value })}
-                      placeholder="Enter your promotional message..."
-                      rows={3}
+                      value={editingBanner.title}
+                      onChange={(e) => handleFieldChange('title', e.target.value)}
+                      placeholder="20% off all Gift Cards for December! 💌"
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Description (Optional)</Label>
+                    <Textarea
+                      value={editingBanner.description || ''}
+                      onChange={(e) => handleFieldChange('description', e.target.value)}
+                      placeholder="Additional details about the promotion"
+                      rows={2}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Discount Percentage</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="100"
-                        value={editingBanner.discountPercent}
-                        onChange={(e) => setEditingBanner({ 
-                          ...editingBanner, 
-                          discountPercent: parseInt(e.target.value) || 0 
-                        })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Promo Type</Label>
-                      <Select
-                        value={editingBanner.promoType}
-                        onValueChange={(value: any) => setEditingBanner({ 
-                          ...editingBanner, 
-                          promoType: value 
-                        })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
-                          <SelectItem value="yearly">Yearly</SelectItem>
-                          <SelectItem value="holiday">Holiday/Event</SelectItem>
-                          <SelectItem value="custom">Custom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {editingBanner.promoType === 'holiday' && (
-                    <div className="space-y-4">
-                      <Label>Select Holiday Template</Label>
-                      <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                        {holidayTemplates.map((holiday) => (
-                          <Button
-                            key={holiday.name}
-                            variant={editingBanner.holidayName === holiday.name ? 'default' : 'outline'}
-                            size="sm"
-                            className="justify-start gap-2"
-                            onClick={() => setEditingBanner({
-                              ...editingBanner,
-                              holidayName: holiday.name,
-                              iconEmoji: holiday.emoji,
-                              message: holiday.message.replace('{discount}', editingBanner.discountPercent.toString()),
-                              promoCode: holiday.defaultCode,
-                              backgroundColor: holiday.bgColor,
-                            })}
-                          >
-                            <span>{holiday.emoji}</span>
-                            <span className="truncate">{holiday.name}</span>
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Promo Code (optional)</Label>
-                      <Input
-                        value={editingBanner.promoCode || ''}
-                        onChange={(e) => setEditingBanner({ ...editingBanner, promoCode: e.target.value.toUpperCase() })}
-                        placeholder="HOLIDAYS"
-                        className="uppercase"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Icon Emoji</Label>
-                      <Input
-                        value={editingBanner.iconEmoji || '🎁'}
-                        onChange={(e) => setEditingBanner({ ...editingBanner, iconEmoji: e.target.value })}
-                        placeholder="🎁"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Button Link URL</Label>
-                      <Input
-                        value={editingBanner.linkUrl}
-                        onChange={(e) => setEditingBanner({ ...editingBanner, linkUrl: e.target.value })}
-                        placeholder="/gift-cards"
-                      />
-                    </div>
-                    <div className="space-y-2">
                       <Label>Button Text</Label>
                       <Input
-                        value={editingBanner.linkText}
-                        onChange={(e) => setEditingBanner({ ...editingBanner, linkText: e.target.value })}
+                        value={editingBanner.link_text || ''}
+                        onChange={(e) => handleFieldChange('link_text', e.target.value)}
                         placeholder="Get Your Discount!"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label>Button Link</Label>
+                      <Input
+                        value={editingBanner.link_url || ''}
+                        onChange={(e) => handleFieldChange('link_url', e.target.value)}
+                        placeholder="/gift-cards"
+                      />
+                    </div>
                   </div>
-                </TabsContent>
 
-                <TabsContent value="timing" className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label>Timezone</Label>
+                    <Label>Target Audience</Label>
                     <Select
-                      value={editingBanner.timezone}
-                      onValueChange={(value) => setEditingBanner({ ...editingBanner, timezone: value })}
+                      value={editingBanner.target_audience || 'all'}
+                      onValueChange={(value) => handleFieldChange('target_audience', value)}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {timezones.map((tz) => (
-                          <SelectItem key={tz.code} value={tz.code}>
-                            {tz.name} (UTC{tz.offset >= 0 ? '+' : ''}{tz.offset})
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="all">All Users</SelectItem>
+                        <SelectItem value="students">Students Only</SelectItem>
+                        <SelectItem value="teachers">Teachers Only</SelectItem>
+                        <SelectItem value="new">New Users</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                </TabsContent>
 
+                <TabsContent value="schedule" className="space-y-4 mt-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-4">
-                      <h4 className="font-medium">Start Time</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-2">
-                          <Label>Date</Label>
-                          <Input
-                            type="date"
-                            value={editingBanner.startDate}
-                            onChange={(e) => setEditingBanner({ ...editingBanner, startDate: e.target.value })}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Time</Label>
-                          <Input
-                            type="time"
-                            value={editingBanner.startTime}
-                            onChange={(e) => setEditingBanner({ ...editingBanner, startTime: e.target.value })}
-                          />
-                        </div>
-                      </div>
+                    <div className="space-y-2">
+                      <Label>Start Date</Label>
+                      <Input
+                        type="datetime-local"
+                        value={editingBanner.start_date?.slice(0, 16) || ''}
+                        onChange={(e) => handleFieldChange('start_date', new Date(e.target.value).toISOString())}
+                      />
                     </div>
-                    <div className="space-y-4">
-                      <h4 className="font-medium">End Time</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-2">
-                          <Label>Date</Label>
-                          <Input
-                            type="date"
-                            value={editingBanner.endDate}
-                            onChange={(e) => setEditingBanner({ ...editingBanner, endDate: e.target.value })}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Time</Label>
-                          <Input
-                            type="time"
-                            value={editingBanner.endTime}
-                            onChange={(e) => setEditingBanner({ ...editingBanner, endTime: e.target.value })}
-                          />
-                        </div>
-                      </div>
+                    <div className="space-y-2">
+                      <Label>End Date</Label>
+                      <Input
+                        type="datetime-local"
+                        value={editingBanner.end_date?.slice(0, 16) || ''}
+                        onChange={(e) => handleFieldChange('end_date', new Date(e.target.value).toISOString())}
+                      />
                     </div>
                   </div>
 
-                  <Card className="bg-muted/50">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 text-sm">
-                        <AlertCircle className="h-4 w-4 text-amber-500" />
-                        <span>
-                          The countdown timer will display real-time based on the selected timezone. 
-                          When it reaches 0, the promotion will automatically end.
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="email" className="space-y-4 mt-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <Label>Send Email Notifications</Label>
+                      <p className="font-medium">Active Status</p>
                       <p className="text-sm text-muted-foreground">
-                        Notify users when promotion starts and ends
+                        Enable to display banner on the platform
                       </p>
                     </div>
                     <Switch
-                      checked={editingBanner.sendEmails}
-                      onCheckedChange={(checked) => setEditingBanner({ 
-                        ...editingBanner, 
-                        sendEmails: checked 
-                      })}
+                      checked={editingBanner.is_active}
+                      onCheckedChange={(checked) => handleFieldChange('is_active', checked)}
                     />
                   </div>
-
-                  <Separator />
-
-                  {editingBanner.sendEmails && (
-                    <>
-                      <div className="space-y-2">
-                        <Label>Email Subject</Label>
-                        <Input
-                          value={editingBanner.emailSubject}
-                          onChange={(e) => setEditingBanner({ 
-                            ...editingBanner, 
-                            emailSubject: e.target.value 
-                          })}
-                          placeholder="🎁 Special Promotion Just For You!"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Email Body</Label>
-                        <Textarea
-                          value={editingBanner.emailBody}
-                          onChange={(e) => setEditingBanner({ 
-                            ...editingBanner, 
-                            emailBody: e.target.value 
-                          })}
-                          rows={8}
-                          placeholder="Enter email content..."
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Use placeholders: {'{name}'}, {'{discount}'}, {'{link}'}, {'{end_date}'}
-                        </p>
-                      </div>
-                    </>
-                  )}
                 </TabsContent>
 
-                <TabsContent value="preview" className="space-y-4 mt-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Banner Preview</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className={`bg-gradient-to-r ${editingBanner.backgroundColor || 'from-primary via-purple-600 to-accent'} text-white py-3 px-4 rounded-lg`}>
-                        <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl animate-bounce">{editingBanner.iconEmoji || '🎁'}</span>
-                            <span className="font-medium">{editingBanner.message}</span>
-                            {editingBanner.promoCode && (
-                              <span className="bg-white/30 px-2 py-1 rounded font-mono font-bold">
-                                {editingBanner.promoCode}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 text-xs bg-white/20 rounded-full px-3 py-1">
-                            <Timer className="h-4 w-4" />
-                            <span>Ends in</span>
-                            <span className="font-mono font-bold">0d : 00h : 00m : 00s</span>
-                          </div>
-                          <Button size="sm" className="bg-white text-primary hover:bg-white/90 font-bold">
-                            {editingBanner.linkText}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {editingBanner.sendEmails && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Email Preview</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="border rounded-lg p-4 space-y-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Badge variant="outline">Subject:</Badge>
-                            <span>{editingBanner.emailSubject}</span>
-                          </div>
-                          <Separator />
-                          <div className="whitespace-pre-wrap text-sm">
-                            {editingBanner.emailBody}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                <TabsContent value="templates" className="space-y-4 mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Click a template to apply it to your banner
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {holidayTemplates.map((template) => (
+                      <Button
+                        key={template.name}
+                        variant="outline"
+                        className="h-auto p-4 flex flex-col items-center gap-2"
+                        onClick={() => applyHolidayTemplate(template)}
+                      >
+                        <span className="text-2xl">{template.emoji}</span>
+                        <span className="text-sm font-medium">{template.name}</span>
+                        <span className="text-xs text-muted-foreground">{template.defaultCode}</span>
+                      </Button>
+                    ))}
+                  </div>
                 </TabsContent>
               </Tabs>
 
-              <div className="flex justify-end gap-2 mt-6 pt-4 border-t sticky bottom-0 bg-background">
-                <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-                  Cancel
-                </Button>
-                <AnimatePresence mode="wait">
-                  {saved ? (
-                    <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.8, opacity: 0 }}
-                    >
-                      <Button className="bg-green-500 hover:bg-green-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Saved!
-                      </Button>
-                    </motion.div>
-                  ) : (
-                    <Button onClick={handleSaveEdit} disabled={saving}>
-                      {saving ? (
-                        <>
-                          <span className="animate-spin mr-2">⏳</span>
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Changes
-                        </>
-                      )}
+              <Separator className="my-6" />
+
+              {/* Preview */}
+              <div className="space-y-2">
+                <Label>Preview</Label>
+                <div className="bg-gradient-to-r from-primary via-purple-600 to-accent text-white py-3 px-4 rounded-lg">
+                  <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Gift className="h-5 w-5" />
+                      <span className="font-medium">{editingBanner.title}</span>
+                    </div>
+                    <Button size="sm" className="bg-white text-primary hover:bg-white/90 font-bold">
+                      {editingBanner.link_text || 'Get Your Discount!'}
                     </Button>
-                  )}
-                </AnimatePresence>
+                  </div>
+                </div>
               </div>
             </ScrollArea>
           )}
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            {hasChanges && (
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
