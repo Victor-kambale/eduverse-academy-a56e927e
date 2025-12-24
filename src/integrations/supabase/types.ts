@@ -967,10 +967,56 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_analytics: {
+        Row: {
+          banner_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          ip_address: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          banner_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          banner_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_analytics_banner_id_fkey"
+            columns: ["banner_id"]
+            isOneToOne: false
+            referencedRelation: "promotional_banners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       promotional_banners: {
         Row: {
           created_at: string
           description: string | null
+          email_sent_at: string | null
+          email_sent_count: number | null
           end_date: string | null
           id: string
           is_active: boolean | null
@@ -987,6 +1033,8 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          email_sent_at?: string | null
+          email_sent_count?: number | null
           end_date?: string | null
           id?: string
           is_active?: boolean | null
@@ -1003,6 +1051,8 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          email_sent_at?: string | null
+          email_sent_count?: number | null
           end_date?: string | null
           id?: string
           is_active?: boolean | null

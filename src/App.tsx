@@ -52,6 +52,7 @@ import RoleManagement from "./pages/admin/RoleManagement";
 import AuditLogs from "./pages/admin/AuditLogs";
 import TestimonialsManagement from "./pages/admin/TestimonialsManagement";
 import Admin2FASettings from "./pages/admin/Admin2FASettings";
+import PromoAnalytics from "./pages/admin/PromoAnalytics";
 import TeacherRegistration from "./pages/TeacherRegistration";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import TeacherChat from "./pages/teacher/TeacherChat";
@@ -203,6 +204,7 @@ const App = () => (
               <Route path="audit-logs" element={<AuditLogs />} />
               <Route path="testimonials" element={<TestimonialsManagement />} />
               <Route path="2fa-settings" element={<Admin2FASettings />} />
+              <Route path="promo-analytics" element={<PromoAnalytics />} />
             </Route>
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
