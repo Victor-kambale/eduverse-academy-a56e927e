@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import ProtectedAdminRoute from "@/components/ProtectedAdminRoute";
+import ProtectedTeacherRoute from "@/components/ProtectedTeacherRoute";
+import ProtectedUniversityRoute from "@/components/ProtectedUniversityRoute";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -127,17 +129,17 @@ const App = () => (
             <Route
               path="/teacher/dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedTeacherRoute>
                   <TeacherDashboard />
-                </ProtectedRoute>
+                </ProtectedTeacherRoute>
               }
             />
             <Route
               path="/teacher/chat"
               element={
-                <ProtectedRoute>
+                <ProtectedTeacherRoute>
                   <TeacherChat />
-                </ProtectedRoute>
+                </ProtectedTeacherRoute>
               }
             />
             
@@ -153,9 +155,9 @@ const App = () => (
             <Route
               path="/university/dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedUniversityRoute>
                   <UniversityDashboard />
-                </ProtectedRoute>
+                </ProtectedUniversityRoute>
               }
             />
             <Route

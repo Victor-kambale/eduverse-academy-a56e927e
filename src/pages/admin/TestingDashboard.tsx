@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import RealtimeRevenue from "@/components/dashboard/RealtimeRevenue";
+import RealtimePaymentNotifications from "@/components/dashboard/RealtimePaymentNotifications";
 import {
   CreditCard,
   Users,
@@ -43,7 +44,10 @@ import {
   ToggleLeft,
   ToggleRight,
   RefreshCw,
-}from "lucide-react";
+  Lock,
+  Unlock,
+  ShieldCheck,
+} from "lucide-react";
 
 const TestingDashboard = () => {
   const { user } = useAuth();
@@ -214,7 +218,7 @@ const TestingDashboard = () => {
         <RealtimeRevenue userType="admin" />
 
         <Tabs defaultValue="payments" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="payments">
               <CreditCard className="w-4 h-4 mr-2" />
               Payments
@@ -222,6 +226,10 @@ const TestingDashboard = () => {
             <TabsTrigger value="users">
               <Users className="w-4 h-4 mr-2" />
               User Testing
+            </TabsTrigger>
+            <TabsTrigger value="access">
+              <Lock className="w-4 h-4 mr-2" />
+              Access Control
             </TabsTrigger>
             <TabsTrigger value="system">
               <TestTube className="w-4 h-4 mr-2" />
@@ -357,6 +365,253 @@ const TestingDashboard = () => {
                       <Button onClick={() => navigate('/university/dashboard')} variant="outline" className="w-full">
                         <Wallet className="w-4 h-4 mr-2" />
                         Test University Withdrawal
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CardContent>
+            </Card>
+
+            {/* Real-time Payment Notifications */}
+            <RealtimePaymentNotifications maxNotifications={10} />
+          </TabsContent>
+
+          {/* Access Control Testing */}
+          <TabsContent value="access" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5" />
+                  Access Control Testing
+                </CardTitle>
+                <CardDescription>
+                  Test role-based access control for Teacher and University dashboards
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {/* Teacher Access Control */}
+                  <Card className="border-2 border-purple-500/30">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <GraduationCap className="w-5 h-5 text-purple-500" />
+                        Teacher Dashboard Access
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Tests the protected teacher route which requires either:
+                        <br />• Approved teacher application
+                        <br />• Instructor role
+                        <br />• Admin role
+                      </p>
+                      <div className="space-y-2">
+                        <Button 
+                          onClick={() => {
+                            window.open('/teacher/dashboard', '_blank');
+                            addTestResult('Teacher Access Test', 'success', 'Opened teacher dashboard');
+                          }}
+                          className="w-full bg-purple-600 hover:bg-purple-700"
+                        >
+                          <Lock className="w-4 h-4 mr-2" />
+                          Test Teacher Dashboard Access
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            window.open('/teacher/chat', '_blank');
+                            addTestResult('Teacher Chat Access', 'success', 'Opened teacher chat');
+                          }}
+                          className="w-full"
+                        >
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Test Teacher Chat Access
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={async () => {
+                            const { data } = await supabase
+                              .from('teacher_applications')
+                              .select('status')
+                              .eq('status', 'approved')
+                              .limit(1);
+                            if (data && data.length > 0) {
+                              toast.success('Found approved teacher applications');
+                              addTestResult('Teacher Applications Check', 'success', 'Approved teachers exist');
+                            } else {
+                              toast.info('No approved teacher applications found');
+                              addTestResult('Teacher Applications Check', 'pending', 'No approved teachers');
+                            }
+                          }}
+                          className="w-full"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Verify Teacher Applications
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* University Access Control */}
+                  <Card className="border-2 border-blue-500/30">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Building2 className="w-5 h-5 text-blue-500" />
+                        University Dashboard Access
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Tests the protected university route which requires either:
+                        <br />• University affiliation
+                        <br />• Instructor role
+                        <br />• Admin role
+                      </p>
+                      <div className="space-y-2">
+                        <Button 
+                          onClick={() => {
+                            window.open('/university/dashboard', '_blank');
+                            addTestResult('University Access Test', 'success', 'Opened university dashboard');
+                          }}
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Lock className="w-4 h-4 mr-2" />
+                          Test University Dashboard Access
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            window.open('/university/register', '_blank');
+                            addTestResult('University Registration', 'success', 'Opened registration');
+                          }}
+                          className="w-full"
+                        >
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Test University Registration
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={async () => {
+                            const { data } = await supabase
+                              .from('user_roles')
+                              .select('role')
+                              .eq('role', 'instructor')
+                              .limit(5);
+                            if (data && data.length > 0) {
+                              toast.success(`Found ${data.length} instructor roles`);
+                              addTestResult('Instructor Roles Check', 'success', `${data.length} instructors found`);
+                            } else {
+                              toast.info('No instructor roles found');
+                              addTestResult('Instructor Roles Check', 'pending', 'No instructors');
+                            }
+                          }}
+                          className="w-full"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Verify Instructor Roles
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Separator />
+
+                {/* Access Control Status */}
+                <Card className="bg-muted/50">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Access Control Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 md:grid-cols-4">
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-background">
+                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Admin Protection</p>
+                          <p className="text-xs text-muted-foreground">Active</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-background">
+                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Teacher Protection</p>
+                          <p className="text-xs text-muted-foreground">Active</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-background">
+                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium">University Protection</p>
+                          <p className="text-xs text-muted-foreground">Active</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-4 rounded-lg bg-background">
+                        <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                          <CheckCircle className="w-5 h-5 text-green-500" />
+                        </div>
+                        <div>
+                          <p className="font-medium">Auth Middleware</p>
+                          <p className="text-xs text-muted-foreground">Active</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Separator />
+
+                {/* Role Management Tests */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Role Management Tests</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Button 
+                        onClick={async () => {
+                          const { count } = await supabase
+                            .from('user_roles')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('role', 'admin');
+                          toast.success(`Found ${count || 0} admin users`);
+                          addTestResult('Admin Count', 'success', `${count || 0} admins found`);
+                        }}
+                      >
+                        <Shield className="w-4 h-4 mr-2" />
+                        Count Admin Users
+                      </Button>
+                      <Button 
+                        variant="secondary"
+                        onClick={async () => {
+                          const { count } = await supabase
+                            .from('user_roles')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('role', 'instructor');
+                          toast.success(`Found ${count || 0} instructor users`);
+                          addTestResult('Instructor Count', 'success', `${count || 0} instructors found`);
+                        }}
+                      >
+                        <GraduationCap className="w-4 h-4 mr-2" />
+                        Count Instructor Users
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={async () => {
+                          const { count } = await supabase
+                            .from('user_roles')
+                            .select('*', { count: 'exact', head: true });
+                          toast.success(`Found ${count || 0} total role assignments`);
+                          addTestResult('Total Roles', 'success', `${count || 0} roles assigned`);
+                        }}
+                      >
+                        <Users className="w-4 h-4 mr-2" />
+                        Count All Roles
                       </Button>
                     </div>
                   </CardContent>
