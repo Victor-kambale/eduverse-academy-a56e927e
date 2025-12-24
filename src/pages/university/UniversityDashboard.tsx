@@ -54,6 +54,8 @@ import { TransactionHistory } from '@/components/withdrawal/TransactionHistory';
 import { InstructorInvitation } from '@/components/university/InstructorInvitation';
 import { BulkCourseImport } from '@/components/university/BulkCourseImport';
 import { toast } from 'sonner';
+import DashboardChatbot from '@/components/chatbot/DashboardChatbot';
+import RealtimeRevenue from '@/components/dashboard/RealtimeRevenue';
 
 interface Instructor {
   id: string;
@@ -748,6 +750,9 @@ export default function UniversityDashboard() {
           </Tabs>
         </div>
       </ScrollArea>
+      
+      {/* Dashboard Chatbot */}
+      <DashboardChatbot dashboardType="university" userId={user?.id} />
     </Layout>
   );
 }
