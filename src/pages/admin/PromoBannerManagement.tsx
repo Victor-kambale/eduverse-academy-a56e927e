@@ -92,9 +92,30 @@ interface PromoBanner {
   sendEmails: boolean;
   emailSubject: string;
   emailBody: string;
-  promoType: 'daily' | 'monthly' | 'yearly' | 'custom';
+  promoType: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'holiday' | 'custom';
+  holidayName?: string;
+  promoCode?: string;
+  backgroundColor?: string;
+  iconEmoji?: string;
   createdAt: string;
 }
+
+// Holiday templates for quick promo creation
+const holidayTemplates = [
+  { name: 'Christmas', emoji: '🎄', message: 'Christmas Special! Get {discount}% OFF with code', defaultCode: 'XMAS', bgColor: 'from-red-600 via-green-600 to-red-600' },
+  { name: 'New Year', emoji: '🎉', message: 'New Year Sale! Start fresh with {discount}% OFF', defaultCode: 'NEWYEAR', bgColor: 'from-yellow-500 via-purple-600 to-blue-600' },
+  { name: 'Valentine', emoji: '💕', message: "Valentine's Day! Spread love with {discount}% OFF", defaultCode: 'LOVE', bgColor: 'from-pink-500 via-red-500 to-pink-500' },
+  { name: 'Easter', emoji: '🐰', message: 'Easter Special! Hop to {discount}% savings', defaultCode: 'EASTER', bgColor: 'from-purple-400 via-pink-400 to-yellow-400' },
+  { name: 'Summer', emoji: '☀️', message: 'Summer Sale! Hot deals with {discount}% OFF', defaultCode: 'SUMMER', bgColor: 'from-orange-500 via-yellow-500 to-orange-500' },
+  { name: 'Halloween', emoji: '🎃', message: 'Spooky Savings! {discount}% OFF everything', defaultCode: 'SPOOKY', bgColor: 'from-orange-600 via-black to-purple-800' },
+  { name: 'Black Friday', emoji: '🏷️', message: 'Black Friday Madness! {discount}% OFF sitewide', defaultCode: 'BLACKFRI', bgColor: 'from-black via-gray-800 to-black' },
+  { name: 'Cyber Monday', emoji: '💻', message: 'Cyber Monday Deals! {discount}% OFF all courses', defaultCode: 'CYBER', bgColor: 'from-cyan-500 via-blue-600 to-cyan-500' },
+  { name: 'Thanksgiving', emoji: '🦃', message: 'Thanksgiving! Be thankful with {discount}% OFF', defaultCode: 'THANKS', bgColor: 'from-orange-600 via-amber-600 to-orange-600' },
+  { name: 'Independence Day', emoji: '🎆', message: 'Freedom Sale! Celebrate with {discount}% OFF', defaultCode: 'FREEDOM', bgColor: 'from-red-600 via-white to-blue-600' },
+  { name: 'Labor Day', emoji: '👷', message: 'Labor Day Sale! Work smart with {discount}% OFF', defaultCode: 'LABOR', bgColor: 'from-blue-700 via-red-600 to-blue-700' },
+  { name: 'Back to School', emoji: '📚', message: 'Back to School! Study smart with {discount}% OFF', defaultCode: 'SCHOOL', bgColor: 'from-green-600 via-blue-600 to-green-600' },
+  { name: 'Holidays', emoji: '🎁', message: 'Holiday Special! Get {discount}% OFF with code', defaultCode: 'HOLIDAYS', bgColor: 'from-red-800 via-green-800 to-red-800' },
+];
 
 const defaultBanner: Omit<PromoBanner, 'id' | 'createdAt'> = {
   message: '20% off all Gift Cards for December! 💌 Treat yourself or a loved one this month!',
@@ -111,6 +132,10 @@ const defaultBanner: Omit<PromoBanner, 'id' | 'createdAt'> = {
   emailSubject: '🎁 Special Promotion Just For You!',
   emailBody: 'Dear Student,\n\nWe have an exciting promotion for you! Don\'t miss out on this limited-time offer.\n\nClick the link below to claim your discount!\n\nBest regards,\nEDUVERSE ACADEMY',
   promoType: 'custom',
+  holidayName: '',
+  promoCode: '',
+  backgroundColor: 'from-primary via-purple-600 to-accent',
+  iconEmoji: '🎁',
 };
 
 export default function PromoBannerManagement() {
@@ -454,11 +479,60 @@ export default function PromoBannerManagement() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="daily">Daily</SelectItem>
+                          <SelectItem value="weekly">Weekly</SelectItem>
                           <SelectItem value="monthly">Monthly</SelectItem>
                           <SelectItem value="yearly">Yearly</SelectItem>
+                          <SelectItem value="holiday">Holiday/Event</SelectItem>
                           <SelectItem value="custom">Custom</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+
+                  {editingBanner.promoType === 'holiday' && (
+                    <div className="space-y-4">
+                      <Label>Select Holiday Template</Label>
+                      <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                        {holidayTemplates.map((holiday) => (
+                          <Button
+                            key={holiday.name}
+                            variant={editingBanner.holidayName === holiday.name ? 'default' : 'outline'}
+                            size="sm"
+                            className="justify-start gap-2"
+                            onClick={() => setEditingBanner({
+                              ...editingBanner,
+                              holidayName: holiday.name,
+                              iconEmoji: holiday.emoji,
+                              message: holiday.message.replace('{discount}', editingBanner.discountPercent.toString()),
+                              promoCode: holiday.defaultCode,
+                              backgroundColor: holiday.bgColor,
+                            })}
+                          >
+                            <span>{holiday.emoji}</span>
+                            <span className="truncate">{holiday.name}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Promo Code (optional)</Label>
+                      <Input
+                        value={editingBanner.promoCode || ''}
+                        onChange={(e) => setEditingBanner({ ...editingBanner, promoCode: e.target.value.toUpperCase() })}
+                        placeholder="HOLIDAYS"
+                        className="uppercase"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Icon Emoji</Label>
+                      <Input
+                        value={editingBanner.iconEmoji || '🎁'}
+                        onChange={(e) => setEditingBanner({ ...editingBanner, iconEmoji: e.target.value })}
+                        placeholder="🎁"
+                      />
                     </div>
                   </div>
 
@@ -618,11 +692,16 @@ export default function PromoBannerManagement() {
                       <CardTitle>Banner Preview</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="bg-gradient-to-r from-primary via-purple-600 to-accent text-white py-3 px-4 rounded-lg">
+                      <div className={`bg-gradient-to-r ${editingBanner.backgroundColor || 'from-primary via-purple-600 to-accent'} text-white py-3 px-4 rounded-lg`}>
                         <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
                           <div className="flex items-center gap-2">
-                            <Gift className="h-5 w-5 animate-bounce" />
+                            <span className="text-xl animate-bounce">{editingBanner.iconEmoji || '🎁'}</span>
                             <span className="font-medium">{editingBanner.message}</span>
+                            {editingBanner.promoCode && (
+                              <span className="bg-white/30 px-2 py-1 rounded font-mono font-bold">
+                                {editingBanner.promoCode}
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-1 text-xs bg-white/20 rounded-full px-3 py-1">
                             <Timer className="h-4 w-4" />
@@ -630,7 +709,6 @@ export default function PromoBannerManagement() {
                             <span className="font-mono font-bold">0d : 00h : 00m : 00s</span>
                           </div>
                           <Button size="sm" className="bg-white text-primary hover:bg-white/90 font-bold">
-                            <Gift className="h-4 w-4 mr-1" />
                             {editingBanner.linkText}
                           </Button>
                         </div>

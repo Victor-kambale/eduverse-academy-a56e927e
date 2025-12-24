@@ -31,6 +31,10 @@ import {
   Wrench,
   ArrowRightLeft,
   FlaskConical,
+  Star,
+  ShieldCheck,
+  ScrollText,
+  UserCog,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,6 +85,7 @@ const navSections: NavSection[] = [
     icon: Monitor,
     items: [
       { title: 'Promos', url: '/admin/promos', icon: Newspaper },
+      { title: 'Testimonials', url: '/admin/testimonials', icon: Star },
       { title: 'Footer Links', url: '/admin/footer-links', icon: LinkIcon },
       { title: 'Languages', url: '/admin/languages', icon: Globe },
     ],
@@ -140,6 +145,9 @@ const navSections: NavSection[] = [
       { title: 'Settings', url: '/admin/settings', icon: Settings },
       { title: 'Maintenance', url: '/admin/maintenance', icon: Wrench },
       { title: 'Security', url: '/admin/security', icon: Shield },
+      { title: '2FA Settings', url: '/admin/2fa', icon: ShieldCheck },
+      { title: 'Audit Logs', url: '/admin/audit-logs', icon: ScrollText },
+      { title: 'Role Management', url: '/admin/roles', icon: UserCog },
     ],
   },
 ];
