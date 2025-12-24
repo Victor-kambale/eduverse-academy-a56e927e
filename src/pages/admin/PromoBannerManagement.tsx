@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Gift, 
   Timer, 
@@ -9,15 +9,14 @@ import {
   Plus, 
   Eye, 
   EyeOff,
-  Globe,
   Mail,
   Calendar,
   Clock,
-  Percent,
   TestTube,
-  CheckCircle,
-  AlertCircle,
-  Loader2
+  Loader2,
+  Upload,
+  Image as ImageIcon,
+  BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,27 +55,8 @@ import {
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-
-// Timezone data
-const timezones = [
-  { code: 'UTC', name: 'UTC (Coordinated Universal Time)', offset: 0 },
-  { code: 'America/New_York', name: 'Eastern Time (US)', offset: -5 },
-  { code: 'America/Chicago', name: 'Central Time (US)', offset: -6 },
-  { code: 'America/Denver', name: 'Mountain Time (US)', offset: -7 },
-  { code: 'America/Los_Angeles', name: 'Pacific Time (US)', offset: -8 },
-  { code: 'Europe/London', name: 'London (GMT)', offset: 0 },
-  { code: 'Europe/Paris', name: 'Paris (CET)', offset: 1 },
-  { code: 'Europe/Berlin', name: 'Berlin (CET)', offset: 1 },
-  { code: 'Asia/Tokyo', name: 'Tokyo (JST)', offset: 9 },
-  { code: 'Asia/Shanghai', name: 'Shanghai (CST)', offset: 8 },
-  { code: 'Asia/Dubai', name: 'Dubai (GST)', offset: 4 },
-  { code: 'Asia/Singapore', name: 'Singapore (SGT)', offset: 8 },
-  { code: 'Australia/Sydney', name: 'Sydney (AEST)', offset: 10 },
-  { code: 'Africa/Lagos', name: 'Lagos (WAT)', offset: 1 },
-  { code: 'Africa/Johannesburg', name: 'Johannesburg (SAST)', offset: 2 },
-  { code: 'Africa/Cairo', name: 'Cairo (EET)', offset: 2 },
-  { code: 'Africa/Nairobi', name: 'Nairobi (EAT)', offset: 3 },
-];
+import { useDropzone } from 'react-dropzone';
+import { Link } from 'react-router-dom';
 
 interface PromoBanner {
   id: string;
@@ -120,6 +100,8 @@ export default function PromoBannerManagement() {
   const [testMode, setTestMode] = useState(false);
   const [livePreview, setLivePreview] = useState<PromoBanner | null>(null);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [sendingEmails, setSendingEmails] = useState(false);
 
   // Fetch banners from database
   useEffect(() => {
@@ -168,6 +150,49 @@ export default function PromoBannerManagement() {
     const timer = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(timer);
   }, [banners]);
+
+  // Image upload handler
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (!editingBanner || acceptedFiles.length === 0) return;
+    
+    const file = acceptedFiles[0];
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `promo-${Date.now()}.${fileExt}`;
+      const filePath = `banners/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('course-media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('course-media')
+        .getPublicUrl(filePath);
+
+      handleFieldChange('media_url', publicUrl);
+      handleFieldChange('media_type', 'image');
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  }, [editingBanner]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] },
+    maxFiles: 1,
+  });
 
   const handleSave = async () => {
     if (!editingBanner) return;
@@ -230,6 +255,32 @@ export default function PromoBannerManagement() {
       toast.error('Failed to save banner');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendEmails = async (banner: PromoBanner) => {
+    setSendingEmails(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-promo-notification', {
+        body: {
+          bannerId: banner.id,
+          promoTitle: banner.title,
+          promoDescription: banner.description,
+          linkUrl: banner.link_url,
+          linkText: banner.link_text,
+          endDate: banner.end_date,
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success(`Promotional emails sent to ${data.sentCount || 0} users!`);
+      fetchBanners();
+    } catch (error) {
+      console.error('Error sending emails:', error);
+      toast.error('Failed to send promotional emails');
+    } finally {
+      setSendingEmails(false);
     }
   };
 
@@ -347,10 +398,18 @@ export default function PromoBannerManagement() {
           <h1 className="text-3xl font-bold">Promo Banner Management</h1>
           <p className="text-muted-foreground">Create and manage promotional banners with countdown timers</p>
         </div>
-        <Button onClick={handleAddNew}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Promo
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/admin/promo-analytics">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              View Analytics
+            </Link>
+          </Button>
+          <Button onClick={handleAddNew}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Promo
+          </Button>
+        </div>
       </div>
 
       {/* Live Preview */}
@@ -421,33 +480,60 @@ export default function PromoBannerManagement() {
             <Card key={banner.id} className={banner.is_active ? 'border-green-500' : ''}>
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={banner.is_active ? 'default' : 'secondary'}>
-                        {banner.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                      <Badge variant="outline">{banner.target_audience || 'all'}</Badge>
-                    </div>
-                    <p className="font-medium">{banner.title}</p>
-                    {banner.description && (
-                      <p className="text-sm text-muted-foreground">{banner.description}</p>
+                  <div className="flex gap-4">
+                    {/* Banner Image Preview */}
+                    {banner.media_url && (
+                      <div className="w-20 h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                        <img 
+                          src={banner.media_url} 
+                          alt="Banner" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     )}
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      {banner.start_date && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(banner.start_date).toLocaleDateString()}
-                        </span>
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={banner.is_active ? 'default' : 'secondary'}>
+                          {banner.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                        <Badge variant="outline">{banner.target_audience || 'all'}</Badge>
+                      </div>
+                      <p className="font-medium">{banner.title}</p>
+                      {banner.description && (
+                        <p className="text-sm text-muted-foreground">{banner.description}</p>
                       )}
-                      {banner.end_date && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          Until {new Date(banner.end_date).toLocaleDateString()}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        {banner.start_date && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(banner.start_date).toLocaleDateString()}
+                          </span>
+                        )}
+                        {banner.end_date && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            Until {new Date(banner.end_date).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSendEmails(banner)}
+                      disabled={sendingEmails}
+                    >
+                      {sendingEmails ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Mail className="h-4 w-4 mr-1" />
+                          Send Emails
+                        </>
+                      )}
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -524,10 +610,11 @@ export default function PromoBannerManagement() {
           {editingBanner && (
             <ScrollArea className="max-h-[70vh] pr-4">
               <Tabs defaultValue="content" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="content">Content</TabsTrigger>
+                  <TabsTrigger value="media">Media</TabsTrigger>
                   <TabsTrigger value="schedule">Schedule</TabsTrigger>
-                  <TabsTrigger value="templates">Holiday Templates</TabsTrigger>
+                  <TabsTrigger value="templates">Templates</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="content" className="space-y-4 mt-4">
@@ -587,6 +674,61 @@ export default function PromoBannerManagement() {
                       </SelectContent>
                     </Select>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="media" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label>Banner Image</Label>
+                    <div
+                      {...getRootProps()}
+                      className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                        isDragActive ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary'
+                      }`}
+                    >
+                      <input {...getInputProps()} />
+                      {uploadingImage ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          <p className="text-sm text-muted-foreground">Uploading...</p>
+                        </div>
+                      ) : editingBanner.media_url ? (
+                        <div className="space-y-4">
+                          <img 
+                            src={editingBanner.media_url} 
+                            alt="Banner preview" 
+                            className="max-h-40 mx-auto rounded-lg"
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Drop a new image to replace
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <Upload className="h-8 w-8 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">
+                            Drag & drop an image or click to browse
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            PNG, JPG, GIF, WebP up to 10MB
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {editingBanner.media_url && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => {
+                        handleFieldChange('media_url', null);
+                        handleFieldChange('media_type', 'none');
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remove Image
+                    </Button>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="schedule" className="space-y-4 mt-4">
