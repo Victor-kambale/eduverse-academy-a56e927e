@@ -1767,6 +1767,9 @@ export type Database = {
           created_at: string
           document_key: string
           document_label: string
+          expiry_date: string | null
+          expiry_notified_at: string | null
+          extracted_data: Json | null
           id: string
           status: string
           updated_at: string
@@ -1779,6 +1782,9 @@ export type Database = {
           created_at?: string
           document_key: string
           document_label: string
+          expiry_date?: string | null
+          expiry_notified_at?: string | null
+          extracted_data?: Json | null
           id?: string
           status?: string
           updated_at?: string
@@ -1791,6 +1797,9 @@ export type Database = {
           created_at?: string
           document_key?: string
           document_label?: string
+          expiry_date?: string | null
+          expiry_notified_at?: string | null
+          extracted_data?: Json | null
           id?: string
           status?: string
           updated_at?: string

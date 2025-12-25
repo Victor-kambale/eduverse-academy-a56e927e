@@ -20,7 +20,8 @@ import {
   XCircle,
   AlertCircle,
   MessageSquare,
-  FileArchive
+  FileArchive,
+  Scale
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +59,7 @@ import { format } from 'date-fns';
 import ApplicationNotesPanel from '@/components/admin/ApplicationNotesPanel';
 import { DocumentVerificationPanel } from '@/components/admin/DocumentVerificationPanel';
 import { BulkDocumentExport } from '@/components/admin/BulkDocumentExport';
+import { ApplicationComparison } from '@/components/admin/ApplicationComparison';
 
 interface UniversityApplication {
   id: string;
@@ -115,6 +117,7 @@ export default function UniversityApplications() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   
   // Document preview state
   const [isDocPreviewOpen, setIsDocPreviewOpen] = useState(false);
@@ -422,6 +425,14 @@ export default function UniversityApplications() {
             <SelectItem value="rejected">Rejected</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          onClick={() => setIsComparisonOpen(true)}
+          className="gap-2"
+        >
+          <Scale className="h-4 w-4" />
+          <span className="hidden sm:inline">Compare</span>
+        </Button>
       </div>
 
       {/* Table - Desktop */}
@@ -901,6 +912,12 @@ export default function UniversityApplications() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Application Comparison */}
+      <ApplicationComparison 
+        open={isComparisonOpen} 
+        onOpenChange={setIsComparisonOpen} 
+      />
     </div>
   );
 }
