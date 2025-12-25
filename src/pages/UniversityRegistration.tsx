@@ -45,6 +45,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/layout/Layout';
 import { PaymentMethodSelector } from '@/components/payment/PaymentMethodSelector';
+import { DocumentScanner } from '@/components/university/DocumentScanner';
 
 const steps = [
   { id: 1, title: 'Organization Info', icon: Building2, description: 'Basic details' },
@@ -173,6 +174,10 @@ export default function UniversityRegistration() {
     dispute_resolution: false,
     data_protection: false,
   });
+
+  const [documentValidation, setDocumentValidation] = useState<Record<string, boolean>>({});
+  const [directorSignature, setDirectorSignature] = useState<File | null>(null);
+  const [directorPhoto, setDirectorPhoto] = useState<File | null>(null);
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -586,166 +591,240 @@ export default function UniversityRegistration() {
       case 4:
         return (
           <div className="space-y-6">
-            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-6">
-              <p className="text-sm text-amber-600 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Please upload clear, legible copies of all required documents. Accepted formats: PDF, JPG, PNG (max 10MB each)
-              </p>
+            <div className="p-4 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/30 rounded-xl mb-6">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-5 w-5 text-amber-500" />
+                </div>
+                <div>
+                  <p className="font-semibold text-amber-600 mb-1">🔒 Advanced Document Verification</p>
+                  <p className="text-sm text-amber-600/80">
+                    All documents undergo deep security scanning to verify authenticity. 
+                    Please upload original, clear documents only. Fraudulent or sample documents will be automatically rejected.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+            <div className="grid grid-cols-1 gap-6">
+              {/* Certificate of Incorporation */}
+              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <FileText className="h-5 w-5 text-primary" />
                   Certificate of Incorporation *
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">Official document of company registration</p>
+                <p className="text-sm text-muted-foreground mb-3">Official government document proving company registration</p>
                 <Input
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFileChange('certificate_of_incorporation', e.target.files?.[0] || null)}
+                  className="cursor-pointer"
                 />
-                {documents.certificate_of_incorporation && (
-                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                    <Check className="h-4 w-4" />
-                    {documents.certificate_of_incorporation.name}
-                  </p>
-                )}
+                <DocumentScanner
+                  file={documents.certificate_of_incorporation}
+                  documentType="Certificate of Incorporation"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, certificate_of_incorporation: valid }))}
+                />
               </div>
 
-              <div>
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+              {/* Business Registration */}
+              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <FileText className="h-5 w-5 text-primary" />
                   Business Registration Certificate
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">Local business registration document</p>
+                <p className="text-sm text-muted-foreground mb-3">Local business registration document from authorities</p>
                 <Input
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFileChange('business_registration', e.target.files?.[0] || null)}
+                  className="cursor-pointer"
                 />
-                {documents.business_registration && (
-                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                    <Check className="h-4 w-4" />
-                    {documents.business_registration.name}
-                  </p>
-                )}
+                <DocumentScanner
+                  file={documents.business_registration}
+                  documentType="Business Registration"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, business_registration: valid }))}
+                />
               </div>
 
-              <div>
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+              {/* Tax Clearance */}
+              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <FileText className="h-5 w-5 text-primary" />
                   Tax Clearance Certificate
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">Proof of tax compliance</p>
+                <p className="text-sm text-muted-foreground mb-3">Proof of tax compliance from revenue authority</p>
                 <Input
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFileChange('tax_clearance_certificate', e.target.files?.[0] || null)}
+                  className="cursor-pointer"
                 />
-                {documents.tax_clearance_certificate && (
-                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                    <Check className="h-4 w-4" />
-                    {documents.tax_clearance_certificate.name}
-                  </p>
-                )}
+                <DocumentScanner
+                  file={documents.tax_clearance_certificate}
+                  documentType="Tax Clearance Certificate"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, tax_clearance_certificate: valid }))}
+                />
               </div>
 
-              <div>
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+              {/* Operating License */}
+              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <FileText className="h-5 w-5 text-primary" />
                   Operating License
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">License to operate educational institution</p>
+                <p className="text-sm text-muted-foreground mb-3">License to operate educational institution</p>
                 <Input
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFileChange('operating_license', e.target.files?.[0] || null)}
+                  className="cursor-pointer"
                 />
-                {documents.operating_license && (
-                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                    <Check className="h-4 w-4" />
-                    {documents.operating_license.name}
-                  </p>
-                )}
+                <DocumentScanner
+                  file={documents.operating_license}
+                  documentType="Operating License"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, operating_license: valid }))}
+                />
               </div>
 
-              <div>
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+              {/* Government Approval Letter */}
+              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <FileText className="h-5 w-5 text-primary" />
                   Government Approval Letter
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">Approval from relevant government ministry</p>
+                <p className="text-sm text-muted-foreground mb-3">Official approval from relevant government ministry</p>
                 <Input
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFileChange('government_approval_letter', e.target.files?.[0] || null)}
+                  className="cursor-pointer"
                 />
-                {documents.government_approval_letter && (
-                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                    <Check className="h-4 w-4" />
-                    {documents.government_approval_letter.name}
-                  </p>
-                )}
+                <DocumentScanner
+                  file={documents.government_approval_letter}
+                  documentType="Government Approval Letter"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, government_approval_letter: valid }))}
+                />
               </div>
 
-              <div>
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+              {/* Ministry of Education Certificate */}
+              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <FileText className="h-5 w-5 text-primary" />
                   Ministry of Education Certificate
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">Recognition from education ministry</p>
+                <p className="text-sm text-muted-foreground mb-3">Recognition certificate from education ministry</p>
                 <Input
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFileChange('ministry_of_education_certificate', e.target.files?.[0] || null)}
+                  className="cursor-pointer"
                 />
-                {documents.ministry_of_education_certificate && (
-                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                    <Check className="h-4 w-4" />
-                    {documents.ministry_of_education_certificate.name}
-                  </p>
-                )}
+                <DocumentScanner
+                  file={documents.ministry_of_education_certificate}
+                  documentType="Ministry of Education Certificate"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, ministry_of_education_certificate: valid }))}
+                />
               </div>
 
-              <div>
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+              {/* Director Signature */}
+              <div className="p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 hover:border-primary/50 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <Award className="h-5 w-5 text-primary" />
+                  Director's Original Signature *
+                </Label>
+                <p className="text-sm text-muted-foreground mb-3">Upload a clear scan of the director's original signature (required for contract validation)</p>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setDirectorSignature(e.target.files?.[0] || null)}
+                  className="cursor-pointer"
+                />
+                <DocumentScanner
+                  file={directorSignature}
+                  documentType="Director's Signature"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, director_signature: valid }))}
+                />
+              </div>
+
+              {/* Director Photo */}
+              <div className="p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 hover:border-primary/50 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Director's Official Photo *
+                </Label>
+                <p className="text-sm text-muted-foreground mb-3">Upload a passport-style photo of the university director</p>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setDirectorPhoto(e.target.files?.[0] || null)}
+                  className="cursor-pointer"
+                />
+                <DocumentScanner
+                  file={directorPhoto}
+                  documentType="Director's Photo"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, director_photo: valid }))}
+                />
+              </div>
+
+              {/* Authorized Signatory ID */}
+              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <FileText className="h-5 w-5 text-primary" />
                   Authorized Signatory ID
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">ID of person authorized to sign contracts</p>
+                <p className="text-sm text-muted-foreground mb-3">ID of person authorized to sign contracts</p>
                 <Input
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFileChange('authorized_signatory_id', e.target.files?.[0] || null)}
+                  className="cursor-pointer"
                 />
-                {documents.authorized_signatory_id && (
-                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                    <Check className="h-4 w-4" />
-                    {documents.authorized_signatory_id.name}
-                  </p>
-                )}
+                <DocumentScanner
+                  file={documents.authorized_signatory_id}
+                  documentType="Authorized Signatory ID"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, authorized_signatory_id: valid }))}
+                />
               </div>
 
-              <div>
-                <Label className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
+              {/* Board Resolution */}
+              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <Label className="flex items-center gap-2 text-lg mb-2">
+                  <FileText className="h-5 w-5 text-primary" />
                   Board Resolution
                 </Label>
-                <p className="text-xs text-muted-foreground mb-2">Board approval for this partnership</p>
+                <p className="text-sm text-muted-foreground mb-3">Board approval for this partnership</p>
                 <Input
                   type="file"
                   accept=".pdf,image/*"
                   onChange={(e) => handleFileChange('board_resolution', e.target.files?.[0] || null)}
+                  className="cursor-pointer"
                 />
-                {documents.board_resolution && (
-                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                    <Check className="h-4 w-4" />
-                    {documents.board_resolution.name}
-                  </p>
-                )}
+                <DocumentScanner
+                  file={documents.board_resolution}
+                  documentType="Board Resolution"
+                  onScanComplete={(valid) => setDocumentValidation(prev => ({ ...prev, board_resolution: valid }))}
+                />
               </div>
             </div>
+
+            {/* Validation Summary */}
+            {Object.keys(documentValidation).length > 0 && (
+              <div className="p-4 bg-card border rounded-xl mt-6">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  Document Verification Status
+                </h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {Object.entries(documentValidation).map(([doc, isValid]) => (
+                    <div key={doc} className={`flex items-center gap-2 p-2 rounded-lg ${isValid ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}>
+                      {isValid ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+                      <span className="text-sm capitalize">{doc.replace(/_/g, ' ')}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
 

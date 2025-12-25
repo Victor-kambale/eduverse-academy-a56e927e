@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +23,11 @@ interface TeacherProfile {
   specializations: string[];
 }
 
-export function TeacherProfileEditor() {
+interface TeacherProfileEditorProps {
+  onClose?: () => void;
+}
+
+export function TeacherProfileEditor({ onClose }: TeacherProfileEditorProps) {
   const { user } = useAuth();
   const [profile, setProfile] = useState<TeacherProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -138,33 +142,32 @@ export function TeacherProfileEditor() {
 
   if (loading) {
     return (
-      <Card className="bg-slate-800/50 border-purple-500/20">
-        <CardContent className="pt-6 flex items-center justify-center h-64">
+      <DialogContent className="max-w-2xl bg-slate-800/95 border-purple-500/30">
+        <div className="pt-6 flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
-        </CardContent>
-      </Card>
+        </div>
+      </DialogContent>
     );
   }
 
   if (!profile) {
     return (
-      <Card className="bg-slate-800/50 border-purple-500/20">
-        <CardContent className="pt-6 text-center text-muted-foreground">
+      <DialogContent className="max-w-2xl bg-slate-800/95 border-purple-500/30">
+        <div className="pt-6 text-center text-muted-foreground">
           <p>No profile found. Please complete your teacher registration first.</p>
-        </CardContent>
-      </Card>
+        </div>
+      </DialogContent>
     );
   }
 
   return (
-    <Card className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-purple-500/20">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
+    <DialogContent className="max-w-2xl max-h-[90vh] bg-gradient-to-br from-slate-800/95 to-slate-900/95 border-purple-500/30">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2 text-white">
           <User className="h-5 w-5 text-purple-400" />
           Edit Profile
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </DialogTitle>
+      </DialogHeader>
         <ScrollArea className="h-[60vh] scroll-smooth pr-4">
           <div className="space-y-6">
             {/* Photo Upload */}
@@ -300,7 +303,6 @@ export function TeacherProfileEditor() {
             </div>
           </div>
         </ScrollArea>
-      </CardContent>
-    </Card>
+      </DialogContent>
   );
 }
