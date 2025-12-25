@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Plus, 
   Edit, 
@@ -19,7 +19,9 @@ import {
   Search,
   ArrowLeft,
   Play,
-  Maximize2
+  Maximize2,
+  GripVertical,
+  Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,6 +61,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { VideoRotationGallery } from '@/components/testimonials/VideoRotationGallery';
 import { BulkImportExport } from '@/components/admin/BulkImportExport';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Testimonial {
   id: string;
@@ -164,6 +183,141 @@ const defaultTestimonial: Omit<Testimonial, 'id' | 'created_at' | 'updated_at'> 
   sort_order: 0,
 };
 
+// Sortable Item Component
+function SortableTestimonialItem({ 
+  testimonial, 
+  onEdit, 
+  onToggleActive, 
+  onDelete 
+}: { 
+  testimonial: Testimonial;
+  onEdit: (t: Testimonial) => void;
+  onToggleActive: (t: Testimonial) => void;
+  onDelete: (id: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: testimonial.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card 
+      ref={setNodeRef}
+      style={style}
+      className={`${!testimonial.is_active ? 'opacity-60' : ''} ${isDragging ? 'shadow-lg z-50' : ''}`}
+    >
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 flex-1">
+            <div 
+              {...attributes} 
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded mt-2"
+            >
+              <GripVertical className="h-5 w-5 text-muted-foreground" />
+            </div>
+            {testimonial.photo_url ? (
+              <img 
+                src={testimonial.photo_url} 
+                alt={testimonial.name}
+                className="w-16 h-16 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                <span className="text-2xl font-bold">{testimonial.name.charAt(0)}</span>
+              </div>
+            )}
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold">{testimonial.name}</h3>
+                <Badge variant={testimonial.is_active ? 'default' : 'secondary'}>
+                  {testimonial.is_active ? 'Active' : 'Hidden'}
+                </Badge>
+                {testimonial.testimonial_type === 'video' && (
+                  <Badge variant="outline" className="text-red-500 border-red-500">
+                    <Video className="h-3 w-3 mr-1" />
+                    Video
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {testimonial.role} {testimonial.country_emoji}
+              </p>
+              <div className="flex gap-1">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star key={i} className="h-3 w-3 text-amber-500 fill-amber-500" />
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground line-clamp-2">{testimonial.testimonial_text}</p>
+              {/* Social Links Display */}
+              <div className="flex gap-2 mt-2">
+                {testimonial.social_facebook && <Facebook className="h-4 w-4 text-blue-600" />}
+                {testimonial.social_twitter && <Twitter className="h-4 w-4 text-sky-500" />}
+                {testimonial.social_linkedin && <Linkedin className="h-4 w-4 text-blue-700" />}
+                {testimonial.social_instagram && <Instagram className="h-4 w-4 text-pink-500" />}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => onEdit(testimonial)}>
+              <Edit className="h-4 w-4 mr-1" />
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onToggleActive(testimonial)}
+            >
+              {testimonial.is_active ? (
+                <>
+                  <EyeOff className="h-4 w-4 mr-1" />
+                  Off
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 mr-1" />
+                  On
+                </>
+              )}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Testimonial?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. The testimonial will be permanently deleted.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete(testimonial.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function TestimonialsManagement() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,16 +332,51 @@ export default function TestimonialsManagement() {
   const [videoGalleryIndex, setVideoGalleryIndex] = useState(0);
   const navigate = useNavigate();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   useEffect(() => {
     fetchTestimonials();
 
-    // Real-time subscription
+    // Real-time subscription with notifications
     const channel = supabase
-      .channel('testimonials-admin-realtime')
+      .channel('testimonials-admin-realtime-notify')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'testimonials' },
-        () => fetchTestimonials()
+        { event: 'INSERT', schema: 'public', table: 'testimonials' },
+        (payload) => {
+          toast.info('⭐ New testimonial added!', {
+            description: `"${(payload.new as Testimonial).name}" has been created`,
+            duration: 5000,
+            icon: <Bell className="h-4 w-4" />,
+          });
+          fetchTestimonials();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'testimonials' },
+        (payload) => {
+          toast.info('⭐ Testimonial updated!', {
+            description: `"${(payload.new as Testimonial).name}" has been modified`,
+            duration: 4000,
+          });
+          fetchTestimonials();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'testimonials' },
+        () => {
+          toast.warning('🗑️ A testimonial was deleted', {
+            duration: 4000,
+          });
+          fetchTestimonials();
+        }
       )
       .subscribe();
 
@@ -209,6 +398,33 @@ export default function TestimonialsManagement() {
       toast.error('Failed to load testimonials');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = testimonials.findIndex((item) => item.id === active.id);
+      const newIndex = testimonials.findIndex((item) => item.id === over.id);
+
+      const newOrder = arrayMove(testimonials, oldIndex, newIndex);
+      setTestimonials(newOrder);
+
+      // Update sort_order in database
+      try {
+        for (let i = 0; i < newOrder.length; i++) {
+          await supabase
+            .from('testimonials')
+            .update({ sort_order: i })
+            .eq('id', newOrder[i].id);
+        }
+
+        toast.success('Order updated successfully');
+      } catch (error: any) {
+        toast.error('Failed to update order');
+        fetchTestimonials(); // Revert on error
+      }
     }
   };
 
@@ -447,7 +663,7 @@ export default function TestimonialsManagement() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Testimonials Management</h1>
-            <p className="text-muted-foreground">Manage graduate testimonials with text and video support</p>
+            <p className="text-muted-foreground">Manage testimonials - drag to reorder</p>
           </div>
         </div>
         <Button onClick={handleAddNew}>
@@ -638,106 +854,41 @@ export default function TestimonialsManagement() {
         </CardContent>
       </Card>
 
-      {/* Testimonials List */}
-      <ScrollArea className="h-[400px] scroll-smooth">
-        <div className="grid gap-4 p-1">
-          {filteredTestimonials.map((testimonial) => (
-            <Card key={testimonial.id} className={!testimonial.is_active ? 'opacity-60' : ''}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 flex-1">
-                    {testimonial.photo_url ? (
-                      <img 
-                        src={testimonial.photo_url} 
-                        alt={testimonial.name}
-                        className="w-16 h-16 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                        <span className="text-2xl font-bold">{testimonial.name.charAt(0)}</span>
-                      </div>
-                    )}
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold">{testimonial.name}</h3>
-                        <Badge variant={testimonial.is_active ? 'default' : 'secondary'}>
-                          {testimonial.is_active ? 'Active' : 'Hidden'}
-                        </Badge>
-                        {testimonial.testimonial_type === 'video' && (
-                          <Badge variant="outline" className="text-red-500 border-red-500">
-                            <Video className="h-3 w-3 mr-1" />
-                            Video
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {testimonial.role} {testimonial.country_emoji}
-                      </p>
-                      <div className="flex gap-1">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="h-3 w-3 text-amber-500 fill-amber-500" />
-                        ))}
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{testimonial.testimonial_text}</p>
-                      {/* Social Links Display */}
-                      <div className="flex gap-2 mt-2">
-                        {testimonial.social_facebook && <Facebook className="h-4 w-4 text-blue-600" />}
-                        {testimonial.social_twitter && <Twitter className="h-4 w-4 text-sky-500" />}
-                        {testimonial.social_linkedin && <Linkedin className="h-4 w-4 text-blue-700" />}
-                        {testimonial.social_instagram && <Instagram className="h-4 w-4 text-pink-500" />}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(testimonial)}>
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToggleActive(testimonial)}
-                    >
-                      {testimonial.is_active ? (
-                        <>
-                          <EyeOff className="h-4 w-4 mr-1" />
-                          Off
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-1" />
-                          On
-                        </>
-                      )}
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Testimonial?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. The testimonial will be permanently deleted.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(testimonial.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+      {/* Testimonials List with Drag & Drop */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GripVertical className="h-5 w-5" />
+            Testimonials - Drag to Reorder
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[400px] scroll-smooth">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={filteredTestimonials.map(t => t.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="grid gap-4 p-1">
+                  {filteredTestimonials.map((testimonial) => (
+                    <SortableTestimonialItem
+                      key={testimonial.id}
+                      testimonial={testimonial}
+                      onEdit={handleEdit}
+                      onToggleActive={handleToggleActive}
+                      onDelete={handleDelete}
+                    />
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </ScrollArea>
+              </SortableContext>
+            </DndContext>
+          </ScrollArea>
+        </CardContent>
+      </Card>
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>

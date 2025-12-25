@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Plus, 
   Edit, 
@@ -10,7 +10,9 @@ import {
   Ban,
   CheckCircle,
   Search,
-  ArrowLeft
+  ArrowLeft,
+  GripVertical,
+  Bell
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +49,23 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { BulkImportExport } from '@/components/admin/BulkImportExport';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface GiftCard {
   id: string;
@@ -93,6 +112,131 @@ const defaultGiftCard: Omit<GiftCard, 'id' | 'created_at' | 'updated_at'> = {
   sort_order: 0,
 };
 
+// Sortable Item Component
+function SortableGiftCardItem({ 
+  card, 
+  onEdit, 
+  onToggleActive, 
+  onToggleDisabled, 
+  onDelete 
+}: { 
+  card: GiftCard;
+  onEdit: (card: GiftCard) => void;
+  onToggleActive: (card: GiftCard) => void;
+  onToggleDisabled: (card: GiftCard) => void;
+  onDelete: (id: string) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: card.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card 
+      ref={setNodeRef}
+      style={style}
+      className={`${!card.is_active || card.is_disabled ? 'opacity-60' : ''} transition-all ${isDragging ? 'shadow-lg z-50' : ''}`}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1">
+            <div 
+              {...attributes} 
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+            >
+              <GripVertical className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className={`w-20 h-14 bg-gradient-to-br ${card.gradient} rounded-lg flex items-center justify-center shadow-md`}>
+              <Gift className="h-6 w-6 text-white/80" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold">{card.name}</h3>
+                <Badge variant="outline">{card.category}</Badge>
+                {!card.is_active && <Badge variant="secondary">Hidden</Badge>}
+                {card.is_disabled && <Badge variant="destructive">Disabled</Badge>}
+              </div>
+              <p className="text-sm text-muted-foreground">Sort order: {card.sort_order}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => onEdit(card)}>
+              <Edit className="h-4 w-4 mr-1" />
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onToggleActive(card)}
+            >
+              {card.is_active ? (
+                <>
+                  <EyeOff className="h-4 w-4 mr-1" />
+                  Off
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4 mr-1" />
+                  On
+                </>
+              )}
+            </Button>
+            <Button
+              variant={card.is_disabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => onToggleDisabled(card)}
+            >
+              {card.is_disabled ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Enable
+                </>
+              ) : (
+                <>
+                  <Ban className="h-4 w-4 mr-1" />
+                  Disable
+                </>
+              )}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Gift Card?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. "{card.name}" will be permanently deleted.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => onDelete(card.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function GiftCardsManagement() {
   const [giftCards, setGiftCards] = useState<GiftCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,17 +246,55 @@ export default function GiftCardsManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const navigate = useNavigate();
+  const isInitialMount = useRef(true);
+  const currentUserIdRef = useRef<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     fetchGiftCards();
+    getCurrentUser();
 
-    // Real-time subscription
+    // Real-time subscription with notification
     const channel = supabase
-      .channel('gift-cards-realtime')
+      .channel('gift-cards-realtime-notify')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'gift_cards' },
-        () => fetchGiftCards()
+        { event: 'INSERT', schema: 'public', table: 'gift_cards' },
+        (payload) => {
+          toast.info('🎁 New gift card added by another admin!', {
+            description: `"${(payload.new as GiftCard).name}" has been created`,
+            duration: 5000,
+            icon: <Bell className="h-4 w-4" />,
+          });
+          fetchGiftCards();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'gift_cards' },
+        (payload) => {
+          toast.info('🎁 Gift card updated!', {
+            description: `"${(payload.new as GiftCard).name}" has been modified`,
+            duration: 4000,
+          });
+          fetchGiftCards();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'gift_cards' },
+        () => {
+          toast.warning('🗑️ A gift card was deleted', {
+            duration: 4000,
+          });
+          fetchGiftCards();
+        }
       )
       .subscribe();
 
@@ -120,6 +302,11 @@ export default function GiftCardsManagement() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUserIdRef.current = user?.id || null;
+  };
 
   const fetchGiftCards = async () => {
     try {
@@ -134,6 +321,44 @@ export default function GiftCardsManagement() {
       toast.error('Failed to load gift cards');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = giftCards.findIndex((item) => item.id === active.id);
+      const newIndex = giftCards.findIndex((item) => item.id === over.id);
+
+      const newOrder = arrayMove(giftCards, oldIndex, newIndex);
+      setGiftCards(newOrder);
+
+      // Update sort_order in database
+      try {
+        const updates = newOrder.map((card, index) => ({
+          id: card.id,
+          sort_order: index,
+          name: card.name,
+          gradient: card.gradient,
+          category: card.category,
+          icon: card.icon,
+          is_active: card.is_active,
+          is_disabled: card.is_disabled,
+        }));
+
+        for (const update of updates) {
+          await supabase
+            .from('gift_cards')
+            .update({ sort_order: update.sort_order })
+            .eq('id', update.id);
+        }
+
+        toast.success('Order updated successfully');
+      } catch (error: any) {
+        toast.error('Failed to update order');
+        fetchGiftCards(); // Revert on error
+      }
     }
   };
 
@@ -297,7 +522,7 @@ export default function GiftCardsManagement() {
               <Gift className="h-8 w-8 text-primary" />
               Gift Cards Management
             </h1>
-            <p className="text-muted-foreground">Manage gift card designs displayed on the platform</p>
+            <p className="text-muted-foreground">Manage gift card designs - drag to reorder</p>
           </div>
         </div>
         <Button onClick={handleAddNew}>
@@ -363,97 +588,42 @@ export default function GiftCardsManagement() {
         </CardContent>
       </Card>
 
-      {/* Gift Cards List */}
-      <ScrollArea className="h-[500px] scroll-smooth">
-        <div className="grid gap-4 p-1">
-          {filteredCards.map((card) => (
-            <Card 
-              key={card.id} 
-              className={`${!card.is_active || card.is_disabled ? 'opacity-60' : ''} transition-all`}
+      {/* Gift Cards List with Drag & Drop */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GripVertical className="h-5 w-5" />
+            Gift Cards - Drag to Reorder
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[500px] scroll-smooth">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className={`w-20 h-14 bg-gradient-to-br ${card.gradient} rounded-lg flex items-center justify-center shadow-md`}>
-                      <Gift className="h-6 w-6 text-white/80" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold">{card.name}</h3>
-                        <Badge variant="outline">{card.category}</Badge>
-                        {!card.is_active && <Badge variant="secondary">Hidden</Badge>}
-                        {card.is_disabled && <Badge variant="destructive">Disabled</Badge>}
-                      </div>
-                      <p className="text-sm text-muted-foreground">Sort order: {card.sort_order}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(card)}>
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToggleActive(card)}
-                    >
-                      {card.is_active ? (
-                        <>
-                          <EyeOff className="h-4 w-4 mr-1" />
-                          Off
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-1" />
-                          On
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant={card.is_disabled ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handleToggleDisabled(card)}
-                    >
-                      {card.is_disabled ? (
-                        <>
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Enable
-                        </>
-                      ) : (
-                        <>
-                          <Ban className="h-4 w-4 mr-1" />
-                          Disable
-                        </>
-                      )}
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Gift Card?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. "{card.name}" will be permanently deleted.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(card.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+              <SortableContext
+                items={filteredCards.map(c => c.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="grid gap-4 p-1">
+                  {filteredCards.map((card) => (
+                    <SortableGiftCardItem
+                      key={card.id}
+                      card={card}
+                      onEdit={handleEdit}
+                      onToggleActive={handleToggleActive}
+                      onToggleDisabled={handleToggleDisabled}
+                      onDelete={handleDelete}
+                    />
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </ScrollArea>
+              </SortableContext>
+            </DndContext>
+          </ScrollArea>
+        </CardContent>
+      </Card>
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
