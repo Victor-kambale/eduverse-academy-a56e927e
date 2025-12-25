@@ -20,6 +20,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { AuditLogWidget } from '@/components/admin/AuditLogWidget';
 import { UniversityApplicationsWidget } from '@/components/admin/UniversityApplicationsWidget';
+import { UniversityStatsWidget } from '@/components/admin/UniversityStatsWidget';
 import {
   AreaChart,
   Area,
@@ -414,6 +415,9 @@ export default function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* University Stats Widget */}
+      <UniversityStatsWidget />
 
       {/* University Applications Widget */}
       <UniversityApplicationsWidget />
