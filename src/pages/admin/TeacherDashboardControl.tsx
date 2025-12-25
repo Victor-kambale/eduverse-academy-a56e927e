@@ -10,7 +10,8 @@ import {
   FileText,
   Search,
   Filter,
-  MoreVertical
+  MoreVertical,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,8 +101,19 @@ export default function TeacherDashboardControl() {
   const approvedTeachers = filteredTeachers.filter(t => t.status === 'approved');
   const pendingTeachers = filteredTeachers.filter(t => t.status === 'pending');
 
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  const handleFilterChange = (status: string) => {
+    setStatusFilter(status);
+    toast.info(`Filtering by: ${status === 'all' ? 'All Teachers' : status}`);
+  };
+
+  const displayedTeachers = statusFilter === 'all' 
+    ? filteredTeachers 
+    : filteredTeachers.filter(t => t.status === statusFilter);
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 scroll-smooth">
       <div>
         <h1 className="text-3xl font-bold">Teacher Dashboard Control</h1>
         <p className="text-muted-foreground">Manage and monitor all teacher accounts</p>
@@ -174,10 +186,31 @@ export default function TeacherDashboardControl() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button variant="outline">
-          <Filter className="w-4 h-4 mr-2" />
-          Filters
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Filter className="w-4 h-4 mr-2" />
+              {statusFilter === 'all' ? 'Filters' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleFilterChange('all')}>
+              All Teachers
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleFilterChange('approved')}>
+              <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
+              Approved
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleFilterChange('pending')}>
+              <Clock className="w-4 h-4 mr-2 text-yellow-500" />
+              Pending
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleFilterChange('rejected')}>
+              <Ban className="w-4 h-4 mr-2 text-red-500" />
+              Rejected
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Teachers List */}
@@ -186,8 +219,8 @@ export default function TeacherDashboardControl() {
           <CardTitle>All Teachers</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredTeachers.map((teacher) => (
+          <div className="space-y-4 max-h-[500px] overflow-y-auto scroll-smooth">
+            {displayedTeachers.map((teacher) => (
               <div 
                 key={teacher.id}
                 className={`flex items-center justify-between p-4 rounded-lg border ${

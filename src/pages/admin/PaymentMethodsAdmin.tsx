@@ -256,7 +256,7 @@ export default function PaymentMethodsAdmin() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 scroll-smooth">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Payment Methods Administration</h1>
@@ -266,7 +266,7 @@ export default function PaymentMethodsAdmin() {
         </div>
         <Button onClick={handleAddNew}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Payment Method
+          Add New Payment Method
         </Button>
       </div>
 

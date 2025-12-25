@@ -222,21 +222,21 @@ const RoleManagement = () => {
                   Assign Role
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>Assign Role to User</DialogTitle>
                   <DialogDescription>
                     Select a user and the role you want to assign
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
+                <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto scroll-smooth">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Select User</label>
                     <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                       <SelectTrigger>
                         <SelectValue placeholder="Choose a user..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-[200px] overflow-y-auto">
                         {users.map(u => (
                           <SelectItem key={u.user_id} value={u.user_id}>
                             {u.full_name} ({u.email})

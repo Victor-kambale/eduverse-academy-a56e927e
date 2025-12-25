@@ -81,6 +81,7 @@ const AuditLogs = () => {
 
       if (error) throw error;
       setLogs(data || []);
+      toast.success('Logs refreshed successfully');
     } catch (error: any) {
       console.error('Error fetching logs:', error);
       toast.error('Failed to load audit logs');
