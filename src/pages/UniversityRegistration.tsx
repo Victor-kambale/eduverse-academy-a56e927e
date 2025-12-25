@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2,
@@ -22,6 +22,7 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +47,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { Layout } from '@/components/layout/Layout';
 import { PaymentMethodSelector } from '@/components/payment/PaymentMethodSelector';
 import { DocumentScanner } from '@/components/university/DocumentScanner';
+import { DragDropUpload } from '@/components/university/DragDropUpload';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 const steps = [
   { id: 1, title: 'Organization Info', icon: Building2, description: 'Basic details' },
@@ -74,6 +78,20 @@ export default function UniversityRegistration() {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [direction, setDirection] = useState(0);
+
+  // Smooth scroll to top when step changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep]);
+
+  const goToStep = (step: number) => {
+    setDirection(step > currentStep ? 1 : -1);
+    setCurrentStep(step);
+  };
   
   // Form state
   const [formData, setFormData] = useState({
@@ -301,8 +319,14 @@ export default function UniversityRegistration() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div className="md:col-span-2">
                 <Label>Organization Name *</Label>
                 <Input
@@ -421,13 +445,19 @@ export default function UniversityRegistration() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         );
 
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label>Primary Email *</Label>
                 <Input
@@ -510,13 +540,19 @@ export default function UniversityRegistration() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         );
 
       case 3:
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div className="md:col-span-2">
                 <Label>Legal Entity Name *</Label>
                 <Input
@@ -585,40 +621,42 @@ export default function UniversityRegistration() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         );
 
       case 4:
         return (
-          <div className="space-y-6">
-            <div className="p-4 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/30 rounded-xl mb-6">
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <div className="p-3 sm:p-4 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border border-amber-500/30 rounded-xl mb-6">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-5 w-5 text-amber-500" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-amber-600 mb-1">🔒 Advanced Document Verification</p>
-                  <p className="text-sm text-amber-600/80">
-                    All documents undergo deep security scanning to verify authenticity. 
-                    Please upload original, clear documents only. Fraudulent or sample documents will be automatically rejected.
+                  <p className="font-semibold text-amber-600 mb-1 text-sm sm:text-base">🔒 Advanced Document Verification</p>
+                  <p className="text-xs sm:text-sm text-amber-600/80">
+                    All documents undergo deep security scanning. Upload original, clear documents only.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Certificate of Incorporation */}
-              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Certificate of Incorporation *
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">Official government document proving company registration</p>
-                <Input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => handleFileChange('certificate_of_incorporation', e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <DragDropUpload
+                  label="Certificate of Incorporation"
+                  description="Official government document proving company registration"
+                  isRequired
+                  onFileSelect={(file) => handleFileChange('certificate_of_incorporation', file)}
+                  file={documents.certificate_of_incorporation}
+                  isValidated={documentValidation.certificate_of_incorporation}
                 />
                 <DocumentScanner
                   file={documents.certificate_of_incorporation}
@@ -628,17 +666,13 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Business Registration */}
-              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Business Registration Certificate
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">Local business registration document from authorities</p>
-                <Input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => handleFileChange('business_registration', e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <DragDropUpload
+                  label="Business Registration Certificate"
+                  description="Local business registration document from authorities"
+                  onFileSelect={(file) => handleFileChange('business_registration', file)}
+                  file={documents.business_registration}
+                  isValidated={documentValidation.business_registration}
                 />
                 <DocumentScanner
                   file={documents.business_registration}
@@ -648,17 +682,13 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Tax Clearance */}
-              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Tax Clearance Certificate
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">Proof of tax compliance from revenue authority</p>
-                <Input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => handleFileChange('tax_clearance_certificate', e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <DragDropUpload
+                  label="Tax Clearance Certificate"
+                  description="Proof of tax compliance from revenue authority"
+                  onFileSelect={(file) => handleFileChange('tax_clearance_certificate', file)}
+                  file={documents.tax_clearance_certificate}
+                  isValidated={documentValidation.tax_clearance_certificate}
                 />
                 <DocumentScanner
                   file={documents.tax_clearance_certificate}
@@ -668,17 +698,13 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Operating License */}
-              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Operating License
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">License to operate educational institution</p>
-                <Input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => handleFileChange('operating_license', e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <DragDropUpload
+                  label="Operating License"
+                  description="License to operate educational institution"
+                  onFileSelect={(file) => handleFileChange('operating_license', file)}
+                  file={documents.operating_license}
+                  isValidated={documentValidation.operating_license}
                 />
                 <DocumentScanner
                   file={documents.operating_license}
@@ -688,17 +714,13 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Government Approval Letter */}
-              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Government Approval Letter
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">Official approval from relevant government ministry</p>
-                <Input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => handleFileChange('government_approval_letter', e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <DragDropUpload
+                  label="Government Approval Letter"
+                  description="Official approval from relevant government ministry"
+                  onFileSelect={(file) => handleFileChange('government_approval_letter', file)}
+                  file={documents.government_approval_letter}
+                  isValidated={documentValidation.government_approval_letter}
                 />
                 <DocumentScanner
                   file={documents.government_approval_letter}
@@ -708,17 +730,13 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Ministry of Education Certificate */}
-              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Ministry of Education Certificate
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">Recognition certificate from education ministry</p>
-                <Input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => handleFileChange('ministry_of_education_certificate', e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <DragDropUpload
+                  label="Ministry of Education Certificate"
+                  description="Recognition certificate from education ministry"
+                  onFileSelect={(file) => handleFileChange('ministry_of_education_certificate', file)}
+                  file={documents.ministry_of_education_certificate}
+                  isValidated={documentValidation.ministry_of_education_certificate}
                 />
                 <DocumentScanner
                   file={documents.ministry_of_education_certificate}
@@ -728,17 +746,15 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Director Signature */}
-              <div className="p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 hover:border-primary/50 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <Award className="h-5 w-5 text-primary" />
-                  Director's Original Signature *
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">Upload a clear scan of the director's original signature (required for contract validation)</p>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setDirectorSignature(e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 hover:border-primary/50 transition-all">
+                <DragDropUpload
+                  label="Director's Original Signature"
+                  description="Clear scan of director's signature for contract validation"
+                  isRequired
+                  accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
+                  onFileSelect={(file) => setDirectorSignature(file)}
+                  file={directorSignature}
+                  isValidated={documentValidation.director_signature}
                 />
                 <DocumentScanner
                   file={directorSignature}
@@ -748,17 +764,15 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Director Photo */}
-              <div className="p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 hover:border-primary/50 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  Director's Official Photo *
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">Upload a passport-style photo of the university director</p>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setDirectorPhoto(e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 hover:border-primary/50 transition-all">
+                <DragDropUpload
+                  label="Director's Official Photo"
+                  description="Passport-style photo of the university director"
+                  isRequired
+                  accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
+                  onFileSelect={(file) => setDirectorPhoto(file)}
+                  file={directorPhoto}
+                  isValidated={documentValidation.director_photo}
                 />
                 <DocumentScanner
                   file={directorPhoto}
@@ -768,17 +782,13 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Authorized Signatory ID */}
-              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Authorized Signatory ID
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">ID of person authorized to sign contracts</p>
-                <Input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => handleFileChange('authorized_signatory_id', e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <DragDropUpload
+                  label="Authorized Signatory ID"
+                  description="ID of person authorized to sign contracts"
+                  onFileSelect={(file) => handleFileChange('authorized_signatory_id', file)}
+                  file={documents.authorized_signatory_id}
+                  isValidated={documentValidation.authorized_signatory_id}
                 />
                 <DocumentScanner
                   file={documents.authorized_signatory_id}
@@ -788,17 +798,13 @@ export default function UniversityRegistration() {
               </div>
 
               {/* Board Resolution */}
-              <div className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
-                <Label className="flex items-center gap-2 text-lg mb-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Board Resolution
-                </Label>
-                <p className="text-sm text-muted-foreground mb-3">Board approval for this partnership</p>
-                <Input
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => handleFileChange('board_resolution', e.target.files?.[0] || null)}
-                  className="cursor-pointer"
+              <div className="p-3 sm:p-4 border rounded-xl bg-card hover:border-primary/30 transition-all">
+                <DragDropUpload
+                  label="Board Resolution"
+                  description="Board approval for this partnership"
+                  onFileSelect={(file) => handleFileChange('board_resolution', file)}
+                  file={documents.board_resolution}
+                  isValidated={documentValidation.board_resolution}
                 />
                 <DocumentScanner
                   file={documents.board_resolution}
@@ -810,28 +816,43 @@ export default function UniversityRegistration() {
 
             {/* Validation Summary */}
             {Object.keys(documentValidation).length > 0 && (
-              <div className="p-4 bg-card border rounded-xl mt-6">
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 sm:p-4 bg-card border rounded-xl mt-6"
+              >
+                <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
+                  <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   Document Verification Status
                 </h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {Object.entries(documentValidation).map(([doc, isValid]) => (
-                    <div key={doc} className={`flex items-center gap-2 p-2 rounded-lg ${isValid ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}>
-                      {isValid ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-                      <span className="text-sm capitalize">{doc.replace(/_/g, ' ')}</span>
-                    </div>
+                    <motion.div
+                      key={doc}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className={`flex items-center gap-2 p-2 rounded-lg text-xs sm:text-sm ${isValid ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}
+                    >
+                      {isValid ? <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> : <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />}
+                      <span className="capitalize truncate">{doc.replace(/_/g, ' ')}</span>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         );
 
       case 5:
         return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <Label>Accreditation Body</Label>
                 <Input
@@ -1000,13 +1021,25 @@ export default function UniversityRegistration() {
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
         );
 
       case 6:
         return (
-          <div className="space-y-6">
-            <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg mb-6">
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <div className="p-3 sm:p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg mb-6">
+              <p className="text-xs sm:text-sm text-blue-600">
+                Banking information is required for revenue sharing. Your organization will receive 80% of all course sales.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <p className="text-sm text-blue-600">
                 Banking information is required for revenue sharing. Your organization will receive 80% of all course sales.
               </p>
@@ -1078,12 +1111,18 @@ export default function UniversityRegistration() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         );
 
       case 7:
         return (
-          <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
             <Card className="border-2 border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -1257,23 +1296,29 @@ export default function UniversityRegistration() {
                 Your signature and agreement are legally binding. This contract is protected and cannot be copied, screenshotted, or reproduced.
               </p>
             </div>
-          </div>
+          </motion.div>
         );
 
       case 8:
         return (
-          <div className="space-y-6">
-            <div className="p-6 bg-muted rounded-lg text-center">
-              <h3 className="font-semibold mb-2">Registration Fee</h3>
-              <p className="text-4xl font-bold text-accent">$299.00 USD</p>
-              <p className="text-sm text-muted-foreground mt-2">
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <div className="p-4 sm:p-6 bg-muted rounded-lg text-center">
+              <h3 className="font-semibold mb-2 text-sm sm:text-base">Registration Fee</h3>
+              <p className="text-3xl sm:text-4xl font-bold text-accent">$299.00 USD</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                 One-time registration fee for university partnership setup
               </p>
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-medium">What's Included:</h4>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <h4 className="font-medium text-sm sm:text-base">What's Included:</h4>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
                   'Multi-instructor management dashboard',
                   'Unlimited course creation',
@@ -1288,10 +1333,16 @@ export default function UniversityRegistration() {
                   'Custom landing page',
                   'Student management tools',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm">
-                    <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <motion.li 
+                    key={i} 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="flex items-center gap-2 text-xs sm:text-sm"
+                  >
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
                     <span>{item}</span>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </div>
@@ -1305,7 +1356,7 @@ export default function UniversityRegistration() {
                 toast.success(`Payment method selected: ${method}`);
               }}
             />
-          </div>
+          </motion.div>
         );
 
       default:
@@ -1315,92 +1366,122 @@ export default function UniversityRegistration() {
 
   return (
     <Layout>
-      <ScrollArea className="h-[calc(100vh-4rem)]">
-        <div className="container max-w-5xl py-8 px-4">
-          <div className="text-center mb-8">
-            <Building2 className="h-16 w-16 mx-auto text-accent mb-4" />
-            <h1 className="text-3xl font-bold">University & Institution Registration</h1>
-            <p className="text-muted-foreground mt-2">
+      <ScrollArea ref={scrollRef} className="h-[calc(100vh-4rem)] scroll-smooth">
+        <div className="container max-w-5xl py-4 sm:py-8 px-3 sm:px-4">
+          {/* Header - Responsive */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-6 sm:mb-8"
+          >
+            <Building2 className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-accent mb-3 sm:mb-4" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">University & Institution Registration</h1>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base px-4">
               Partner with EDUVERSE ACADEMY to offer accredited online courses
             </p>
             <Badge variant="secondary" className="mt-2">
               Estimated time: 1 hour
             </Badge>
-          </div>
+          </motion.div>
 
           {/* Progress Bar */}
-          <div className="mb-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="mb-4 sm:mb-6"
+          >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Registration Progress</span>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
+              <span className="text-xs sm:text-sm font-medium">Registration Progress</span>
+              <span className="text-xs sm:text-sm text-muted-foreground">{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
-          </div>
+          </motion.div>
 
-          {/* Progress Steps */}
-          <div className="flex items-center justify-between mb-8 overflow-x-auto pb-4">
+          {/* Progress Steps - Scrollable on mobile */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center justify-between mb-6 sm:mb-8 overflow-x-auto pb-4 gap-1 scrollbar-hide"
+          >
             {steps.map((step, index) => {
               const Icon = step.icon;
               const isActive = currentStep === step.id;
               const isCompleted = currentStep > step.id;
 
               return (
-                <div key={step.id} className="flex items-center">
+                <div key={step.id} className="flex items-center flex-shrink-0">
                   <button
-                    onClick={() => isCompleted && setCurrentStep(step.id)}
+                    onClick={() => isCompleted && goToStep(step.id)}
                     disabled={!isCompleted}
-                    className={`flex flex-col items-center min-w-[80px] ${
+                    className={cn(
+                      'flex flex-col items-center min-w-[60px] sm:min-w-[80px] transition-all',
                       isCompleted ? 'cursor-pointer' : 'cursor-default'
-                    }`}
+                    )}
                   >
-                    <div
-                      className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
-                        isActive
-                          ? 'bg-accent text-accent-foreground'
-                          : isCompleted
-                          ? 'bg-green-500 text-white'
-                          : 'bg-muted text-muted-foreground'
-                      }`}
+                    <motion.div
+                      whileHover={isCompleted ? { scale: 1.1 } : {}}
+                      whileTap={isCompleted ? { scale: 0.95 } : {}}
+                      className={cn(
+                        'flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300',
+                        isActive && 'bg-accent text-accent-foreground ring-4 ring-accent/20',
+                        isCompleted && 'bg-green-500 text-white',
+                        !isActive && !isCompleted && 'bg-muted text-muted-foreground'
+                      )}
                     >
-                      {isCompleted ? <Check className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
-                    </div>
-                    <span className={`text-xs mt-1 text-center ${isActive ? 'font-semibold' : ''}`}>
+                      {isCompleted ? (
+                        <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : (
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      )}
+                    </motion.div>
+                    <span className={cn(
+                      'text-[10px] sm:text-xs mt-1 text-center hidden sm:block',
+                      isActive && 'font-semibold text-accent'
+                    )}>
                       {step.title}
                     </span>
                   </button>
                   {index < steps.length - 1 && (
-                    <div
-                      className={`w-8 h-1 mx-1 rounded ${
+                    <motion.div
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: isCompleted ? 1 : 0.3 }}
+                      className={cn(
+                        'w-4 sm:w-8 h-0.5 sm:h-1 mx-0.5 sm:mx-1 rounded origin-left transition-colors',
                         isCompleted ? 'bg-green-500' : 'bg-muted'
-                      }`}
+                      )}
                     />
                   )}
                 </div>
               );
             })}
-          </div>
+          </motion.div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="overflow-hidden">
+            <CardHeader className="px-4 sm:px-6 py-4 sm:py-6 bg-gradient-to-r from-primary/5 to-accent/5">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 {(() => {
                   const StepIcon = steps[currentStep - 1].icon;
-                  return <StepIcon className="h-5 w-5" />;
+                  return <StepIcon className="h-5 w-5 text-primary" />;
                 })()}
                 {steps[currentStep - 1].title}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs sm:text-sm">
                 Step {currentStep} of {steps.length} - {steps[currentStep - 1].description}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              {renderStep()}
+            <CardContent className="px-3 sm:px-6 py-4 sm:py-6">
+              <AnimatePresence mode="wait">
+                {renderStep()}
+              </AnimatePresence>
 
-              <div className="flex justify-between mt-8 pt-6 border-t">
+              <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
                 <Button
                   variant="outline"
-                  onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+                  onClick={() => goToStep(Math.max(1, currentStep - 1))}
                   disabled={currentStep === 1}
+                  className="w-full sm:w-auto"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Previous
@@ -1408,8 +1489,9 @@ export default function UniversityRegistration() {
                 
                 {currentStep < steps.length ? (
                   <Button
-                    onClick={() => setCurrentStep((prev) => Math.min(steps.length, prev + 1))}
+                    onClick={() => goToStep(Math.min(steps.length, currentStep + 1))}
                     disabled={!canProceed()}
+                    className="w-full sm:w-auto"
                   >
                     Next <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -1417,6 +1499,7 @@ export default function UniversityRegistration() {
                   <Button
                     onClick={handleSubmit}
                     disabled={loading || !Object.values(contractAgreed).every(v => v)}
+                    className="w-full sm:w-auto"
                   >
                     {loading ? (
                       <>
@@ -1424,7 +1507,10 @@ export default function UniversityRegistration() {
                         Submitting...
                       </>
                     ) : (
-                      'Complete Registration'
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Complete Registration
+                      </>
                     )}
                   </Button>
                 )}
