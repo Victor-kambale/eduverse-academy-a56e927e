@@ -23,6 +23,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,8 +49,11 @@ import { Layout } from '@/components/layout/Layout';
 import { PaymentMethodSelector } from '@/components/payment/PaymentMethodSelector';
 import { DocumentScanner } from '@/components/university/DocumentScanner';
 import { DragDropUpload } from '@/components/university/DragDropUpload';
+import { EmailVerification } from '@/components/university/EmailVerification';
+import { FormField } from '@/components/ui/form-field';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useFormValidation, step1Schema, step2Schema, step3Schema, step5Schema, step6Schema } from '@/hooks/useFormValidation';
 
 const steps = [
   { id: 1, title: 'Organization Info', icon: Building2, description: 'Basic details' },
@@ -58,8 +62,9 @@ const steps = [
   { id: 4, title: 'Government Documents', icon: FileText, description: 'Official docs' },
   { id: 5, title: 'Academic Credentials', icon: GraduationCap, description: 'Accreditations' },
   { id: 6, title: 'Banking Details', icon: Briefcase, description: 'Payment info' },
-  { id: 7, title: 'Partnership Contract', icon: Shield, description: 'Agreement' },
-  { id: 8, title: 'Payment', icon: CreditCard, description: 'Registration fee' },
+  { id: 7, title: 'Email Verification', icon: ShieldCheck, description: 'Verify email' },
+  { id: 8, title: 'Partnership Contract', icon: Shield, description: 'Agreement' },
+  { id: 9, title: 'Payment', icon: CreditCard, description: 'Registration fee' },
 ];
 
 const organizationTypes = [
@@ -165,6 +170,10 @@ export default function UniversityRegistration() {
   const [direction, setDirection] = useState(0);
   const [hasSavedProgress, setHasSavedProgress] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [emailVerified, setEmailVerified] = useState(false);
+
+  // Form validation
+  const { errors, validateStep, markTouched, getFieldError, setErrors } = useFormValidation();
 
   // Form state
   const [formData, setFormData] = useState(initialFormData);
@@ -264,12 +273,35 @@ export default function UniversityRegistration() {
   }, [currentStep]);
 
   const goToStep = (step: number) => {
+    // Validate current step before proceeding
+    if (step > currentStep) {
+      const validation = validateStep(currentStep, formData);
+      if (!validation.isValid) {
+        // Mark all fields as touched to show errors
+        Object.keys(validation.errors).forEach((field) => markTouched(field));
+        toast.error('Please fix the errors before proceeding');
+        return;
+      }
+    }
     setDirection(step > currentStep ? 1 : -1);
     setCurrentStep(step);
   };
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleFieldBlur = (field: string) => {
+    markTouched(field);
+    validateStep(currentStep, formData);
   };
 
   const handleFileChange = (field: keyof typeof documents, file: File | null) => {
@@ -366,21 +398,31 @@ export default function UniversityRegistration() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1:
-        return formData.organization_name && formData.organization_type && formData.country;
-      case 2:
-        return formData.primary_email && formData.primary_phone && formData.contact_person_name;
-      case 3:
-        return formData.legal_entity_name && formData.tax_id;
+      case 1: {
+        const validation = validateStep(1, formData);
+        return formData.organization_name && formData.organization_type && formData.country && validation.isValid;
+      }
+      case 2: {
+        const validation = validateStep(2, formData);
+        return formData.primary_email && formData.primary_phone && formData.contact_person_name && validation.isValid;
+      }
+      case 3: {
+        const validation = validateStep(3, formData);
+        return formData.legal_entity_name && formData.tax_id && validation.isValid;
+      }
       case 4:
         return documents.certificate_of_incorporation || documents.business_registration;
       case 5:
         return formData.accreditation_body || formData.student_enrollment;
-      case 6:
-        return formData.bank_name && formData.account_number;
+      case 6: {
+        const validation = validateStep(6, formData);
+        return formData.bank_name && formData.account_number && validation.isValid;
+      }
       case 7:
-        return Object.values(contractAgreed).every(v => v);
+        return emailVerified;
       case 8:
+        return Object.values(contractAgreed).every(v => v);
+      case 9:
         return true;
       default:
         return true;
@@ -402,20 +444,27 @@ export default function UniversityRegistration() {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div className="md:col-span-2">
-                <Label>Organization Name *</Label>
-                <Input
-                  placeholder="University of Excellence"
+                <FormField
+                  label="Organization Name"
+                  name="organization_name"
                   value={formData.organization_name}
-                  onChange={(e) => updateFormData('organization_name', e.target.value)}
+                  onChange={(v) => updateFormData('organization_name', v)}
+                  onBlur={() => handleFieldBlur('organization_name')}
+                  error={getFieldError('organization_name')}
+                  required
+                  placeholder="University of Excellence"
+                  showSuccessIcon
                 />
               </div>
               <div>
-                <Label>Organization Type *</Label>
+                <Label className="flex items-center gap-1">
+                  Organization Type <span className="text-destructive">*</span>
+                </Label>
                 <Select 
                   value={formData.organization_type}
                   onValueChange={(v) => updateFormData('organization_type', v)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className={cn(getFieldError('organization_type') && 'border-destructive')}>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -426,95 +475,115 @@ export default function UniversityRegistration() {
                     ))}
                   </SelectContent>
                 </Select>
+                {getFieldError('organization_type') && (
+                  <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    {getFieldError('organization_type')}
+                  </p>
+                )}
               </div>
-              <div>
-                <Label>Acronym / Short Name</Label>
-                <Input
-                  placeholder="UoE"
-                  value={formData.organization_acronym}
-                  onChange={(e) => updateFormData('organization_acronym', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Year Established</Label>
-                <Input
-                  type="number"
-                  placeholder="1990"
-                  value={formData.year_established}
-                  onChange={(e) => updateFormData('year_established', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Registration Number</Label>
-                <Input
-                  placeholder="REG-12345-2023"
-                  value={formData.registration_number}
-                  onChange={(e) => updateFormData('registration_number', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Country *</Label>
-                <Input
-                  placeholder="United States"
-                  value={formData.country}
-                  onChange={(e) => updateFormData('country', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>State / Province</Label>
-                <Input
-                  placeholder="California"
-                  value={formData.state_province}
-                  onChange={(e) => updateFormData('state_province', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>City</Label>
-                <Input
-                  placeholder="Los Angeles"
-                  value={formData.city}
-                  onChange={(e) => updateFormData('city', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label>Postal Code</Label>
-                <Input
-                  placeholder="90001"
-                  value={formData.postal_code}
-                  onChange={(e) => updateFormData('postal_code', e.target.value)}
-                />
-              </div>
+              <FormField
+                label="Acronym / Short Name"
+                name="organization_acronym"
+                value={formData.organization_acronym}
+                onChange={(v) => updateFormData('organization_acronym', v)}
+                onBlur={() => handleFieldBlur('organization_acronym')}
+                error={getFieldError('organization_acronym')}
+                placeholder="UoE"
+              />
+              <FormField
+                label="Year Established"
+                name="year_established"
+                type="number"
+                value={formData.year_established}
+                onChange={(v) => updateFormData('year_established', v)}
+                onBlur={() => handleFieldBlur('year_established')}
+                error={getFieldError('year_established')}
+                placeholder="1990"
+              />
+              <FormField
+                label="Registration Number"
+                name="registration_number"
+                value={formData.registration_number}
+                onChange={(v) => updateFormData('registration_number', v)}
+                placeholder="REG-12345-2023"
+              />
+              <FormField
+                label="Country"
+                name="country"
+                value={formData.country}
+                onChange={(v) => updateFormData('country', v)}
+                onBlur={() => handleFieldBlur('country')}
+                error={getFieldError('country')}
+                required
+                placeholder="United States"
+                showSuccessIcon
+              />
+              <FormField
+                label="State / Province"
+                name="state_province"
+                value={formData.state_province}
+                onChange={(v) => updateFormData('state_province', v)}
+                placeholder="California"
+              />
+              <FormField
+                label="City"
+                name="city"
+                value={formData.city}
+                onChange={(v) => updateFormData('city', v)}
+                placeholder="Los Angeles"
+              />
+              <FormField
+                label="Postal Code"
+                name="postal_code"
+                value={formData.postal_code}
+                onChange={(v) => updateFormData('postal_code', v)}
+                placeholder="90001"
+              />
               <div className="md:col-span-2">
-                <Label>Street Address</Label>
-                <Input
-                  placeholder="123 Education Boulevard"
+                <FormField
+                  label="Street Address"
+                  name="street_address"
                   value={formData.street_address}
-                  onChange={(e) => updateFormData('street_address', e.target.value)}
+                  onChange={(v) => updateFormData('street_address', v)}
+                  placeholder="123 Education Boulevard"
                 />
               </div>
               <div className="md:col-span-2">
-                <Label>Website</Label>
-                <Input
-                  placeholder="https://university.edu"
+                <FormField
+                  label="Website"
+                  name="website"
+                  type="url"
                   value={formData.website}
-                  onChange={(e) => updateFormData('website', e.target.value)}
+                  onChange={(v) => updateFormData('website', v)}
+                  onBlur={() => handleFieldBlur('website')}
+                  error={getFieldError('website')}
+                  placeholder="https://university.edu"
                 />
               </div>
               <div className="md:col-span-2">
-                <Label>Description</Label>
-                <Textarea
-                  placeholder="Tell us about your organization, its history, achievements, and educational focus..."
+                <FormField
+                  label="Description"
+                  name="description"
+                  type="textarea"
                   value={formData.description}
-                  onChange={(e) => updateFormData('description', e.target.value)}
+                  onChange={(v) => updateFormData('description', v)}
+                  onBlur={() => handleFieldBlur('description')}
+                  error={getFieldError('description')}
+                  placeholder="Tell us about your organization, its history, achievements, and educational focus..."
                   rows={4}
                 />
               </div>
               <div className="md:col-span-2">
-                <Label>Mission Statement</Label>
-                <Textarea
-                  placeholder="Your organization's mission and vision..."
+                <FormField
+                  label="Mission Statement"
+                  name="mission_statement"
+                  type="textarea"
                   value={formData.mission_statement}
-                  onChange={(e) => updateFormData('mission_statement', e.target.value)}
+                  onChange={(v) => updateFormData('mission_statement', v)}
+                  onBlur={() => handleFieldBlur('mission_statement')}
+                  error={getFieldError('mission_statement')}
+                  placeholder="Your organization's mission and vision..."
                   rows={3}
                 />
               </div>
@@ -1189,6 +1258,20 @@ export default function UniversityRegistration() {
         );
 
       case 7:
+        return (
+          <EmailVerification
+            email={formData.primary_email}
+            organizationName={formData.organization_name}
+            onVerified={() => {
+              setEmailVerified(true);
+              toast.success('Email verified! You can now proceed.');
+              goToStep(8);
+            }}
+            onBack={() => goToStep(2)}
+          />
+        );
+
+      case 8:
         return (
           <motion.div
             initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
