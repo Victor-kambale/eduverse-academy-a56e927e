@@ -18,13 +18,15 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Table,
   TableBody,
@@ -52,6 +54,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
+import ApplicationNotesPanel from '@/components/admin/ApplicationNotesPanel';
 
 interface UniversityApplication {
   id: string;
@@ -353,49 +356,49 @@ export default function UniversityApplications() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">University Applications</h1>
-        <p className="text-muted-foreground">Review and manage university registration applications</p>
+        <h1 className="text-2xl sm:text-3xl font-bold">University Applications</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Review and manage university registration applications</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
         <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold">{applications.length}</p>
-            <p className="text-sm text-muted-foreground">Total</p>
+          <CardContent className="p-3 sm:p-4 text-center">
+            <p className="text-2xl sm:text-3xl font-bold">{applications.length}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-yellow-600">{pendingCount}</p>
-            <p className="text-sm text-muted-foreground">Pending</p>
+          <CardContent className="p-3 sm:p-4 text-center">
+            <p className="text-2xl sm:text-3xl font-bold text-yellow-600">{pendingCount}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Pending</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-blue-600">{underReviewCount}</p>
-            <p className="text-sm text-muted-foreground">Under Review</p>
+          <CardContent className="p-3 sm:p-4 text-center">
+            <p className="text-2xl sm:text-3xl font-bold text-blue-600">{underReviewCount}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Under Review</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-green-600">{approvedCount}</p>
-            <p className="text-sm text-muted-foreground">Approved</p>
+          <CardContent className="p-3 sm:p-4 text-center">
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">{approvedCount}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Approved</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
-            <p className="text-sm text-muted-foreground">Rejected</p>
+        <Card className="col-span-2 sm:col-span-1">
+          <CardContent className="p-3 sm:p-4 text-center">
+            <p className="text-2xl sm:text-3xl font-bold text-red-600">{rejectedCount}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Rejected</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by institution, email, or contact..."
@@ -405,7 +408,7 @@ export default function UniversityApplications() {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -418,8 +421,8 @@ export default function UniversityApplications() {
         </Select>
       </div>
 
-      {/* Table */}
-      <div className="border rounded-lg">
+      {/* Table - Desktop */}
+      <div className="hidden md:block border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -501,20 +504,69 @@ export default function UniversityApplications() {
         </Table>
       </div>
 
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {loading ? (
+          <div className="text-center py-8 text-muted-foreground">Loading...</div>
+        ) : filteredApplications.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">No applications found</div>
+        ) : (
+          filteredApplications.map((app) => (
+            <Card key={app.id} className="cursor-pointer" onClick={() => {
+              setSelectedApp(app);
+              setIsViewDialogOpen(true);
+            }}>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-medium truncate">{app.institution_name}</p>
+                      {getStatusBadge(app.status)}
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">{app.primary_email}</p>
+                    <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" />
+                      <span>{app.country}</span>
+                      <span>•</span>
+                      <Calendar className="h-3 w-3" />
+                      <span>{format(new Date(app.created_at), 'MMM d, yyyy')}</span>
+                    </div>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant={app.email_verified ? 'default' : 'secondary'} className="text-xs">
+                        {app.email_verified ? '✓' : '✗'} Email
+                      </Badge>
+                      <Badge variant={app.phone_verified ? 'default' : 'secondary'} className="text-xs">
+                        {app.phone_verified ? '✓' : '✗'} Phone
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
       {/* View Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Application Details</DialogTitle>
           </DialogHeader>
           {selectedApp && (
-            <Tabs defaultValue="info" className="mt-4">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="info">Institution Info</TabsTrigger>
-                <TabsTrigger value="contact">Contact Person</TabsTrigger>
-                <TabsTrigger value="academic">Academic Info</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-              </TabsList>
+            <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-hidden">
+              {/* Main Content */}
+              <div className="flex-1 overflow-y-auto">
+                <Tabs defaultValue="info" className="mt-2">
+                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+                    <TabsTrigger value="info" className="text-xs sm:text-sm">Institution</TabsTrigger>
+                    <TabsTrigger value="contact" className="text-xs sm:text-sm">Contact</TabsTrigger>
+                    <TabsTrigger value="academic" className="text-xs sm:text-sm">Academic</TabsTrigger>
+                    <TabsTrigger value="documents" className="text-xs sm:text-sm">Documents</TabsTrigger>
+                  </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
                 <div className="flex items-start gap-6">
@@ -672,15 +724,15 @@ export default function UniversityApplications() {
               </TabsContent>
 
               <TabsContent value="documents" className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {documentFields.map(({ key, label }) => {
                     const url = selectedApp[key as keyof UniversityApplication] as string | null;
                     return (
                       <Card key={key} className={url ? '' : 'opacity-50'}>
-                        <CardContent className="p-4 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-muted-foreground" />
-                            <span className="text-sm">{label}</span>
+                        <CardContent className="p-3 sm:p-4 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-xs sm:text-sm truncate">{label}</span>
                           </div>
                           {url ? (
                             <Button
@@ -689,10 +741,10 @@ export default function UniversityApplications() {
                               onClick={() => openDocumentPreview(label, url)}
                             >
                               <Eye className="h-4 w-4 mr-1" />
-                              View
+                              <span className="hidden sm:inline">View</span>
                             </Button>
                           ) : (
-                            <Badge variant="secondary">Not uploaded</Badge>
+                            <Badge variant="secondary" className="text-xs">Not uploaded</Badge>
                           )}
                         </CardContent>
                       </Card>
@@ -700,13 +752,23 @@ export default function UniversityApplications() {
                   })}
                 </div>
               </TabsContent>
-            </Tabs>
+                </Tabs>
+              </div>
+
+              {/* Notes Panel - Sidebar on larger screens */}
+              <div className="lg:w-80 lg:border-l lg:pl-4 border-t lg:border-t-0 pt-4 lg:pt-0">
+                <ScrollArea className="h-64 lg:h-[60vh]">
+                  <ApplicationNotesPanel applicationId={selectedApp.id} />
+                </ScrollArea>
+              </div>
+            </div>
           )}
           {selectedApp && selectedApp.status !== 'approved' && selectedApp.status !== 'rejected' && (
-            <DialogFooter className="mt-6">
+            <DialogFooter className="mt-4 flex-col sm:flex-row gap-2">
               <Button
                 variant="outline"
                 onClick={() => setIsRejectDialogOpen(true)}
+                className="w-full sm:w-auto"
               >
                 <X className="h-4 w-4 mr-2" />
                 Reject
@@ -715,6 +777,7 @@ export default function UniversityApplications() {
                 <Button
                   variant="secondary"
                   onClick={() => handleMarkUnderReview(selectedApp)}
+                  className="w-full sm:w-auto"
                 >
                   <Clock className="h-4 w-4 mr-2" />
                   Mark Under Review
@@ -723,6 +786,7 @@ export default function UniversityApplications() {
               <Button
                 onClick={() => handleApprove(selectedApp)}
                 disabled={!selectedApp.email_verified || !selectedApp.contract_signed}
+                className="w-full sm:w-auto"
               >
                 <Check className="h-4 w-4 mr-2" />
                 Approve

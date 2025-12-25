@@ -13,16 +13,19 @@ import {
   Phone,
   Globe,
   Shield,
-  Eye
+  Eye,
+  Upload
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow } from 'date-fns';
+import DocumentReupload from '@/components/university/DocumentReupload';
 
 interface ApplicationData {
   id: string;
@@ -463,45 +466,55 @@ export default function ApplicationStatus() {
           </Card>
         </div>
 
-        {/* Documents Status */}
+        {/* Documents Status with Re-upload */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
               Document Status
             </CardTitle>
-            <CardDescription>Required documents for your application</CardDescription>
+            <CardDescription>
+              {application.status === 'rejected' 
+                ? 'You can re-upload documents and resubmit your application'
+                : 'Required documents for your application'
+              }
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              {requiredDocuments.map((doc) => {
-                const isUploaded = !!application[doc.key as keyof ApplicationData];
-                return (
-                  <div
+            <Tabs defaultValue="required" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="required" className="text-xs sm:text-sm">Required Documents</TabsTrigger>
+                <TabsTrigger value="optional" className="text-xs sm:text-sm">Optional Documents</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="required" className="space-y-3">
+                {requiredDocuments.map((doc) => (
+                  <DocumentReupload
                     key={doc.key}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
-                      isUploaded ? 'bg-green-500/5 border-green-500/20' : 'bg-amber-500/5 border-amber-500/20'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className={`h-5 w-5 ${isUploaded ? 'text-green-500' : 'text-amber-500'}`} />
-                      <span className="text-sm font-medium">{doc.label}</span>
-                    </div>
-                    {isUploaded ? (
-                      <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Uploaded
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Required
-                      </Badge>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    applicationId={application.id}
+                    documentKey={doc.key}
+                    documentLabel={doc.label}
+                    currentUrl={application[doc.key as keyof ApplicationData] as string | null}
+                    onUploadComplete={fetchApplication}
+                    disabled={application.status === 'approved'}
+                  />
+                ))}
+              </TabsContent>
+              
+              <TabsContent value="optional" className="space-y-3">
+                {optionalDocuments.map((doc) => (
+                  <DocumentReupload
+                    key={doc.key}
+                    applicationId={application.id}
+                    documentKey={doc.key}
+                    documentLabel={doc.label}
+                    currentUrl={application[doc.key as keyof ApplicationData] as string | null}
+                    onUploadComplete={fetchApplication}
+                    disabled={application.status === 'approved'}
+                  />
+                ))}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
