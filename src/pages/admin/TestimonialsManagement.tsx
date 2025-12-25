@@ -18,7 +18,8 @@ import {
   Instagram,
   Search,
   ArrowLeft,
-  Play
+  Play,
+  Maximize2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,6 +57,8 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { VideoRotationGallery } from '@/components/testimonials/VideoRotationGallery';
+import { BulkImportExport } from '@/components/admin/BulkImportExport';
 
 interface Testimonial {
   id: string;
@@ -171,6 +174,8 @@ export default function TestimonialsManagement() {
   const [countrySearch, setCountrySearch] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
+  const [showVideoGallery, setShowVideoGallery] = useState(false);
+  const [videoGalleryIndex, setVideoGalleryIndex] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -480,20 +485,38 @@ export default function TestimonialsManagement() {
         </CardContent>
       </Card>
 
+      {/* Bulk Import/Export */}
+      <BulkImportExport entityType="testimonials" onImportComplete={fetchTestimonials} />
+
       {/* Video Gallery Preview */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Video className="h-5 w-5" />
-            Video Testimonials Gallery
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Video className="h-5 w-5" />
+              Video Testimonials Gallery
+            </CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowVideoGallery(true)}
+              disabled={testimonials.filter(t => t.is_active && t.video_url).length === 0}
+            >
+              <Maximize2 className="h-4 w-4 mr-2" />
+              Open 3D Gallery
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[180px] scroll-smooth">
             <div className="flex gap-4 pb-4">
-              {testimonials.filter(t => t.is_active && t.video_url).map((t) => (
+              {testimonials.filter(t => t.is_active && t.video_url).map((t, index) => (
                 <div 
                   key={t.id}
+                  onClick={() => {
+                    setVideoGalleryIndex(index);
+                    setShowVideoGallery(true);
+                  }}
                   className="flex-shrink-0 w-48 h-32 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 relative overflow-hidden group cursor-pointer hover:scale-105 transition-transform"
                 >
                   {t.photo_url ? (
@@ -518,6 +541,23 @@ export default function TestimonialsManagement() {
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Video Rotation Gallery Modal */}
+      <VideoRotationGallery
+        videos={testimonials
+          .filter(t => t.is_active && t.video_url)
+          .map(t => ({
+            id: t.id,
+            name: t.name,
+            role: t.role,
+            country_emoji: t.country_emoji,
+            video_url: t.video_url!,
+            photo_url: t.photo_url || undefined,
+          }))}
+        isOpen={showVideoGallery}
+        onClose={() => setShowVideoGallery(false)}
+        initialIndex={videoGalleryIndex}
+      />
 
       {/* Testimonial Preview */}
       <Card>
