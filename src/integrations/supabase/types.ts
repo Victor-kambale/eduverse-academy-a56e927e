@@ -630,6 +630,45 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_cards: {
+        Row: {
+          category: string
+          created_at: string
+          gradient: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          is_disabled: boolean
+          name: string
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          gradient: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_disabled?: boolean
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          gradient?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_disabled?: boolean
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       language_settings: {
         Row: {
           code: string
@@ -1480,9 +1519,15 @@ export type Database = {
           photo_url: string | null
           rating: number
           role: string
+          social_facebook: string | null
+          social_instagram: string | null
+          social_linkedin: string | null
+          social_twitter: string | null
           sort_order: number
           testimonial_text: string
+          testimonial_type: string | null
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           country_code?: string
@@ -1494,9 +1539,15 @@ export type Database = {
           photo_url?: string | null
           rating?: number
           role?: string
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
           sort_order?: number
           testimonial_text: string
+          testimonial_type?: string | null
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           country_code?: string
@@ -1508,9 +1559,15 @@ export type Database = {
           photo_url?: string | null
           rating?: number
           role?: string
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
           sort_order?: number
           testimonial_text?: string
+          testimonial_type?: string | null
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
