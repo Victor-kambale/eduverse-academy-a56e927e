@@ -53,6 +53,7 @@ import { WithdrawalForm } from '@/components/withdrawal/WithdrawalForm';
 import { TransactionHistory } from '@/components/withdrawal/TransactionHistory';
 import { InstructorInvitation } from '@/components/university/InstructorInvitation';
 import { BulkCourseImport } from '@/components/university/BulkCourseImport';
+import { UniversityCourseWizard } from '@/components/university/UniversityCourseWizard';
 import { toast } from 'sonner';
 import DashboardChatbot from '@/components/chatbot/DashboardChatbot';
 import RealtimeRevenue from '@/components/dashboard/RealtimeRevenue';
@@ -93,6 +94,7 @@ export default function UniversityDashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCourseWizard, setShowCourseWizard] = useState(false);
 
   const [stats, setStats] = useState({
     totalInstructors: 0,
@@ -285,10 +287,14 @@ export default function UniversityDashboard() {
                 <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              <Button>
+              <Button onClick={() => setShowCourseWizard(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Course
               </Button>
+              <UniversityCourseWizard
+                open={showCourseWizard}
+                onClose={() => setShowCourseWizard(false)}
+              />
             </div>
           </div>
 
