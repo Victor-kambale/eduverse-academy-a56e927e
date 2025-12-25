@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.send-promo-notification]
 verify_jwt = true
+
+[functions.check-document-expiry]
+verify_jwt = false
+
+[functions.extract-document-ocr]
+verify_jwt = true
