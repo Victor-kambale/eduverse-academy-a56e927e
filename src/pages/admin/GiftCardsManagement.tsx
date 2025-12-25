@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  EyeOff, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  EyeOff,
   Save,
   Gift,
   Ban,
@@ -12,7 +12,9 @@ import {
   Search,
   ArrowLeft,
   GripVertical,
-  Bell
+  Bell,
+  Undo2,
+  Redo2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -113,27 +115,26 @@ const defaultGiftCard: Omit<GiftCard, 'id' | 'created_at' | 'updated_at'> = {
 };
 
 // Sortable Item Component
-function SortableGiftCardItem({ 
-  card, 
-  onEdit, 
-  onToggleActive, 
-  onToggleDisabled, 
-  onDelete 
-}: { 
+function SortableGiftCardItem({
+  card,
+  isSelected,
+  onSelect,
+  onEdit,
+  onToggleActive,
+  onToggleDisabled,
+  onDelete,
+}: {
   card: GiftCard;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
   onEdit: (card: GiftCard) => void;
   onToggleActive: (card: GiftCard) => void;
   onToggleDisabled: (card: GiftCard) => void;
   onDelete: (id: string) => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: card.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: card.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -142,22 +143,29 @@ function SortableGiftCardItem({
   };
 
   return (
-    <Card 
+    <Card
       ref={setNodeRef}
       style={style}
-      className={`${!card.is_active || card.is_disabled ? 'opacity-60' : ''} transition-all ${isDragging ? 'shadow-lg z-50' : ''}`}
+      data-item-id={card.id}
+      onClick={() => onSelect(card.id)}
+      className={`${!card.is_active || card.is_disabled ? 'opacity-60' : ''} transition-all ${
+        isDragging ? 'shadow-lg z-50' : ''
+      } ${isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
     >
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-1">
-            <div 
-              {...attributes} 
+            <div
+              {...attributes}
               {...listeners}
               className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+              aria-label="Drag to reorder"
             >
               <GripVertical className="h-5 w-5 text-muted-foreground" />
             </div>
-            <div className={`w-20 h-14 bg-gradient-to-br ${card.gradient} rounded-lg flex items-center justify-center shadow-md`}>
+            <div
+              className={`w-20 h-14 bg-gradient-to-br ${card.gradient} rounded-lg flex items-center justify-center shadow-md`}
+            >
               <Gift className="h-6 w-6 text-white/80" />
             </div>
             <div className="flex-1">
@@ -175,11 +183,7 @@ function SortableGiftCardItem({
               <Edit className="h-4 w-4 mr-1" />
               Edit
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onToggleActive(card)}
-            >
+            <Button variant="outline" size="sm" onClick={() => onToggleActive(card)}>
               {card.is_active ? (
                 <>
                   <EyeOff className="h-4 w-4 mr-1" />
@@ -193,7 +197,7 @@ function SortableGiftCardItem({
               )}
             </Button>
             <Button
-              variant={card.is_disabled ? "default" : "outline"}
+              variant={card.is_disabled ? 'default' : 'outline'}
               size="sm"
               onClick={() => onToggleDisabled(card)}
             >
@@ -224,9 +228,7 @@ function SortableGiftCardItem({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => onDelete(card.id)}>
-                    Delete
-                  </AlertDialogAction>
+                  <AlertDialogAction onClick={() => onDelete(card.id)}>Delete</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -245,9 +247,14 @@ export default function GiftCardsManagement() {
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [undoStack, setUndoStack] = useState<string[][]>([]);
+  const [redoStack, setRedoStack] = useState<string[][]>([]);
+
   const navigate = useNavigate();
   const isInitialMount = useRef(true);
   const currentUserIdRef = useRef<string | null>(null);
+  const lastLocalMutationRef = useRef<number>(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
