@@ -73,6 +73,89 @@ const organizationTypes = [
   { value: 'government', label: 'Government Institution' },
 ];
 
+const STORAGE_KEY = 'university_registration_draft';
+
+interface SavedFormState {
+  formData: typeof initialFormData;
+  contractAgreed: typeof initialContractAgreed;
+  currentStep: number;
+  savedAt: string;
+}
+
+const initialFormData = {
+  // Organization Info
+  organization_name: '',
+  organization_type: '',
+  organization_acronym: '',
+  year_established: '',
+  registration_number: '',
+  country: '',
+  state_province: '',
+  city: '',
+  postal_code: '',
+  street_address: '',
+  website: '',
+  
+  // Contact Details
+  primary_email: '',
+  secondary_email: '',
+  primary_phone: '',
+  secondary_phone: '',
+  fax_number: '',
+  contact_person_name: '',
+  contact_person_title: '',
+  contact_person_email: '',
+  contact_person_phone: '',
+  
+  // Legal Information
+  legal_entity_name: '',
+  legal_entity_type: '',
+  tax_id: '',
+  vat_number: '',
+  business_license_number: '',
+  incorporation_date: '',
+  jurisdiction: '',
+  
+  // Academic Details
+  accreditation_body: '',
+  accreditation_number: '',
+  accreditation_date: '',
+  accreditation_expiry: '',
+  student_enrollment: '',
+  faculty_count: '',
+  campus_count: '',
+  programs_offered: '',
+  
+  // Banking
+  bank_country: '',
+  bank_name: '',
+  bank_branch: '',
+  account_holder_name: '',
+  account_number: '',
+  routing_number: '',
+  swift_code: '',
+  iban: '',
+  
+  // Description
+  description: '',
+  mission_statement: '',
+  specializations: [] as string[],
+  
+  // Payment
+  paymentMethod: '',
+};
+
+const initialContractAgreed = {
+  terms: false,
+  privacy: false,
+  partnership: false,
+  revenue_share: false,
+  quality_standards: false,
+  content_guidelines: false,
+  dispute_resolution: false,
+  data_protection: false,
+};
+
 export default function UniversityRegistration() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -80,82 +163,11 @@ export default function UniversityRegistration() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [direction, setDirection] = useState(0);
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
+  const [lastSaved, setLastSaved] = useState<string | null>(null);
 
-  // Smooth scroll to top when step changes
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [currentStep]);
-
-  const goToStep = (step: number) => {
-    setDirection(step > currentStep ? 1 : -1);
-    setCurrentStep(step);
-  };
-  
   // Form state
-  const [formData, setFormData] = useState({
-    // Organization Info
-    organization_name: '',
-    organization_type: '',
-    organization_acronym: '',
-    year_established: '',
-    registration_number: '',
-    country: '',
-    state_province: '',
-    city: '',
-    postal_code: '',
-    street_address: '',
-    website: '',
-    
-    // Contact Details
-    primary_email: '',
-    secondary_email: '',
-    primary_phone: '',
-    secondary_phone: '',
-    fax_number: '',
-    contact_person_name: '',
-    contact_person_title: '',
-    contact_person_email: '',
-    contact_person_phone: '',
-    
-    // Legal Information
-    legal_entity_name: '',
-    legal_entity_type: '',
-    tax_id: '',
-    vat_number: '',
-    business_license_number: '',
-    incorporation_date: '',
-    jurisdiction: '',
-    
-    // Academic Details
-    accreditation_body: '',
-    accreditation_number: '',
-    accreditation_date: '',
-    accreditation_expiry: '',
-    student_enrollment: '',
-    faculty_count: '',
-    campus_count: '',
-    programs_offered: '',
-    
-    // Banking
-    bank_country: '',
-    bank_name: '',
-    bank_branch: '',
-    account_holder_name: '',
-    account_number: '',
-    routing_number: '',
-    swift_code: '',
-    iban: '',
-    
-    // Description
-    description: '',
-    mission_statement: '',
-    specializations: [] as string[],
-    
-    // Payment
-    paymentMethod: '',
-  });
+  const [formData, setFormData] = useState(initialFormData);
 
   const [documents, setDocuments] = useState({
     // Government Documents
@@ -182,20 +194,79 @@ export default function UniversityRegistration() {
     organization_brochure: null as File | null,
   });
 
-  const [contractAgreed, setContractAgreed] = useState({
-    terms: false,
-    privacy: false,
-    partnership: false,
-    revenue_share: false,
-    quality_standards: false,
-    content_guidelines: false,
-    dispute_resolution: false,
-    data_protection: false,
-  });
+  const [contractAgreed, setContractAgreed] = useState(initialContractAgreed);
 
   const [documentValidation, setDocumentValidation] = useState<Record<string, boolean>>({});
   const [directorSignature, setDirectorSignature] = useState<File | null>(null);
   const [directorPhoto, setDirectorPhoto] = useState<File | null>(null);
+
+  // Load saved progress on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed: SavedFormState = JSON.parse(saved);
+        setFormData(parsed.formData);
+        setContractAgreed(parsed.contractAgreed);
+        setCurrentStep(parsed.currentStep);
+        setHasSavedProgress(true);
+        setLastSaved(parsed.savedAt);
+        toast.success('Your previous progress has been restored!', {
+          description: `Last saved: ${new Date(parsed.savedAt).toLocaleString()}`,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load saved progress:', error);
+    }
+  }, []);
+
+  // Auto-save progress every 30 seconds and on form changes
+  useEffect(() => {
+    const saveProgress = () => {
+      const state: SavedFormState = {
+        formData,
+        contractAgreed,
+        currentStep,
+        savedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      setLastSaved(state.savedAt);
+      setHasSavedProgress(true);
+    };
+
+    // Debounce save on form changes
+    const timeoutId = setTimeout(saveProgress, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData, contractAgreed, currentStep]);
+
+  // Clear saved progress on successful submission
+  const clearSavedProgress = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setHasSavedProgress(false);
+    setLastSaved(null);
+  };
+
+  // Reset form and clear progress
+  const handleResetForm = () => {
+    setFormData(initialFormData);
+    setContractAgreed(initialContractAgreed);
+    setCurrentStep(1);
+    clearSavedProgress();
+    toast.success('Form has been reset');
+  };
+
+  // Smooth scroll to top when step changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep]);
+
+  const goToStep = (step: number) => {
+    setDirection(step > currentStep ? 1 : -1);
+    setCurrentStep(step);
+  };
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -274,6 +345,9 @@ export default function UniversityRegistration() {
       });
 
       if (error) throw error;
+
+      // Clear saved progress on successful submission
+      clearSavedProgress();
 
       // Play success sound
       const audio = new Audio('/sounds/success.mp3');
@@ -1398,8 +1472,33 @@ export default function UniversityRegistration() {
             <Progress value={progress} className="h-2" />
           </motion.div>
 
+          {/* Auto-save Status */}
+          {hasSavedProgress && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 p-3 bg-muted/50 rounded-lg border"
+            >
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="text-muted-foreground">
+                  Progress auto-saved {lastSaved && `at ${new Date(lastSaved).toLocaleTimeString()}`}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResetForm}
+                className="text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Reset Form
+              </Button>
+            </motion.div>
+          )}
+
           {/* Progress Steps - Scrollable on mobile */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
