@@ -19,7 +19,8 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  MessageSquare
+  MessageSquare,
+  FileArchive
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,6 +56,8 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { format } from 'date-fns';
 import ApplicationNotesPanel from '@/components/admin/ApplicationNotesPanel';
+import { DocumentVerificationPanel } from '@/components/admin/DocumentVerificationPanel';
+import { BulkDocumentExport } from '@/components/admin/BulkDocumentExport';
 
 interface UniversityApplication {
   id: string;
@@ -552,20 +555,27 @@ export default function UniversityApplications() {
 
       {/* View Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle>Application Details</DialogTitle>
+            {selectedApp && (
+              <BulkDocumentExport 
+                applicationId={selectedApp.id} 
+                institutionName={selectedApp.institution_name} 
+              />
+            )}
           </DialogHeader>
           {selectedApp && (
             <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-hidden">
               {/* Main Content */}
               <div className="flex-1 overflow-y-auto">
                 <Tabs defaultValue="info" className="mt-2">
-                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
                     <TabsTrigger value="info" className="text-xs sm:text-sm">Institution</TabsTrigger>
                     <TabsTrigger value="contact" className="text-xs sm:text-sm">Contact</TabsTrigger>
                     <TabsTrigger value="academic" className="text-xs sm:text-sm">Academic</TabsTrigger>
                     <TabsTrigger value="documents" className="text-xs sm:text-sm">Documents</TabsTrigger>
+                    <TabsTrigger value="verification" className="text-xs sm:text-sm">Verification</TabsTrigger>
                   </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
@@ -751,6 +761,26 @@ export default function UniversityApplications() {
                     );
                   })}
                 </div>
+              </TabsContent>
+
+              <TabsContent value="verification" className="space-y-4 mt-4">
+                <DocumentVerificationPanel
+                  applicationId={selectedApp.id}
+                  documents={{
+                    certificate_of_incorporation_url: selectedApp.certificate_of_incorporation_url,
+                    business_registration_url: selectedApp.business_registration_url,
+                    accreditation_certificate_url: selectedApp.accreditation_certificate_url,
+                    tax_clearance_url: selectedApp.tax_clearance_url,
+                    ministry_certificate_url: selectedApp.ministry_certificate_url,
+                    operating_license_url: selectedApp.operating_license_url,
+                    government_approval_url: selectedApp.government_approval_url,
+                    academic_charter_url: selectedApp.academic_charter_url,
+                    quality_assurance_url: selectedApp.quality_assurance_url,
+                    authorization_letter_url: selectedApp.authorization_letter_url,
+                    institutional_profile_url: selectedApp.institutional_profile_url,
+                    leadership_cv_url: selectedApp.leadership_cv_url,
+                  }}
+                />
               </TabsContent>
                 </Tabs>
               </div>

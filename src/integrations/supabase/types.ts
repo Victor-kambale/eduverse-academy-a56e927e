@@ -1636,6 +1636,7 @@ export type Database = {
           institution_name: string
           institution_type: string
           institutional_profile_url: string | null
+          last_reminder_sent_at: string | null
           leadership_cv_url: string | null
           ministry_certificate_url: string | null
           operating_license_url: string | null
@@ -1648,6 +1649,7 @@ export type Database = {
           registration_payment_date: string | null
           registration_payment_id: string | null
           rejection_reason: string | null
+          reminder_count: number | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -1683,6 +1685,7 @@ export type Database = {
           institution_name: string
           institution_type: string
           institutional_profile_url?: string | null
+          last_reminder_sent_at?: string | null
           leadership_cv_url?: string | null
           ministry_certificate_url?: string | null
           operating_license_url?: string | null
@@ -1695,6 +1698,7 @@ export type Database = {
           registration_payment_date?: string | null
           registration_payment_id?: string | null
           rejection_reason?: string | null
+          reminder_count?: number | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -1730,6 +1734,7 @@ export type Database = {
           institution_name?: string
           institution_type?: string
           institutional_profile_url?: string | null
+          last_reminder_sent_at?: string | null
           leadership_cv_url?: string | null
           ministry_certificate_url?: string | null
           operating_license_url?: string | null
@@ -1742,6 +1747,7 @@ export type Database = {
           registration_payment_date?: string | null
           registration_payment_id?: string | null
           rejection_reason?: string | null
+          reminder_count?: number | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -1752,6 +1758,53 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      university_document_verifications: {
+        Row: {
+          admin_comment: string | null
+          admin_id: string | null
+          application_id: string
+          created_at: string
+          document_key: string
+          document_label: string
+          id: string
+          status: string
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          admin_comment?: string | null
+          admin_id?: string | null
+          application_id: string
+          created_at?: string
+          document_key: string
+          document_label: string
+          id?: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          admin_comment?: string | null
+          admin_id?: string | null
+          application_id?: string
+          created_at?: string
+          document_key?: string
+          document_label?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "university_document_verifications_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "university_applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_quiz_answers: {
         Row: {
