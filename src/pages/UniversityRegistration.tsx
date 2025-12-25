@@ -24,6 +24,8 @@ import {
   CheckCircle,
   Sparkles,
   ShieldCheck,
+  Smartphone,
+  ClipboardCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,6 +52,8 @@ import { PaymentMethodSelector } from '@/components/payment/PaymentMethodSelecto
 import { DocumentScanner } from '@/components/university/DocumentScanner';
 import { DragDropUpload } from '@/components/university/DragDropUpload';
 import { EmailVerification } from '@/components/university/EmailVerification';
+import { SMSVerification } from '@/components/university/SMSVerification';
+import { DocumentStatusDashboard } from '@/components/university/DocumentStatusDashboard';
 import { FormField } from '@/components/ui/form-field';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -60,11 +64,13 @@ const steps = [
   { id: 2, title: 'Contact Details', icon: Mail, description: 'Communication info' },
   { id: 3, title: 'Legal Information', icon: Scale, description: 'Registration & tax' },
   { id: 4, title: 'Government Documents', icon: FileText, description: 'Official docs' },
-  { id: 5, title: 'Academic Credentials', icon: GraduationCap, description: 'Accreditations' },
-  { id: 6, title: 'Banking Details', icon: Briefcase, description: 'Payment info' },
-  { id: 7, title: 'Email Verification', icon: ShieldCheck, description: 'Verify email' },
-  { id: 8, title: 'Partnership Contract', icon: Shield, description: 'Agreement' },
-  { id: 9, title: 'Payment', icon: CreditCard, description: 'Registration fee' },
+  { id: 5, title: 'Document Status', icon: ClipboardCheck, description: 'Verification status' },
+  { id: 6, title: 'Academic Credentials', icon: GraduationCap, description: 'Accreditations' },
+  { id: 7, title: 'Banking Details', icon: Briefcase, description: 'Payment info' },
+  { id: 8, title: 'Email Verification', icon: ShieldCheck, description: 'Verify email' },
+  { id: 9, title: 'Phone Verification', icon: Smartphone, description: 'Verify phone' },
+  { id: 10, title: 'Partnership Contract', icon: Shield, description: 'Agreement' },
+  { id: 11, title: 'Payment', icon: CreditCard, description: 'Registration fee' },
 ];
 
 const organizationTypes = [
@@ -171,6 +177,7 @@ export default function UniversityRegistration() {
   const [hasSavedProgress, setHasSavedProgress] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
 
   // Form validation
   const { errors, validateStep, markTouched, getFieldError, setErrors } = useFormValidation();
@@ -413,16 +420,21 @@ export default function UniversityRegistration() {
       case 4:
         return documents.certificate_of_incorporation || documents.business_registration;
       case 5:
+        // Document status - always allow proceed to view status
+        return true;
+      case 6:
         return formData.accreditation_body || formData.student_enrollment;
-      case 6: {
+      case 7: {
         const validation = validateStep(6, formData);
         return formData.bank_name && formData.account_number && validation.isValid;
       }
-      case 7:
-        return emailVerified;
       case 8:
-        return Object.values(contractAgreed).every(v => v);
+        return emailVerified;
       case 9:
+        return phoneVerified;
+      case 10:
+        return Object.values(contractAgreed).every(v => v);
+      case 11:
         return true;
       default:
         return true;
@@ -1167,7 +1179,118 @@ export default function UniversityRegistration() {
           </motion.div>
         );
 
+      case 5:
+        return (
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <DocumentStatusDashboard
+              documents={documents}
+              documentValidation={documentValidation}
+              onReupload={(docId) => {
+                // Navigate back to document upload step
+                goToStep(4);
+                toast.info(`Please upload: ${docId.replace(/_/g, ' ')}`);
+              }}
+            />
+          </motion.div>
+        );
+
       case 6:
+        return (
+          <motion.div
+            initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction > 0 ? -50 : 50 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="space-y-6"
+          >
+            <h3 className="font-semibold text-lg">Academic Documents</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Award className="h-4 w-4" />
+                  Accreditation Certificate
+                </Label>
+                <Input
+                  type="file"
+                  accept=".pdf,image/*"
+                  className="mt-2"
+                  onChange={(e) => handleFileChange('accreditation_certificate', e.target.files?.[0] || null)}
+                />
+                {documents.accreditation_certificate && (
+                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                    <Check className="h-4 w-4" />
+                    {documents.accreditation_certificate.name}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Quality Assurance Certificate
+                </Label>
+                <Input
+                  type="file"
+                  accept=".pdf,image/*"
+                  className="mt-2"
+                  onChange={(e) => handleFileChange('quality_assurance_certificate', e.target.files?.[0] || null)}
+                />
+                {documents.quality_assurance_certificate && (
+                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                    <Check className="h-4 w-4" />
+                    {documents.quality_assurance_certificate.name}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  Organization Logo
+                </Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  className="mt-2"
+                  onChange={(e) => handleFileChange('organization_logo', e.target.files?.[0] || null)}
+                />
+                {documents.organization_logo && (
+                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                    <Check className="h-4 w-4" />
+                    {documents.organization_logo.name}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Organization Brochure
+                </Label>
+                <Input
+                  type="file"
+                  accept=".pdf"
+                  className="mt-2"
+                  onChange={(e) => handleFileChange('organization_brochure', e.target.files?.[0] || null)}
+                />
+                {documents.organization_brochure && (
+                  <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                    <Check className="h-4 w-4" />
+                    {documents.organization_brochure.name}
+                  </p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        );
+
+      case 7:
         return (
           <motion.div
             initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
@@ -1178,12 +1301,6 @@ export default function UniversityRegistration() {
           >
             <div className="p-3 sm:p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg mb-6">
               <p className="text-xs sm:text-sm text-blue-600">
-                Banking information is required for revenue sharing. Your organization will receive 80% of all course sales.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <p className="text-sm text-blue-600">
                 Banking information is required for revenue sharing. Your organization will receive 80% of all course sales.
               </p>
             </div>
@@ -1257,7 +1374,7 @@ export default function UniversityRegistration() {
           </motion.div>
         );
 
-      case 7:
+      case 8:
         return (
           <EmailVerification
             email={formData.primary_email}
@@ -1265,13 +1382,27 @@ export default function UniversityRegistration() {
             onVerified={() => {
               setEmailVerified(true);
               toast.success('Email verified! You can now proceed.');
-              goToStep(8);
+              goToStep(9);
             }}
             onBack={() => goToStep(2)}
           />
         );
 
-      case 8:
+      case 9:
+        return (
+          <SMSVerification
+            phoneNumber={formData.primary_phone}
+            organizationName={formData.organization_name}
+            onVerified={() => {
+              setPhoneVerified(true);
+              toast.success('Phone verified! You can now proceed.');
+              goToStep(10);
+            }}
+            onBack={() => goToStep(2)}
+          />
+        );
+
+      case 10:
         return (
           <motion.div
             initial={{ opacity: 0, x: direction > 0 ? 50 : -50 }}
