@@ -64,6 +64,7 @@ import ResetPassword from "./pages/ResetPassword";
 import VerifyCertificate from "./pages/VerifyCertificate";
 import UniversityRegistration from "./pages/UniversityRegistration";
 import UniversityDashboard from "./pages/university/UniversityDashboard";
+import ApplicationStatus from "./pages/university/ApplicationStatus";
 import GiftCards from "./pages/GiftCards";
 import StudentAuth from "./pages/auth/StudentAuth";
 import TeacherAuth from "./pages/auth/TeacherAuth";
@@ -165,6 +166,14 @@ const App = () => (
                 <ProtectedUniversityRoute>
                   <UniversityDashboard />
                 </ProtectedUniversityRoute>
+              }
+            />
+            <Route
+              path="/university/application-status"
+              element={
+                <ProtectedRoute>
+                  <ApplicationStatus />
+                </ProtectedRoute>
               }
             />
             <Route
