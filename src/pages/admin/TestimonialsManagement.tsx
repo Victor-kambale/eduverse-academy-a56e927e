@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Star, 
-  Eye, 
-  EyeOff, 
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Star,
+  Eye,
+  EyeOff,
   Save,
   Upload,
   Globe,
@@ -21,7 +21,9 @@ import {
   Play,
   Maximize2,
   GripVertical,
-  Bell
+  Bell,
+  Undo2,
+  Redo2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
