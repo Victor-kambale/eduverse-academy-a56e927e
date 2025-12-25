@@ -21,7 +21,10 @@ import {
   AlertCircle,
   MessageSquare,
   FileArchive,
-  Scale
+  Scale,
+  BookTemplate,
+  Calculator,
+  History
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,6 +63,9 @@ import ApplicationNotesPanel from '@/components/admin/ApplicationNotesPanel';
 import { DocumentVerificationPanel } from '@/components/admin/DocumentVerificationPanel';
 import { BulkDocumentExport } from '@/components/admin/BulkDocumentExport';
 import { ApplicationComparison } from '@/components/admin/ApplicationComparison';
+import { DocumentTemplateLibrary } from '@/components/admin/DocumentTemplateLibrary';
+import { ApplicationScoringSystem } from '@/components/admin/ApplicationScoringSystem';
+import { ApplicationAuditTrail } from '@/components/admin/ApplicationAuditTrail';
 
 interface UniversityApplication {
   id: string;
@@ -118,6 +124,7 @@ export default function UniversityApplications() {
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
+  const [isTemplateLibraryOpen, setIsTemplateLibraryOpen] = useState(false);
   
   // Document preview state
   const [isDocPreviewOpen, setIsDocPreviewOpen] = useState(false);
@@ -170,6 +177,16 @@ export default function UniversityApplications() {
         .eq('id', application.id);
 
       if (updateError) throw updateError;
+
+      // Log audit trail
+      await supabase.from('audit_logs').insert({
+        action: 'application_approved',
+        entity_type: 'university_application',
+        entity_id: application.id,
+        user_id: user?.id,
+        old_value: { status: application.status },
+        new_value: { status: 'approved' },
+      });
 
       // Add instructor role
       const { error: roleError } = await supabase
@@ -226,6 +243,16 @@ export default function UniversityApplications() {
 
       if (error) throw error;
 
+      // Log audit trail
+      await supabase.from('audit_logs').insert({
+        action: 'status_changed',
+        entity_type: 'university_application',
+        entity_id: application.id,
+        user_id: user?.id,
+        old_value: { status: application.status },
+        new_value: { status: 'under_review' },
+      });
+
       await supabase.from('notifications').insert({
         user_id: application.user_id,
         title: 'Application Under Review',
@@ -265,6 +292,17 @@ export default function UniversityApplications() {
         .eq('id', selectedApp.id);
 
       if (error) throw error;
+
+      // Log audit trail
+      await supabase.from('audit_logs').insert({
+        action: 'application_rejected',
+        entity_type: 'university_application',
+        entity_id: selectedApp.id,
+        user_id: user?.id,
+        old_value: { status: selectedApp.status },
+        new_value: { status: 'rejected' },
+        metadata: { rejection_reason: rejectionReason },
+      });
 
       await supabase.from('notifications').insert({
         user_id: selectedApp.user_id,
@@ -433,6 +471,14 @@ export default function UniversityApplications() {
           <Scale className="h-4 w-4" />
           <span className="hidden sm:inline">Compare</span>
         </Button>
+        <Button
+          variant="outline"
+          onClick={() => setIsTemplateLibraryOpen(true)}
+          className="gap-2"
+        >
+          <FileText className="h-4 w-4" />
+          <span className="hidden sm:inline">Templates</span>
+        </Button>
       </div>
 
       {/* Table - Desktop */}
@@ -581,12 +627,14 @@ export default function UniversityApplications() {
               {/* Main Content */}
               <div className="flex-1 overflow-y-auto">
                 <Tabs defaultValue="info" className="mt-2">
-                  <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
+                  <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7">
                     <TabsTrigger value="info" className="text-xs sm:text-sm">Institution</TabsTrigger>
                     <TabsTrigger value="contact" className="text-xs sm:text-sm">Contact</TabsTrigger>
                     <TabsTrigger value="academic" className="text-xs sm:text-sm">Academic</TabsTrigger>
                     <TabsTrigger value="documents" className="text-xs sm:text-sm">Documents</TabsTrigger>
                     <TabsTrigger value="verification" className="text-xs sm:text-sm">Verification</TabsTrigger>
+                    <TabsTrigger value="scoring" className="text-xs sm:text-sm">Scoring</TabsTrigger>
+                    <TabsTrigger value="audit" className="text-xs sm:text-sm">Audit</TabsTrigger>
                   </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
@@ -793,6 +841,17 @@ export default function UniversityApplications() {
                   }}
                 />
               </TabsContent>
+
+              <TabsContent value="scoring" className="space-y-4 mt-4">
+                <ApplicationScoringSystem 
+                  application={selectedApp}
+                  onScoreUpdate={fetchApplications}
+                />
+              </TabsContent>
+
+              <TabsContent value="audit" className="space-y-4 mt-4">
+                <ApplicationAuditTrail applicationId={selectedApp.id} />
+              </TabsContent>
                 </Tabs>
               </div>
 
@@ -918,6 +977,16 @@ export default function UniversityApplications() {
         open={isComparisonOpen} 
         onOpenChange={setIsComparisonOpen} 
       />
+
+      {/* Template Library Dialog */}
+      <Dialog open={isTemplateLibraryOpen} onOpenChange={setIsTemplateLibraryOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Document Template Library</DialogTitle>
+          </DialogHeader>
+          <DocumentTemplateLibrary />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
