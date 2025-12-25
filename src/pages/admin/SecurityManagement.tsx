@@ -79,8 +79,22 @@ export default function SecurityManagement() {
     toast.success('Security setting updated');
   };
 
+  const handleUnblockIP = (ip: string) => {
+    toast.success(`IP ${ip} has been unblocked`);
+  };
+
+  const handleBlockIP = (ip: string) => {
+    if (!ip) {
+      toast.error('Please enter an IP address');
+      return;
+    }
+    toast.success(`IP ${ip} has been blocked`);
+  };
+
+  const [newIPToBlock, setNewIPToBlock] = useState('');
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 scroll-smooth">
       <div>
         <h1 className="text-3xl font-bold">Security Dashboard</h1>
         <p className="text-muted-foreground">Monitor and manage platform security</p>
@@ -131,7 +145,7 @@ export default function SecurityManagement() {
               <CardTitle>Authentication Settings</CardTitle>
               <CardDescription>Configure authentication security options</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 max-h-[500px] overflow-y-auto scroll-smooth">
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-base">Require Two-Factor Authentication</Label>
@@ -203,9 +217,9 @@ export default function SecurityManagement() {
               <CardDescription>Monitor suspicious activity and security alerts</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[400px] overflow-y-auto scroll-smooth">
                 {securityEvents.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-4">
                       <AlertTriangle className={`w-5 h-5 ${event.severity === 'high' || event.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'}`} />
                       <div>
@@ -231,7 +245,7 @@ export default function SecurityManagement() {
               <CardTitle>Access Control</CardTitle>
               <CardDescription>Manage role-based access permissions</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="max-h-[400px] overflow-y-auto scroll-smooth">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -275,20 +289,33 @@ export default function SecurityManagement() {
               <CardDescription>IPs blocked due to suspicious activity</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[300px] overflow-y-auto scroll-smooth">
                 {blockedIPs.map((ip) => (
-                  <div key={ip} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div key={ip} className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors">
                     <div className="flex items-center gap-3">
                       <Ban className="w-4 h-4 text-red-500" />
                       <code>{ip}</code>
                     </div>
-                    <Button variant="outline" size="sm">Unblock</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleUnblockIP(ip)}
+                    >
+                      Unblock
+                    </Button>
                   </div>
                 ))}
               </div>
               <div className="mt-4 flex gap-2">
-                <Input placeholder="Enter IP address to block..." />
-                <Button>Block IP</Button>
+                <Input 
+                  placeholder="Enter IP address to block..." 
+                  value={newIPToBlock}
+                  onChange={(e) => setNewIPToBlock(e.target.value)}
+                />
+                <Button onClick={() => {
+                  handleBlockIP(newIPToBlock);
+                  setNewIPToBlock('');
+                }}>Block IP</Button>
               </div>
             </CardContent>
           </Card>

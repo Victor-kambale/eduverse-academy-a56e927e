@@ -57,8 +57,14 @@ export default function MaintenanceManagement() {
     }
   };
 
+  const handleDownloadBackup = async (backupDate: string) => {
+    toast.info(`Preparing download for backup: ${backupDate}...`);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    toast.success(`Backup download started for ${backupDate}`);
+  };
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 scroll-smooth">
       <div>
         <h1 className="text-3xl font-bold">System Maintenance</h1>
         <p className="text-muted-foreground">Monitor system health and perform maintenance tasks</p>
@@ -141,9 +147,9 @@ export default function MaintenanceManagement() {
               <CardDescription>Real-time status of all platform services</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[400px] overflow-y-auto scroll-smooth">
                 {systemServices.map((service) => (
-                  <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={service.name} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className={`w-3 h-3 rounded-full ${getStatusColor(service.status)}`} />
                       <div>
@@ -270,15 +276,18 @@ export default function MaintenanceManagement() {
               <CardTitle>Recent System Logs</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 font-mono text-sm">
+              <div className="space-y-2 font-mono text-sm max-h-[400px] overflow-y-auto scroll-smooth">
                 {[
                   { time: '12:45:32', level: 'INFO', message: 'User authentication successful' },
                   { time: '12:44:21', level: 'INFO', message: 'Payment processed successfully' },
                   { time: '12:43:15', level: 'WARN', message: 'Rate limit approaching for IP 192.168.1.100' },
                   { time: '12:42:08', level: 'INFO', message: 'Course enrollment completed' },
                   { time: '12:41:55', level: 'INFO', message: 'Email sent successfully' },
+                  { time: '12:40:30', level: 'INFO', message: 'Database backup completed' },
+                  { time: '12:39:22', level: 'INFO', message: 'Cache cleared successfully' },
+                  { time: '12:38:15', level: 'WARN', message: 'High memory usage detected' },
                 ].map((log, i) => (
-                  <div key={i} className="flex items-center gap-4 p-2 bg-muted rounded">
+                  <div key={i} className="flex items-center gap-4 p-2 bg-muted rounded hover:bg-muted/80 transition-colors">
                     <span className="text-muted-foreground">{log.time}</span>
                     <Badge variant={log.level === 'WARN' ? 'secondary' : 'outline'}>{log.level}</Badge>
                     <span>{log.message}</span>
@@ -296,20 +305,26 @@ export default function MaintenanceManagement() {
               <CardDescription>Automatic daily backups are enabled</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[400px] overflow-y-auto scroll-smooth">
                 {[
                   { date: 'Today, 03:00 AM', size: '2.4 GB', status: 'completed' },
                   { date: 'Yesterday, 03:00 AM', size: '2.3 GB', status: 'completed' },
                   { date: 'Dec 20, 03:00 AM', size: '2.3 GB', status: 'completed' },
+                  { date: 'Dec 19, 03:00 AM', size: '2.3 GB', status: 'completed' },
+                  { date: 'Dec 18, 03:00 AM', size: '2.2 GB', status: 'completed' },
                 ].map((backup, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={i} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                     <div>
                       <p className="font-medium">{backup.date}</p>
                       <p className="text-sm text-muted-foreground">Size: {backup.size}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-green-500">Completed</Badge>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDownloadBackup(backup.date)}
+                      >
                         <Download className="w-4 h-4 mr-1" />
                         Download
                       </Button>
