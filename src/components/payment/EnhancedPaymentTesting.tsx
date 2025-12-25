@@ -28,6 +28,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -356,8 +357,20 @@ export function EnhancedPaymentTesting() {
     }
   };
 
+  const handleClearResults = () => {
+    setTestResults([]);
+    toast.success('All test results cleared');
+  };
+
+  const handleClearAll = () => {
+    setTestResults([]);
+    setTestAmount('10.00');
+    setPaymentMethods(defaultPaymentMethods);
+    toast.success('All data cleared and reset');
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 scroll-smooth">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-500/20">
@@ -431,9 +444,13 @@ export function EnhancedPaymentTesting() {
               </Badge>
             </div>
             <div className="ml-auto flex gap-2">
-              <Button variant="outline" onClick={() => setTestResults([])}>
+              <Button variant="outline" onClick={handleClearResults}>
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Clear Results
+              </Button>
+              <Button variant="outline" onClick={handleClearAll}>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All
               </Button>
               <Button variant="outline" onClick={exportResults} disabled={testResults.length === 0}>
                 <Download className="w-4 h-4 mr-2" />
@@ -456,6 +473,7 @@ export function EnhancedPaymentTesting() {
         </TabsList>
 
         <TabsContent value="all" className="mt-6">
+          <ScrollArea className="h-[600px] scroll-smooth">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {paymentMethods.map((method) => (
               <Card key={method.id} className={`relative ${!method.enabled ? 'opacity-50' : ''}`}>
@@ -519,9 +537,11 @@ export function EnhancedPaymentTesting() {
               </Card>
             ))}
           </div>
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="cards" className="mt-6">
+          <ScrollArea className="h-[600px] scroll-smooth">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {paymentMethods.filter(m => m.category === 'card').map((method) => (
               <Card key={method.id} className={!method.enabled ? 'opacity-50' : ''}>
@@ -548,9 +568,11 @@ export function EnhancedPaymentTesting() {
               </Card>
             ))}
           </div>
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="wallets" className="mt-6">
+          <ScrollArea className="h-[600px] scroll-smooth">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {paymentMethods.filter(m => m.category === 'wallet' || m.category === 'mobile').map((method) => (
               <Card key={method.id} className={!method.enabled ? 'opacity-50' : ''}>
@@ -569,9 +591,11 @@ export function EnhancedPaymentTesting() {
               </Card>
             ))}
           </div>
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="qr" className="mt-6">
+          <ScrollArea className="h-[600px] scroll-smooth">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {paymentMethods.filter(m => m.category === 'qr').map((method) => (
               <Card key={method.id} className={`${!method.enabled ? 'opacity-50' : ''}`}>
@@ -601,9 +625,11 @@ export function EnhancedPaymentTesting() {
               </Card>
             ))}
           </div>
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="withdrawals" className="mt-6">
+          <ScrollArea className="h-[600px] scroll-smooth">
           <Card>
             <CardHeader>
               <CardTitle>Withdrawal Process Testing</CardTitle>
@@ -613,9 +639,11 @@ export function EnhancedPaymentTesting() {
               <WithdrawalTestingPanel />
             </CardContent>
           </Card>
+          </ScrollArea>
         </TabsContent>
 
         <TabsContent value="results" className="mt-6">
+          <ScrollArea className="h-[600px] scroll-smooth">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -680,6 +708,7 @@ export function EnhancedPaymentTesting() {
               )}
             </CardContent>
           </Card>
+          </ScrollArea>
         </TabsContent>
       </Tabs>
 

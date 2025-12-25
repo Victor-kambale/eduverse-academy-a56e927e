@@ -46,6 +46,7 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { BulkImportExport } from '@/components/admin/BulkImportExport';
 
 interface GiftCard {
   id: string;
@@ -304,6 +305,9 @@ export default function GiftCardsManagement() {
           Add Gift Card
         </Button>
       </div>
+
+      {/* Bulk Import/Export */}
+      <BulkImportExport entityType="gift_cards" onImportComplete={fetchGiftCards} />
 
       {/* Filters */}
       <Card>
