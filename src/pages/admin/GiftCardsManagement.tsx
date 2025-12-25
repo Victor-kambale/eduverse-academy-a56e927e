@@ -619,6 +619,8 @@ export default function GiftCardsManagement() {
                     <SortableGiftCardItem
                       key={card.id}
                       card={card}
+                      isSelected={selectedCardId === card.id}
+                      onSelect={(id) => setSelectedCardId(id)}
                       onEdit={handleEdit}
                       onToggleActive={handleToggleActive}
                       onToggleDisabled={handleToggleDisabled}
