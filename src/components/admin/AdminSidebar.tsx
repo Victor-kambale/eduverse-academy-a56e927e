@@ -113,6 +113,7 @@ const navSections: NavSection[] = [
     title: 'Universities Dashboard',
     icon: Building2,
     items: [
+      { title: 'University Applications', url: '/admin/universities', icon: Building2 },
       { title: 'Certificates', url: '/admin/certificates', icon: Award },
       { title: 'Degrees', url: '/admin/degrees', icon: FileText },
     ],
