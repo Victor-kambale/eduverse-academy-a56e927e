@@ -353,29 +353,39 @@ export default function UniversityRegistration() {
         }
       }
 
-      // Create university application
-      const { error } = await supabase.from('teacher_applications').insert({
+      // Create university application in the dedicated table
+      const { error } = await supabase.from('university_applications').insert({
         user_id: user.id,
-        full_name: formData.organization_name,
-        email: formData.primary_email,
-        phone: formData.primary_phone,
+        institution_name: formData.organization_name,
+        institution_type: formData.organization_type,
+        founding_year: formData.year_established ? parseInt(formData.year_established) : null,
         country: formData.country,
-        bio: formData.description,
-        specializations: formData.specializations.length > 0 ? formData.specializations : ['Education'],
+        city: formData.city,
         website_url: formData.website,
-        university_name: formData.organization_name,
-        university_country: formData.country,
-        id_document_url: documentUrls.certificate_of_incorporation || null,
-        passport_url: documentUrls.tax_clearance_certificate || null,
-        graduation_degree_url: documentUrls.accreditation_certificate || null,
-        photo_url: documentUrls.organization_logo || null,
-        bank_country: formData.bank_country,
-        bank_name: formData.bank_name,
-        account_holder_name: formData.account_holder_name,
-        account_number: formData.account_number,
-        routing_number: formData.routing_number,
-        swift_code: formData.swift_code,
-        iban: formData.iban,
+        primary_email: formData.primary_email,
+        primary_phone: formData.primary_phone,
+        contact_name: formData.contact_person_name,
+        contact_title: formData.contact_person_title,
+        contact_email: formData.contact_person_email,
+        contact_phone: formData.contact_person_phone,
+        student_count: formData.student_enrollment,
+        faculty_count: formData.faculty_count,
+        programs_offered: formData.specializations.length > 0 ? formData.specializations : null,
+        accreditation_bodies: formData.accreditation_body ? [formData.accreditation_body] : null,
+        certificate_of_incorporation_url: documentUrls.certificate_of_incorporation || null,
+        business_registration_url: documentUrls.business_registration || null,
+        tax_clearance_url: documentUrls.tax_clearance_certificate || null,
+        operating_license_url: documentUrls.operating_license || null,
+        government_approval_url: documentUrls.government_approval_letter || null,
+        ministry_certificate_url: documentUrls.ministry_of_education_certificate || null,
+        accreditation_certificate_url: documentUrls.accreditation_certificate || null,
+        quality_assurance_url: documentUrls.quality_assurance_certificate || null,
+        academic_charter_url: documentUrls.academic_charter || null,
+        institutional_profile_url: documentUrls.institutional_profile || null,
+        leadership_cv_url: documentUrls.leadership_cv || null,
+        authorization_letter_url: documentUrls.authorization_letter || null,
+        email_verified: emailVerified,
+        phone_verified: phoneVerified,
         contract_signed: true,
         contract_signed_at: new Date().toISOString(),
         registration_fee_paid: true,
@@ -385,6 +395,35 @@ export default function UniversityRegistration() {
 
       if (error) throw error;
 
+      // Send submission confirmation email
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            to: formData.primary_email,
+            subject: 'University Registration Received - EduVerse',
+            html: `
+              <h1>Thank you for your application!</h1>
+              <p>We have received your university registration for <strong>${formData.organization_name}</strong>.</p>
+              <p>Our team will review your application and documents. You will receive an email notification once your application has been reviewed.</p>
+              <p>Application Status: <strong>Pending Review</strong></p>
+              <p>If you have any questions, please contact our support team.</p>
+              <p>Best regards,<br>The EduVerse Team</p>
+            `
+          }
+        });
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+      }
+
+      // Create notification for admins
+      await supabase.from('notifications').insert({
+        user_id: user.id,
+        title: 'Registration Submitted',
+        message: `Your university registration for ${formData.organization_name} has been submitted and is pending review.`,
+        type: 'info',
+        category: 'registration',
+      });
+
       // Clear saved progress on successful submission
       clearSavedProgress();
 
@@ -393,7 +432,7 @@ export default function UniversityRegistration() {
       audio.volume = 0.5;
       audio.play().catch(() => {});
 
-      toast.success('University registration submitted successfully!');
+      toast.success('University registration submitted successfully! You will receive an email confirmation.');
       navigate('/university/dashboard');
     } catch (error) {
       console.error('Registration error:', error);

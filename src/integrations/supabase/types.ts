@@ -1571,6 +1571,150 @@ export type Database = {
         }
         Relationships: []
       }
+      university_applications: {
+        Row: {
+          academic_charter_url: string | null
+          accreditation_bodies: string[] | null
+          accreditation_certificate_url: string | null
+          approved_at: string | null
+          approved_by: string | null
+          authorization_letter_url: string | null
+          business_registration_url: string | null
+          certificate_of_incorporation_url: string | null
+          city: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          contact_title: string | null
+          contract_signed: boolean | null
+          contract_signed_at: string | null
+          country: string
+          created_at: string
+          email_verified: boolean | null
+          faculty_count: string | null
+          founding_year: number | null
+          government_approval_url: string | null
+          id: string
+          institution_name: string
+          institution_type: string
+          institutional_profile_url: string | null
+          leadership_cv_url: string | null
+          ministry_certificate_url: string | null
+          operating_license_url: string | null
+          phone_verified: boolean | null
+          primary_email: string
+          primary_phone: string | null
+          programs_offered: string[] | null
+          quality_assurance_url: string | null
+          registration_fee_paid: boolean | null
+          registration_payment_date: string | null
+          registration_payment_id: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          student_count: string | null
+          tax_clearance_url: string | null
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          academic_charter_url?: string | null
+          accreditation_bodies?: string[] | null
+          accreditation_certificate_url?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          authorization_letter_url?: string | null
+          business_registration_url?: string | null
+          certificate_of_incorporation_url?: string | null
+          city?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          contact_title?: string | null
+          contract_signed?: boolean | null
+          contract_signed_at?: string | null
+          country: string
+          created_at?: string
+          email_verified?: boolean | null
+          faculty_count?: string | null
+          founding_year?: number | null
+          government_approval_url?: string | null
+          id?: string
+          institution_name: string
+          institution_type: string
+          institutional_profile_url?: string | null
+          leadership_cv_url?: string | null
+          ministry_certificate_url?: string | null
+          operating_license_url?: string | null
+          phone_verified?: boolean | null
+          primary_email: string
+          primary_phone?: string | null
+          programs_offered?: string[] | null
+          quality_assurance_url?: string | null
+          registration_fee_paid?: boolean | null
+          registration_payment_date?: string | null
+          registration_payment_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_count?: string | null
+          tax_clearance_url?: string | null
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          academic_charter_url?: string | null
+          accreditation_bodies?: string[] | null
+          accreditation_certificate_url?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          authorization_letter_url?: string | null
+          business_registration_url?: string | null
+          certificate_of_incorporation_url?: string | null
+          city?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          contact_title?: string | null
+          contract_signed?: boolean | null
+          contract_signed_at?: string | null
+          country?: string
+          created_at?: string
+          email_verified?: boolean | null
+          faculty_count?: string | null
+          founding_year?: number | null
+          government_approval_url?: string | null
+          id?: string
+          institution_name?: string
+          institution_type?: string
+          institutional_profile_url?: string | null
+          leadership_cv_url?: string | null
+          ministry_certificate_url?: string | null
+          operating_license_url?: string | null
+          phone_verified?: boolean | null
+          primary_email?: string
+          primary_phone?: string | null
+          programs_offered?: string[] | null
+          quality_assurance_url?: string | null
+          registration_fee_paid?: boolean | null
+          registration_payment_date?: string | null
+          registration_payment_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_count?: string | null
+          tax_clearance_url?: string | null
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       user_quiz_answers: {
         Row: {
           attempt_id: string
