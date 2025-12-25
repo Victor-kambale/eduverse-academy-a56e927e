@@ -1571,6 +1571,44 @@ export type Database = {
         }
         Relationships: []
       }
+      university_application_notes: {
+        Row: {
+          admin_id: string
+          application_id: string
+          created_at: string
+          id: string
+          is_internal: boolean | null
+          note: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          application_id: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          note: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          application_id?: string
+          created_at?: string
+          id?: string
+          is_internal?: boolean | null
+          note?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "university_application_notes_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "university_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       university_applications: {
         Row: {
           academic_charter_url: string | null
