@@ -16,7 +16,6 @@ import {
   TrendingUp,
   Users,
   Star,
-  Bell,
   Settings,
   BarChart3
 } from 'lucide-react';
@@ -40,6 +39,9 @@ import { WithdrawalForm } from '@/components/withdrawal/WithdrawalForm';
 import { Wallet } from 'lucide-react';
 import DashboardChatbot from '@/components/chatbot/DashboardChatbot';
 import RealtimeRevenue from '@/components/dashboard/RealtimeRevenue';
+import { TeacherNotificationBell } from '@/components/teacher/TeacherNotificationBell';
+import { TeacherProfileEditor } from '@/components/teacher/TeacherProfileEditor';
+import { EnhancedCourseCreation } from '@/components/teacher/EnhancedCourseCreation';
 
 interface Course {
   id: string;
@@ -272,12 +274,19 @@ const TeacherDashboard = () => {
                 <p className="text-purple-200/70">Manage your courses, content, and track your success</p>
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" size="icon" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20">
-                  <Bell className="w-5 h-5" />
-                </Button>
+                <TeacherNotificationBell />
                 <Button variant="outline" size="icon" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20">
                   <Settings className="w-5 h-5" />
                 </Button>
+                <Dialog open={showCourseCreation} onOpenChange={setShowCourseCreation}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Course
+                    </Button>
+                  </DialogTrigger>
+                  <EnhancedCourseCreation onClose={() => { setShowCourseCreation(false); fetchData(); }} />
+                </Dialog>
                 <Link to="/teacher/chat">
                   <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                     <MessageSquare className="w-4 h-4 mr-2" />
