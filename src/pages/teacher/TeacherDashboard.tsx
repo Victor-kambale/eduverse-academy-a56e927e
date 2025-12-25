@@ -100,6 +100,8 @@ const TeacherDashboard = () => {
   });
   const [resourceDialogOpen, setResourceDialogOpen] = useState(false);
   const [certificateDialogOpen, setCertificateDialogOpen] = useState(false);
+  const [showCourseCreation, setShowCourseCreation] = useState(false);
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -275,9 +277,14 @@ const TeacherDashboard = () => {
               </div>
               <div className="flex gap-3">
                 <TeacherNotificationBell />
-                <Button variant="outline" size="icon" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20">
-                  <Settings className="w-5 h-5" />
-                </Button>
+                <Dialog open={showProfileEditor} onOpenChange={setShowProfileEditor}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20">
+                      <Settings className="w-5 h-5" />
+                    </Button>
+                  </DialogTrigger>
+                  <TeacherProfileEditor onClose={() => setShowProfileEditor(false)} />
+                </Dialog>
                 <Dialog open={showCourseCreation} onOpenChange={setShowCourseCreation}>
                   <DialogTrigger asChild>
                     <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
