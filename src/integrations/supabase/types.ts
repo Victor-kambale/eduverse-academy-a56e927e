@@ -517,6 +517,48 @@ export type Database = {
         }
         Relationships: []
       }
+      document_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_type: string
+          download_count: number | null
+          file_size: number | null
+          file_url: string
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_type: string
+          download_count?: number | null
+          file_size?: number | null
+          file_url: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_type?: string
+          download_count?: number | null
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       earnings_summary: {
         Row: {
           available_balance: number | null
@@ -1620,6 +1662,7 @@ export type Database = {
           business_registration_url: string | null
           certificate_of_incorporation_url: string | null
           city: string | null
+          completeness_score: number | null
           contact_email: string
           contact_name: string
           contact_phone: string | null
@@ -1628,6 +1671,7 @@ export type Database = {
           contract_signed_at: string | null
           country: string
           created_at: string
+          document_quality_score: number | null
           email_verified: boolean | null
           faculty_count: string | null
           founding_year: number | null
@@ -1637,9 +1681,11 @@ export type Database = {
           institution_type: string
           institutional_profile_url: string | null
           last_reminder_sent_at: string | null
+          last_scored_at: string | null
           leadership_cv_url: string | null
           ministry_certificate_url: string | null
           operating_license_url: string | null
+          overall_score: number | null
           phone_verified: boolean | null
           primary_email: string
           primary_phone: string | null
@@ -1652,6 +1698,7 @@ export type Database = {
           reminder_count: number | null
           reviewed_at: string | null
           reviewed_by: string | null
+          scoring_notes: string | null
           status: string
           student_count: string | null
           tax_clearance_url: string | null
@@ -1669,6 +1716,7 @@ export type Database = {
           business_registration_url?: string | null
           certificate_of_incorporation_url?: string | null
           city?: string | null
+          completeness_score?: number | null
           contact_email: string
           contact_name: string
           contact_phone?: string | null
@@ -1677,6 +1725,7 @@ export type Database = {
           contract_signed_at?: string | null
           country: string
           created_at?: string
+          document_quality_score?: number | null
           email_verified?: boolean | null
           faculty_count?: string | null
           founding_year?: number | null
@@ -1686,9 +1735,11 @@ export type Database = {
           institution_type: string
           institutional_profile_url?: string | null
           last_reminder_sent_at?: string | null
+          last_scored_at?: string | null
           leadership_cv_url?: string | null
           ministry_certificate_url?: string | null
           operating_license_url?: string | null
+          overall_score?: number | null
           phone_verified?: boolean | null
           primary_email: string
           primary_phone?: string | null
@@ -1701,6 +1752,7 @@ export type Database = {
           reminder_count?: number | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          scoring_notes?: string | null
           status?: string
           student_count?: string | null
           tax_clearance_url?: string | null
@@ -1718,6 +1770,7 @@ export type Database = {
           business_registration_url?: string | null
           certificate_of_incorporation_url?: string | null
           city?: string | null
+          completeness_score?: number | null
           contact_email?: string
           contact_name?: string
           contact_phone?: string | null
@@ -1726,6 +1779,7 @@ export type Database = {
           contract_signed_at?: string | null
           country?: string
           created_at?: string
+          document_quality_score?: number | null
           email_verified?: boolean | null
           faculty_count?: string | null
           founding_year?: number | null
@@ -1735,9 +1789,11 @@ export type Database = {
           institution_type?: string
           institutional_profile_url?: string | null
           last_reminder_sent_at?: string | null
+          last_scored_at?: string | null
           leadership_cv_url?: string | null
           ministry_certificate_url?: string | null
           operating_license_url?: string | null
+          overall_score?: number | null
           phone_verified?: boolean | null
           primary_email?: string
           primary_phone?: string | null
@@ -1750,6 +1806,7 @@ export type Database = {
           reminder_count?: number | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          scoring_notes?: string | null
           status?: string
           student_count?: string | null
           tax_clearance_url?: string | null
