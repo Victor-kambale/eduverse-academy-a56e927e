@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { 
   Upload, 
   FileText, 
@@ -17,7 +18,8 @@ import {
   Users,
   Star,
   Settings,
-  BarChart3
+  BarChart3,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,6 +81,20 @@ interface TeacherCredits {
   is_premium: boolean;
   premium_expires_at: string | null;
 }
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.4 }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 const TeacherDashboard = () => {
   const { user } = useAuth();
@@ -251,10 +267,15 @@ const TeacherDashboard = () => {
     return (
       <Layout>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-          <div className="text-center">
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
             <Loader2 className="w-12 h-12 animate-spin text-purple-400 mx-auto mb-4" />
             <p className="text-purple-200">Loading your dashboard...</p>
-          </div>
+          </motion.div>
         </div>
       </Layout>
     );
@@ -264,22 +285,38 @@ const TeacherDashboard = () => {
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         {/* Hero Section */}
-        <div className="relative overflow-hidden">
+        <motion.div 
+          className="relative overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-40" />
           
           <div className="container py-12 relative z-10">
-            <div className="flex items-center justify-between mb-8">
+            <motion.div 
+              className="flex items-center justify-between mb-8"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">
                   Teacher Dashboard
+                  <Sparkles className="w-8 h-8 text-yellow-400" />
                 </h1>
                 <p className="text-purple-200/70">Manage your courses, content, and track your success</p>
               </div>
-              <div className="flex gap-3">
+              <motion.div 
+                className="flex gap-3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
                 <TeacherNotificationBell />
                 <Dialog open={showProfileEditor} onOpenChange={setShowProfileEditor}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="icon" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20">
+                    <Button variant="outline" size="icon" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400">
                       <Settings className="w-5 h-5" />
                     </Button>
                   </DialogTrigger>
@@ -287,7 +324,7 @@ const TeacherDashboard = () => {
                 </Dialog>
                 <Dialog open={showCourseCreation} onOpenChange={setShowCourseCreation}>
                   <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                    <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-500/30">
                       <Plus className="w-4 h-4 mr-2" />
                       Create Course
                     </Button>
@@ -295,109 +332,101 @@ const TeacherDashboard = () => {
                   <EnhancedCourseCreation onClose={() => { setShowCourseCreation(false); fetchData(); }} />
                 </Dialog>
                 <Link to="/teacher/chat">
-                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/30">
                     <MessageSquare className="w-4 h-4 mr-2" />
                     Messages
                   </Button>
                 </Link>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              <Card className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 border-purple-500/30 backdrop-blur-sm">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                      <BookOpen className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-4xl font-bold text-white">{courses.length}</p>
-                      <p className="text-purple-300/70">Total Courses</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-pink-600/20 to-pink-800/20 border-pink-500/30 backdrop-blur-sm">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-lg shadow-pink-500/30">
-                      <FileText className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-4xl font-bold text-white">{resources.length}</p>
-                      <p className="text-pink-300/70">Resources</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 border-emerald-500/30 backdrop-blur-sm">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                      <Award className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-4xl font-bold text-white">{certificates.length}</p>
-                      <p className="text-emerald-300/70">Certificates</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-cyan-600/20 to-cyan-800/20 border-cyan-500/30 backdrop-blur-sm">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-700 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                      <MessageSquare className="w-7 h-7 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-4xl font-bold text-white">{credits?.free_messages_remaining || 0}</p>
-                      <p className="text-cyan-300/70">Free Messages</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              {[
+                { icon: BookOpen, value: courses.length, label: 'Total Courses', gradient: 'from-purple-600/20 to-purple-800/20', iconGradient: 'from-purple-500 to-purple-700', color: 'purple' },
+                { icon: FileText, value: resources.length, label: 'Resources', gradient: 'from-pink-600/20 to-pink-800/20', iconGradient: 'from-pink-500 to-pink-700', color: 'pink' },
+                { icon: Award, value: certificates.length, label: 'Certificates', gradient: 'from-emerald-600/20 to-emerald-800/20', iconGradient: 'from-emerald-500 to-emerald-700', color: 'emerald' },
+                { icon: MessageSquare, value: credits?.free_messages_remaining || 0, label: 'Free Messages', gradient: 'from-cyan-600/20 to-cyan-800/20', iconGradient: 'from-cyan-500 to-cyan-700', color: 'cyan' },
+              ].map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  variants={fadeInUp}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                >
+                  <Card className={`bg-gradient-to-br ${stat.gradient} border-${stat.color}-500/30 backdrop-blur-sm hover:border-${stat.color}-500/50 transition-all`}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.iconGradient} flex items-center justify-center shadow-lg shadow-${stat.color}-500/30`}>
+                          <stat.icon className="w-7 h-7 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-4xl font-bold text-white">{stat.value}</p>
+                          <p className={`text-${stat.color}-300/70`}>{stat.label}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
 
             {/* Premium Status */}
             {credits && (
-              <Card className="mb-10 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border-amber-500/30 backdrop-blur-sm">
-                <CardContent className="py-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                        <Star className="w-6 h-6 text-white" />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Card className="mb-10 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-red-500/10 border-amber-500/30 backdrop-blur-sm">
+                  <CardContent className="py-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <motion.div 
+                          className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center"
+                          animate={{ rotate: [0, 5, -5, 0] }}
+                          transition={{ repeat: Infinity, duration: 4 }}
+                        >
+                          <Star className="w-6 h-6 text-white" />
+                        </motion.div>
+                        <div>
+                          <p className="font-semibold text-white text-lg">
+                            {credits.is_premium ? '✨ Premium Member' : 'Free Tier'}
+                          </p>
+                          <p className="text-amber-300/70">
+                            {credits.is_premium 
+                              ? `Premium expires: ${new Date(credits.premium_expires_at!).toLocaleDateString()}`
+                              : `${credits.free_messages_remaining} free messages remaining this month`
+                            }
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-white text-lg">
-                          {credits.is_premium ? '✨ Premium Member' : 'Free Tier'}
-                        </p>
-                        <p className="text-amber-300/70">
-                          {credits.is_premium 
-                            ? `Premium expires: ${new Date(credits.premium_expires_at!).toLocaleDateString()}`
-                            : `${credits.free_messages_remaining} free messages remaining this month`
-                          }
-                        </p>
-                      </div>
+                      {!credits.is_premium && (
+                        <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30">
+                          Upgrade to Premium
+                        </Button>
+                      )}
                     </div>
-                    {!credits.is_premium && (
-                      <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/30">
-                        Upgrade to Premium
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Courses Carousel Section */}
         {courses.length > 0 && (
-          <div className="py-10 bg-slate-900/50">
+          <motion.div 
+            className="py-10 bg-slate-900/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
             <div className="container mb-6">
               <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                 <BookOpen className="w-6 h-6 text-purple-400" />
@@ -463,11 +492,16 @@ const TeacherDashboard = () => {
                 </div>
               ))}
             </InfiniteCarousel>
-          </div>
+          </motion.div>
         )}
 
         {/* Main Content */}
-        <div className="container py-10">
+        <motion.div 
+          className="container py-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
           <Tabs defaultValue="resources" className="space-y-6">
             <TabsList className="bg-slate-800/50 border border-purple-500/20 p-1">
               <TabsTrigger value="resources" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
@@ -493,7 +527,7 @@ const TeacherDashboard = () => {
                 <h2 className="text-xl font-semibold text-white">Course Resources</h2>
                 <Dialog open={resourceDialogOpen} onOpenChange={setResourceDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
+                    <Button className="bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30">
                       <Plus className="w-4 h-4 mr-2" />
                       Upload Resource
                     </Button>
@@ -557,7 +591,7 @@ const TeacherDashboard = () => {
                 </Dialog>
               </div>
 
-              <ScrollArea className="h-[400px]">
+              <ScrollArea className="h-[400px] scroll-smooth">
                 <div className="space-y-3">
                   {resources.length === 0 ? (
                     <Card className="bg-slate-800/50 border-purple-500/20">
@@ -574,30 +608,37 @@ const TeacherDashboard = () => {
                       </CardContent>
                     </Card>
                   ) : (
-                    resources.map((resource) => (
-                      <Card key={resource.id} className="bg-slate-800/50 border-purple-500/20 hover:border-purple-500/40 transition-colors">
-                        <CardContent className="py-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-                                <FileText className="w-6 h-6 text-white" />
+                    resources.map((resource, index) => (
+                      <motion.div
+                        key={resource.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <Card className="bg-slate-800/50 border-purple-500/20 hover:border-purple-500/40 transition-colors">
+                          <CardContent className="py-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
+                                  <FileText className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-white">{resource.title}</p>
+                                  <p className="text-sm text-purple-300/70">
+                                    {new Date(resource.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="font-medium text-white">{resource.title}</p>
-                                <p className="text-sm text-purple-300/70">
-                                  {new Date(resource.created_at).toLocaleDateString()}
-                                </p>
+                              <div className="flex items-center gap-3">
+                                {getStatusBadge(resource.is_approved, resource.rejection_reason)}
+                                {resource.rejection_reason && (
+                                  <span className="text-xs text-red-400 max-w-[150px] truncate">{resource.rejection_reason}</span>
+                                )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              {getStatusBadge(resource.is_approved, resource.rejection_reason)}
-                              {resource.rejection_reason && (
-                                <span className="text-xs text-red-400 max-w-[150px] truncate">{resource.rejection_reason}</span>
-                              )}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
                     ))
                   )}
                 </div>
@@ -609,7 +650,7 @@ const TeacherDashboard = () => {
                 <h2 className="text-xl font-semibold text-white">Certificate Templates</h2>
                 <Dialog open={certificateDialogOpen} onOpenChange={setCertificateDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-emerald-600 to-cyan-600">
+                    <Button className="bg-gradient-to-r from-emerald-600 to-cyan-600 shadow-lg shadow-emerald-500/30">
                       <Plus className="w-4 h-4 mr-2" />
                       Upload Certificate
                     </Button>
@@ -673,7 +714,7 @@ const TeacherDashboard = () => {
                 </Dialog>
               </div>
 
-              <ScrollArea className="h-[400px]">
+              <ScrollArea className="h-[400px] scroll-smooth">
                 <div className="space-y-3">
                   {certificates.length === 0 ? (
                     <Card className="bg-slate-800/50 border-emerald-500/20">
@@ -690,27 +731,34 @@ const TeacherDashboard = () => {
                       </CardContent>
                     </Card>
                   ) : (
-                    certificates.map((cert) => (
-                      <Card key={cert.id} className="bg-slate-800/50 border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-                        <CardContent className="py-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center">
-                                <Award className="w-6 h-6 text-white" />
+                    certificates.map((cert, index) => (
+                      <motion.div
+                        key={cert.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <Card className="bg-slate-800/50 border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
+                          <CardContent className="py-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center">
+                                  <Award className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-white">{cert.template_name}</p>
+                                  <p className="text-sm text-emerald-300/70">
+                                    {new Date(cert.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="font-medium text-white">{cert.template_name}</p>
-                                <p className="text-sm text-emerald-300/70">
-                                  {new Date(cert.created_at).toLocaleDateString()}
-                                </p>
+                              <div className="flex items-center gap-3">
+                                {getStatusBadge(cert.is_approved, cert.rejection_reason)}
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              {getStatusBadge(cert.is_approved, cert.rejection_reason)}
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
                     ))
                   )}
                 </div>
@@ -734,27 +782,30 @@ const TeacherDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="text-center p-6 rounded-xl bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-500/20">
-                      <Users className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                      <p className="text-3xl font-bold text-white">0</p>
-                      <p className="text-purple-300/70">Total Students</p>
-                    </div>
-                    <div className="text-center p-6 rounded-xl bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 border border-emerald-500/20">
-                      <DollarSign className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                      <p className="text-3xl font-bold text-white">$0</p>
-                      <p className="text-emerald-300/70">Total Earnings</p>
-                    </div>
-                    <div className="text-center p-6 rounded-xl bg-gradient-to-br from-amber-600/20 to-amber-800/20 border border-amber-500/20">
-                      <Star className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                      <p className="text-3xl font-bold text-white">0.0</p>
-                      <p className="text-amber-300/70">Average Rating</p>
-                    </div>
+                    {[
+                      { icon: Users, value: '0', label: 'Total Students', gradient: 'from-purple-600/20 to-purple-800/20', iconColor: 'text-purple-400', borderColor: 'border-purple-500/20' },
+                      { icon: DollarSign, value: '$0', label: 'Total Earnings', gradient: 'from-emerald-600/20 to-emerald-800/20', iconColor: 'text-emerald-400', borderColor: 'border-emerald-500/20' },
+                      { icon: Star, value: '0.0', label: 'Average Rating', gradient: 'from-amber-600/20 to-amber-800/20', iconColor: 'text-amber-400', borderColor: 'border-amber-500/20' },
+                    ].map((stat, index) => (
+                      <motion.div
+                        key={stat.label}
+                        className={`text-center p-6 rounded-xl bg-gradient-to-br ${stat.gradient} border ${stat.borderColor}`}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <stat.icon className={`w-8 h-8 ${stat.iconColor} mx-auto mb-2`} />
+                        <p className="text-3xl font-bold text-white">{stat.value}</p>
+                        <p className="text-slate-400">{stat.label}</p>
+                      </motion.div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
+        </motion.div>
       </div>
       
       {/* Dashboard Chatbot */}
