@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -25,7 +27,8 @@ import {
   Building2,
   User,
   Briefcase,
-  FileCheck
+  FileCheck,
+  Sparkles
 } from "lucide-react";
 import { DocumentUpload } from "@/components/teacher/DocumentUpload";
 import { BankAccountForm } from "@/components/teacher/BankAccountForm";
@@ -89,6 +92,21 @@ interface FormData {
   agreedToTerms: boolean;
   agreedToContract: boolean;
 }
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: { duration: 0.3 }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 const TeacherRegistration = () => {
   const { user } = useAuth();
@@ -215,7 +233,6 @@ const TeacherRegistration = () => {
     setIsSubmitting(true);
 
     try {
-      // Upload documents
       const documentUrls: Record<string, string | null> = {};
       
       if (formData.documents.idDocument) {
@@ -234,7 +251,6 @@ const TeacherRegistration = () => {
         documentUrls.photo_url = await uploadDocument(formData.documents.photo, 'photo');
       }
 
-      // Create teacher application
       const { error } = await supabase
         .from('teacher_applications')
         .insert({
@@ -285,318 +301,410 @@ const TeacherRegistration = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
-        {/* Header */}
-        <div className="bg-primary text-primary-foreground py-12">
-          <div className="container">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="p-3 bg-accent rounded-xl">
-                <GraduationCap className="w-8 h-8" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900">
+        {/* Hero Header */}
+        <motion.div 
+          className="relative overflow-hidden bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-purple-600/20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iLjAyIi8+PC9nPjwvc3ZnPg==')] opacity-40" />
+          
+          <div className="container py-12 relative z-10">
+            <motion.div 
+              className="flex items-center gap-4 mb-4"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-lg shadow-purple-500/30">
+                <GraduationCap className="w-10 h-10 text-white" />
               </div>
               <div>
-                <h1 className="font-display text-3xl font-bold">Become an Eduverse Teacher</h1>
-                <p className="text-primary-foreground/80">Join our community of expert instructors</p>
+                <h1 className="font-display text-4xl font-bold text-white flex items-center gap-3">
+                  Become an Eduverse Teacher
+                  <Sparkles className="w-8 h-8 text-yellow-400" />
+                </h1>
+                <p className="text-purple-200/80 text-lg">Join our community of expert instructors and inspire learners worldwide</p>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         <div className="container py-8">
           {/* Progress Steps */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
+          <motion.div 
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="flex items-center justify-between mb-4 overflow-x-auto pb-2">
               {steps.map((step, index) => (
-                <div key={step.id} className="flex items-center">
+                <motion.div 
+                  key={step.id} 
+                  className="flex items-center"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 * index }}
+                >
                   <div className="flex flex-col items-center">
-                    <div className={`
-                      w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all
-                      ${currentStep > step.id 
-                        ? 'bg-success border-success text-success-foreground' 
-                        : currentStep === step.id 
-                          ? 'bg-accent border-accent text-accent-foreground' 
-                          : 'bg-muted border-border text-muted-foreground'}
-                    `}>
+                    <motion.div 
+                      className={`
+                        w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all shadow-lg
+                        ${currentStep > step.id 
+                          ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 border-emerald-400 text-white shadow-emerald-500/30' 
+                          : currentStep === step.id 
+                            ? 'bg-gradient-to-br from-purple-500 to-pink-500 border-purple-400 text-white shadow-purple-500/30' 
+                            : 'bg-slate-800/50 border-slate-600 text-slate-400'}
+                      `}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
                       {currentStep > step.id ? (
-                        <CheckCircle2 className="w-6 h-6" />
+                        <CheckCircle2 className="w-7 h-7" />
                       ) : (
-                        <step.icon className="w-6 h-6" />
+                        <step.icon className="w-7 h-7" />
                       )}
-                    </div>
-                    <span className="text-xs mt-2 font-medium hidden md:block">{step.title}</span>
+                    </motion.div>
+                    <span className={`text-xs mt-2 font-medium hidden md:block ${
+                      currentStep >= step.id ? 'text-purple-300' : 'text-slate-500'
+                    }`}>{step.title}</span>
                   </div>
                   {index < steps.length - 1 && (
-                    <div className={`hidden md:block w-24 h-0.5 mx-2 ${
-                      currentStep > step.id ? 'bg-success' : 'bg-border'
+                    <div className={`hidden md:block w-16 lg:w-24 h-1 mx-2 rounded-full transition-all ${
+                      currentStep > step.id ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-slate-700'
                     }`} />
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
-            <Progress value={progress} className="h-2" />
-          </div>
+            <Progress value={progress} className="h-2 bg-slate-800" />
+          </motion.div>
 
           {/* Form Content */}
-          <Card className="max-w-4xl mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                {(() => {
-                  const StepIcon = steps[currentStep - 1].icon;
-                  return <StepIcon className="w-5 h-5 text-accent" />;
-                })()}
-                {steps[currentStep - 1].title}
-              </CardTitle>
-              <CardDescription>{steps[currentStep - 1].description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Step 1: Personal Info */}
-              {currentStep === 1 && (
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name *</Label>
-                    <Input
-                      id="fullName"
-                      value={formData.fullName}
-                      onChange={(e) => updateFormData('fullName', e.target.value)}
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email Address *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => updateFormData('email', e.target.value)}
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => updateFormData('phone', e.target.value)}
-                      placeholder="+1 234 567 8900"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country of Residence *</Label>
-                    <Select value={formData.country} onValueChange={(v) => updateFormData('country', v)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {countries.map(country => (
-                          <SelectItem key={country} value={country}>{country}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="dob">Date of Birth *</Label>
-                    <Input
-                      id="dob"
-                      type="date"
-                      value={formData.dateOfBirth}
-                      onChange={(e) => updateFormData('dateOfBirth', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin">LinkedIn Profile</Label>
-                    <Input
-                      id="linkedin"
-                      value={formData.linkedinUrl}
-                      onChange={(e) => updateFormData('linkedinUrl', e.target.value)}
-                      placeholder="https://linkedin.com/in/yourprofile"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Step 2: Experience */}
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Professional Bio *</Label>
-                    <Textarea
-                      id="bio"
-                      value={formData.bio}
-                      onChange={(e) => updateFormData('bio', e.target.value)}
-                      placeholder="Tell us about your professional background, expertise, and teaching experience..."
-                      className="min-h-[150px]"
-                    />
-                  </div>
-                  
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="experience">Years of Experience</Label>
-                      <Input
-                        id="experience"
-                        type="number"
-                        min={0}
-                        value={formData.experienceYears}
-                        onChange={(e) => updateFormData('experienceYears', parseInt(e.target.value))}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="website">Personal Website</Label>
-                      <Input
-                        id="website"
-                        value={formData.websiteUrl}
-                        onChange={(e) => updateFormData('websiteUrl', e.target.value)}
-                        placeholder="https://yourwebsite.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Areas of Expertise *</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {specializations.map(spec => (
-                        <Badge
-                          key={spec}
-                          variant={formData.selectedSpecializations.includes(spec) ? "default" : "outline"}
-                          className="cursor-pointer transition-all hover:scale-105"
-                          onClick={() => handleSpecializationToggle(spec)}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="max-w-4xl mx-auto bg-gradient-to-br from-slate-800/90 to-slate-900/90 border-purple-500/20 backdrop-blur-xl shadow-2xl">
+              <CardHeader className="border-b border-purple-500/20">
+                <CardTitle className="flex items-center gap-3 text-white text-xl">
+                  {(() => {
+                    const StepIcon = steps[currentStep - 1].icon;
+                    return (
+                      <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
+                        <StepIcon className="w-5 h-5 text-white" />
+                      </div>
+                    );
+                  })()}
+                  {steps[currentStep - 1].title}
+                </CardTitle>
+                <CardDescription className="text-purple-300/70">{steps[currentStep - 1].description}</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <ScrollArea className="max-h-[60vh] pr-4 scroll-smooth">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStep}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {/* Step 1: Personal Info */}
+                      {currentStep === 1 && (
+                        <motion.div 
+                          className="grid md:grid-cols-2 gap-6"
+                          variants={staggerContainer}
+                          initial="initial"
+                          animate="animate"
                         >
-                          {spec}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+                          <motion.div className="space-y-2" variants={fadeInUp}>
+                            <Label htmlFor="fullName" className="text-purple-200">Full Name *</Label>
+                            <Input
+                              id="fullName"
+                              value={formData.fullName}
+                              onChange={(e) => updateFormData('fullName', e.target.value)}
+                              placeholder="Enter your full name"
+                              className="bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500 focus:border-purple-400"
+                            />
+                          </motion.div>
+                          <motion.div className="space-y-2" variants={fadeInUp}>
+                            <Label htmlFor="email" className="text-purple-200">Email Address *</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              value={formData.email}
+                              onChange={(e) => updateFormData('email', e.target.value)}
+                              placeholder="your@email.com"
+                              className="bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500 focus:border-purple-400"
+                            />
+                          </motion.div>
+                          <motion.div className="space-y-2" variants={fadeInUp}>
+                            <Label htmlFor="phone" className="text-purple-200">Phone Number</Label>
+                            <Input
+                              id="phone"
+                              type="tel"
+                              value={formData.phone}
+                              onChange={(e) => updateFormData('phone', e.target.value)}
+                              placeholder="+1 234 567 8900"
+                              className="bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500 focus:border-purple-400"
+                            />
+                          </motion.div>
+                          <motion.div className="space-y-2" variants={fadeInUp}>
+                            <Label htmlFor="country" className="text-purple-200">Country of Residence *</Label>
+                            <Select value={formData.country} onValueChange={(v) => updateFormData('country', v)}>
+                              <SelectTrigger className="bg-slate-800/50 border-purple-500/30 text-white">
+                                <SelectValue placeholder="Select your country" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-slate-800 border-purple-500/30">
+                                {countries.map(country => (
+                                  <SelectItem key={country} value={country} className="text-white hover:bg-purple-500/20">{country}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </motion.div>
+                          <motion.div className="space-y-2" variants={fadeInUp}>
+                            <Label htmlFor="dob" className="text-purple-200">Date of Birth *</Label>
+                            <Input
+                              id="dob"
+                              type="date"
+                              value={formData.dateOfBirth}
+                              onChange={(e) => updateFormData('dateOfBirth', e.target.value)}
+                              className="bg-slate-800/50 border-purple-500/30 text-white"
+                            />
+                          </motion.div>
+                          <motion.div className="space-y-2" variants={fadeInUp}>
+                            <Label htmlFor="linkedin" className="text-purple-200">LinkedIn Profile</Label>
+                            <Input
+                              id="linkedin"
+                              value={formData.linkedinUrl}
+                              onChange={(e) => updateFormData('linkedinUrl', e.target.value)}
+                              placeholder="https://linkedin.com/in/yourprofile"
+                              className="bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500 focus:border-purple-400"
+                            />
+                          </motion.div>
+                        </motion.div>
+                      )}
 
-                  <div className="border-t pt-6">
-                    <h4 className="font-semibold mb-4 flex items-center gap-2">
-                      <GraduationCap className="w-5 h-5" />
-                      Educational Background
-                    </h4>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="university">University Name *</Label>
-                        <Input
-                          id="university"
-                          value={formData.universityName}
-                          onChange={(e) => updateFormData('universityName', e.target.value)}
-                          placeholder="Enter university name"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="uniCountry">University Country</Label>
-                        <Select value={formData.universityCountry} onValueChange={(v) => updateFormData('universityCountry', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select country" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {countries.map(country => (
-                              <SelectItem key={country} value={country}>{country}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="gradYear">Graduation Year</Label>
-                        <Input
-                          id="gradYear"
-                          type="number"
-                          min={1950}
-                          max={new Date().getFullYear()}
-                          value={formData.graduationYear}
-                          onChange={(e) => updateFormData('graduationYear', e.target.value)}
-                          placeholder="2020"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="degreeType">Degree Type</Label>
-                        <Select value={formData.degreeType} onValueChange={(v) => updateFormData('degreeType', v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select degree" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
-                            <SelectItem value="master">Master's Degree</SelectItem>
-                            <SelectItem value="phd">Ph.D / Doctorate</SelectItem>
-                            <SelectItem value="diploma">Diploma</SelectItem>
-                            <SelectItem value="certificate">Professional Certificate</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="reference">Academic Reference Contact</Label>
-                        <Input
-                          id="reference"
-                          value={formData.academicReferenceContact}
-                          onChange={(e) => updateFormData('academicReferenceContact', e.target.value)}
-                          placeholder="Name, email or phone of academic reference"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+                      {/* Step 2: Experience */}
+                      {currentStep === 2 && (
+                        <motion.div 
+                          className="space-y-6"
+                          variants={staggerContainer}
+                          initial="initial"
+                          animate="animate"
+                        >
+                          <motion.div className="space-y-2" variants={fadeInUp}>
+                            <Label htmlFor="bio" className="text-purple-200">Professional Bio *</Label>
+                            <Textarea
+                              id="bio"
+                              value={formData.bio}
+                              onChange={(e) => updateFormData('bio', e.target.value)}
+                              placeholder="Tell us about your professional background, expertise, and teaching experience..."
+                              className="min-h-[150px] bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500 focus:border-purple-400"
+                            />
+                          </motion.div>
+                          
+                          <motion.div className="grid md:grid-cols-2 gap-6" variants={fadeInUp}>
+                            <div className="space-y-2">
+                              <Label htmlFor="experience" className="text-purple-200">Years of Experience</Label>
+                              <Input
+                                id="experience"
+                                type="number"
+                                min={0}
+                                value={formData.experienceYears}
+                                onChange={(e) => updateFormData('experienceYears', parseInt(e.target.value))}
+                                className="bg-slate-800/50 border-purple-500/30 text-white"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="website" className="text-purple-200">Personal Website</Label>
+                              <Input
+                                id="website"
+                                value={formData.websiteUrl}
+                                onChange={(e) => updateFormData('websiteUrl', e.target.value)}
+                                placeholder="https://yourwebsite.com"
+                                className="bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500"
+                              />
+                            </div>
+                          </motion.div>
 
-              {/* Step 3: Documents */}
-              {currentStep === 3 && (
-                <DocumentUpload
-                  documents={formData.documents}
-                  onUpdate={updateDocuments}
-                />
-              )}
+                          <motion.div className="space-y-3" variants={fadeInUp}>
+                            <Label className="text-purple-200">Areas of Expertise *</Label>
+                            <div className="flex flex-wrap gap-2">
+                              {specializations.map(spec => (
+                                <motion.div key={spec} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <Badge
+                                    variant={formData.selectedSpecializations.includes(spec) ? "default" : "outline"}
+                                    className={`cursor-pointer transition-all ${
+                                      formData.selectedSpecializations.includes(spec)
+                                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 border-0 text-white'
+                                        : 'border-purple-500/30 text-purple-300 hover:bg-purple-500/20'
+                                    }`}
+                                    onClick={() => handleSpecializationToggle(spec)}
+                                  >
+                                    {spec}
+                                  </Badge>
+                                </motion.div>
+                              ))}
+                            </div>
+                          </motion.div>
 
-              {/* Step 4: Bank Account */}
-              {currentStep === 4 && (
-                <BankAccountForm
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  countries={countries}
-                />
-              )}
+                          <motion.div className="border-t border-purple-500/20 pt-6" variants={fadeInUp}>
+                            <h4 className="font-semibold mb-4 flex items-center gap-2 text-white">
+                              <GraduationCap className="w-5 h-5 text-purple-400" />
+                              Educational Background
+                            </h4>
+                            <div className="grid md:grid-cols-2 gap-6">
+                              <div className="space-y-2">
+                                <Label htmlFor="university" className="text-purple-200">University Name *</Label>
+                                <Input
+                                  id="university"
+                                  value={formData.universityName}
+                                  onChange={(e) => updateFormData('universityName', e.target.value)}
+                                  placeholder="Enter university name"
+                                  className="bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="uniCountry" className="text-purple-200">University Country</Label>
+                                <Select value={formData.universityCountry} onValueChange={(v) => updateFormData('universityCountry', v)}>
+                                  <SelectTrigger className="bg-slate-800/50 border-purple-500/30 text-white">
+                                    <SelectValue placeholder="Select country" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-slate-800 border-purple-500/30">
+                                    {countries.map(country => (
+                                      <SelectItem key={country} value={country} className="text-white hover:bg-purple-500/20">{country}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="gradYear" className="text-purple-200">Graduation Year</Label>
+                                <Input
+                                  id="gradYear"
+                                  type="number"
+                                  min={1950}
+                                  max={new Date().getFullYear()}
+                                  value={formData.graduationYear}
+                                  onChange={(e) => updateFormData('graduationYear', e.target.value)}
+                                  placeholder="2020"
+                                  className="bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="degreeType" className="text-purple-200">Degree Type</Label>
+                                <Select value={formData.degreeType} onValueChange={(v) => updateFormData('degreeType', v)}>
+                                  <SelectTrigger className="bg-slate-800/50 border-purple-500/30 text-white">
+                                    <SelectValue placeholder="Select degree" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-slate-800 border-purple-500/30">
+                                    <SelectItem value="bachelor" className="text-white hover:bg-purple-500/20">Bachelor's Degree</SelectItem>
+                                    <SelectItem value="master" className="text-white hover:bg-purple-500/20">Master's Degree</SelectItem>
+                                    <SelectItem value="phd" className="text-white hover:bg-purple-500/20">Ph.D / Doctorate</SelectItem>
+                                    <SelectItem value="diploma" className="text-white hover:bg-purple-500/20">Diploma</SelectItem>
+                                    <SelectItem value="certificate" className="text-white hover:bg-purple-500/20">Professional Certificate</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="reference" className="text-purple-200">Academic Reference Contact</Label>
+                                <Input
+                                  id="reference"
+                                  value={formData.academicReferenceContact}
+                                  onChange={(e) => updateFormData('academicReferenceContact', e.target.value)}
+                                  placeholder="Name, email or phone of academic reference"
+                                  className="bg-slate-800/50 border-purple-500/30 text-white placeholder:text-slate-500"
+                                />
+                              </div>
+                            </div>
+                          </motion.div>
+                        </motion.div>
+                      )}
 
-              {/* Step 5: Payment */}
-              {currentStep === 5 && (
-                <PaymentStep
-                  onPaymentComplete={() => setPaymentCompleted(true)}
-                  paymentCompleted={paymentCompleted}
-                />
-              )}
+                      {/* Step 3: Documents */}
+                      {currentStep === 3 && (
+                        <motion.div variants={fadeInUp} initial="initial" animate="animate">
+                          <DocumentUpload
+                            documents={formData.documents}
+                            onUpdate={updateDocuments}
+                          />
+                        </motion.div>
+                      )}
 
-              {/* Step 6: Contract */}
-              {currentStep === 6 && (
-                <TeacherContract
-                  agreedToContract={formData.agreedToContract}
-                  onAgreeChange={(agreed) => updateFormData('agreedToContract', agreed)}
-                />
-              )}
+                      {/* Step 4: Bank Account */}
+                      {currentStep === 4 && (
+                        <motion.div variants={fadeInUp} initial="initial" animate="animate">
+                          <BankAccountForm
+                            formData={formData}
+                            updateFormData={updateFormData}
+                            countries={countries}
+                          />
+                        </motion.div>
+                      )}
 
-              {/* Navigation Buttons */}
-              <div className="flex justify-between mt-8 pt-6 border-t">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={currentStep === 1}
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Previous
-                </Button>
-                
-                {currentStep < 6 ? (
-                  <Button onClick={handleNext} disabled={!validateStep(currentStep)}>
-                    Next Step
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={handleSubmit} 
-                    disabled={!validateStep(6) || isSubmitting}
-                    className="bg-success hover:bg-success/90"
+                      {/* Step 5: Payment */}
+                      {currentStep === 5 && (
+                        <motion.div variants={fadeInUp} initial="initial" animate="animate">
+                          <PaymentStep
+                            onPaymentComplete={() => setPaymentCompleted(true)}
+                            paymentCompleted={paymentCompleted}
+                          />
+                        </motion.div>
+                      )}
+
+                      {/* Step 6: Contract */}
+                      {currentStep === 6 && (
+                        <motion.div variants={fadeInUp} initial="initial" animate="animate">
+                          <TeacherContract
+                            agreedToContract={formData.agreedToContract}
+                            onAgreeChange={(agreed) => updateFormData('agreedToContract', agreed)}
+                          />
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </ScrollArea>
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between mt-8 pt-6 border-t border-purple-500/20">
+                  <Button
+                    variant="outline"
+                    onClick={handlePrevious}
+                    disabled={currentStep === 1}
+                    className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
                   >
-                    {isSubmitting ? "Submitting..." : "Submit Application"}
-                    <CheckCircle2 className="w-4 h-4 ml-2" />
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Previous
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  
+                  {currentStep < 6 ? (
+                    <Button 
+                      onClick={handleNext} 
+                      disabled={!validateStep(currentStep)}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/30"
+                    >
+                      Next Step
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={handleSubmit} 
+                      disabled={!validateStep(6) || isSubmitting}
+                      className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 shadow-lg shadow-emerald-500/30"
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit Application"}
+                      <CheckCircle2 className="w-4 h-4 ml-2" />
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </div>
     </Layout>
