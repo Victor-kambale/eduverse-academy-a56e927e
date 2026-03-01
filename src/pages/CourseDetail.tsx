@@ -19,23 +19,22 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEnrollment } from "@/hooks/useEnrollment";
-
 const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 30 } as const,
   visible: {
     opacity: 1, y: 0,
-    transition: { duration: 0.5, ease: "easeOut" }
-  },
+    transition: { duration: 0.5 }
+  } as const,
 };
 
 const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  hidden: { opacity: 0 } as const,
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } } as const,
 };
 
 const scaleIn = {
-  hidden: { opacity: 0, scale: 0.9 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+  hidden: { opacity: 0, scale: 0.9 } as const,
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } } as const,
 };
 
 // Mock course data
