@@ -7,13 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { EnhancedPaymentFlow } from "@/components/payment/EnhancedPaymentFlow";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Star, Clock, Users, Play, Award, Globe, BookOpen, CheckCircle, Lock,
-  Heart, Share2, PlayCircle, FileText, Download, MessageSquare, BarChart,
+  Heart, Share2, PlayCircle, FileText, Download, MessageSquare,
   Trophy, Loader2, GraduationCap, Sparkles, Shield, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -21,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { useAuth } from "@/hooks/useAuth";
 import { GuestPrompt, useGuestPrompt } from "@/components/layout/GuestPrompt";
+import { notifyEnrollment, notifyPayment } from "@/hooks/useNotifications";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 } as const,
@@ -35,7 +35,6 @@ const scaleIn = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } } as const,
 };
 
-// Fallback data for courses not found in DB
 const fallbackCourse = {
   title: "Course",
   subtitle: "Learn from industry experts.",
@@ -98,7 +97,6 @@ const CourseDetailPage = () => {
   const { showPrompt, GuestPromptComponent } = useGuestPrompt();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const { isEnrolled, isLoading: isEnrollmentLoading } = useEnrollment(id);
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -107,15 +105,12 @@ const CourseDetailPage = () => {
     const fetchCourse = async () => {
       if (!id) return;
       try {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from('courses')
           .select('*')
           .eq('id', id)
           .maybeSingle();
-        
-        if (data) {
-          setCourse(data);
-        }
+        if (data) setCourse(data);
       } catch (err) {
         console.error('Error fetching course:', err);
       } finally {
@@ -140,13 +135,57 @@ const CourseDetailPage = () => {
       showPrompt("enroll in this course");
       return;
     }
-    setShowPaymentModal(true);
-  };
 
-  const handlePaymentSuccess = (paymentMethod: string) => {
-    setShowPaymentModal(false);
-    toast.success("Payment successful! You can now start learning.");
-    navigate(`/course/${id}/learn`);
+    // Free course → enroll directly
+    if (coursePrice === 0) {
+      setIsProcessingPayment(true);
+      try {
+        const { error } = await supabase
+          .from("enrollments")
+          .insert({ user_id: user.id, course_id: id });
+
+        if (error) {
+          if (error.code === "23505") {
+            toast.info("You're already enrolled in this course!");
+          } else {
+            throw error;
+          }
+        } else {
+          toast.success("Successfully enrolled! Start learning now.");
+          await notifyEnrollment(user.id, courseTitle, id!);
+          navigate(`/course/${id}/learn`);
+        }
+      } catch (err) {
+        console.error("Enrollment error:", err);
+        toast.error("Failed to enroll. Please try again.");
+      } finally {
+        setIsProcessingPayment(false);
+      }
+      return;
+    }
+
+    // Paid course → redirect to Stripe Checkout
+    setIsProcessingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: {
+          courseId: id,
+          courseTitle: courseTitle,
+          amount: coursePrice,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
+    } catch (err: any) {
+      console.error("Payment error:", err);
+      toast.error(err.message || "Failed to start payment. Please try again.");
+      setIsProcessingPayment(false);
+    }
   };
 
   const handleWishlist = () => {
@@ -177,12 +216,10 @@ const CourseDetailPage = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
-        className="bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground relative overflow-hidden"
+        className="relative gradient-hero text-primary-foreground overflow-hidden noise-overlay"
       >
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-10 w-72 h-72 bg-accent rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-96 h-96 bg-primary-foreground rounded-full blur-3xl" />
-        </div>
+        <div className="absolute inset-0 gradient-mesh opacity-60" />
+        <div className="absolute inset-0 grid-pattern" />
 
         <div className="container py-10 lg:py-16 relative z-10">
           <div className="grid lg:grid-cols-3 gap-8">
@@ -253,7 +290,7 @@ const CourseDetailPage = () => {
           <div className="lg:col-span-2 space-y-8">
             {/* What You'll Learn */}
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={scaleIn}>
-              <Card className="border-2 border-accent/20 shadow-lg">
+              <Card className="border-2 border-accent/20 shadow-elevated">
                 <CardHeader>
                   <CardTitle className="font-display flex items-center gap-2">
                     <Zap className="w-5 h-5 text-accent" />
@@ -264,7 +301,7 @@ const CourseDetailPage = () => {
                   <motion.div className="grid md:grid-cols-2 gap-3" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer}>
                     {staticMeta.whatYouWillLearn.map((item, index) => (
                       <motion.div key={index} variants={fadeUp} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                        <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                        <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
                         <span className="text-sm">{item}</span>
                       </motion.div>
                     ))}
@@ -275,7 +312,7 @@ const CourseDetailPage = () => {
 
             {/* Course Content */}
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={scaleIn}>
-              <Card className="shadow-lg">
+              <Card className="shadow-elevated">
                 <CardHeader>
                   <CardTitle className="font-display flex items-center gap-2">
                     <BookOpen className="w-5 h-5 text-primary" />
@@ -299,15 +336,9 @@ const CourseDetailPage = () => {
                             {section.items.map((item, itemIndex) => (
                               <div key={itemIndex} className="flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
                                 <div className="flex items-center gap-3">
-                                  {item.preview ? (
-                                    <PlayCircle className="w-4 h-4 text-accent" />
-                                  ) : (
-                                    <Lock className="w-4 h-4 text-muted-foreground" />
-                                  )}
+                                  {item.preview ? <PlayCircle className="w-4 h-4 text-accent" /> : <Lock className="w-4 h-4 text-muted-foreground" />}
                                   <span className="text-sm">{item.title}</span>
-                                  {item.preview && (
-                                    <Badge variant="outline" className="text-xs bg-accent/10 text-accent border-accent/20">Preview</Badge>
-                                  )}
+                                  {item.preview && <Badge variant="outline" className="text-xs bg-accent/10 text-accent border-accent/20">Preview</Badge>}
                                 </div>
                                 <span className="text-sm text-muted-foreground">{item.duration}</span>
                               </div>
@@ -323,7 +354,7 @@ const CourseDetailPage = () => {
 
             {/* Requirements */}
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={scaleIn}>
-              <Card className="shadow-lg">
+              <Card className="shadow-elevated">
                 <CardHeader>
                   <CardTitle className="font-display flex items-center gap-2">
                     <Shield className="w-5 h-5 text-primary" />
@@ -345,7 +376,7 @@ const CourseDetailPage = () => {
 
             {/* Reviews */}
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={scaleIn}>
-              <Card className="shadow-lg">
+              <Card className="shadow-elevated">
                 <CardHeader>
                   <CardTitle className="font-display flex items-center gap-2">
                     <MessageSquare className="w-5 h-5 text-primary" />
@@ -389,22 +420,25 @@ const CourseDetailPage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <Card className="shadow-2xl overflow-hidden border-2 border-border/50">
-                {/* Video Preview */}
-                <div className="relative aspect-video bg-muted group cursor-pointer overflow-hidden">
-                  <img src={courseImage} alt={courseTitle} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/40 group-hover:bg-background/30 transition-colors">
-                    <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.95 }} className="w-16 h-16 rounded-full bg-accent flex items-center justify-center shadow-xl">
-                      <Play className="w-6 h-6 text-accent-foreground ml-1" />
-                    </motion.div>
+              <Card className="overflow-hidden border-0 shadow-2xl bg-card">
+                {/* Image glow */}
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-accent/10 blur-xl rounded-t-xl" />
+                  <div className="relative aspect-video bg-muted group cursor-pointer overflow-hidden">
+                    <img src={courseImage} alt={courseTitle} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-foreground/30 group-hover:bg-foreground/20 transition-colors">
+                      <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.95 }} className="w-16 h-16 rounded-full bg-accent flex items-center justify-center shadow-glow-lg">
+                        <Play className="w-6 h-6 text-accent-foreground ml-1" />
+                      </motion.div>
+                    </div>
                   </div>
                 </div>
 
                 <CardContent className="p-6 space-y-5">
-                  {/* Price - uses actual course price */}
+                  {/* Price */}
                   <div className="flex items-center gap-3">
                     {coursePrice === 0 ? (
-                      <span className="text-4xl font-bold text-green-600">Free</span>
+                      <span className="text-4xl font-bold text-success">Free</span>
                     ) : (
                       <>
                         <span className="text-4xl font-bold">${coursePrice}</span>
@@ -434,13 +468,19 @@ const CourseDetailPage = () => {
                       </Button>
                     ) : isEnrolled ? (
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button variant="accent" size="lg" className="w-full h-12 font-semibold" onClick={() => navigate(`/course/${id}/learn`)}>
+                        <Button variant="accent" size="lg" className="w-full h-12 font-semibold shine-effect" onClick={() => navigate(`/course/${id}/learn`)}>
                           <GraduationCap className="w-5 h-5 mr-2" /> Continue Learning
                         </Button>
                       </motion.div>
                     ) : (
                       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                        <Button variant="accent" size="lg" className="w-full h-12 font-semibold text-base" onClick={handleEnroll} disabled={isProcessingPayment}>
+                        <Button
+                          variant="accent"
+                          size="lg"
+                          className="w-full h-12 font-semibold text-base shine-effect"
+                          onClick={handleEnroll}
+                          disabled={isProcessingPayment}
+                        >
                           {isProcessingPayment ? (
                             <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
                           ) : coursePrice === 0 ? (
@@ -491,25 +531,6 @@ const CourseDetailPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Enhanced Payment Flow Modal */}
-      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-display text-2xl">{t('payment.selectMethod')}</DialogTitle>
-            <DialogDescription>
-              Complete your purchase for: {courseTitle}
-            </DialogDescription>
-          </DialogHeader>
-          <EnhancedPaymentFlow
-            amount={coursePrice}
-            courseName={courseTitle}
-            courseLevel={courseLevel}
-            onSuccess={handlePaymentSuccess}
-            onCancel={() => setShowPaymentModal(false)}
-          />
-        </DialogContent>
-      </Dialog>
     </Layout>
   );
 };
