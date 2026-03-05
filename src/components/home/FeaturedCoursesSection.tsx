@@ -44,27 +44,39 @@ export function FeaturedCoursesSection() {
   }, []);
 
   return (
-    <section className="py-20 bg-secondary/30">
-      <div className="container">
+    <section className="py-24 relative overflow-hidden">
+      <div className="absolute inset-0 bg-secondary/30" />
+      {/* Decorative lines */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+
+      <div className="container relative">
         <motion.div
-          className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12"
+          className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-14"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
           <div>
-            <h2 className="font-display text-3xl md:text-4xl font-bold mb-2">
+            <motion.span 
+              className="inline-block text-sm font-semibold text-accent uppercase tracking-widest mb-3"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              Top Picks
+            </motion.span>
+            <h2 className="font-display text-3xl md:text-5xl font-bold mb-3">
               {tSmart(["courses.featured", "home.featured"], { defaultValue: "Featured Courses" })}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-lg max-w-md">
               {tSmart(["home.popular"], { defaultValue: "Start learning from our most popular courses" })}
             </p>
           </div>
           <Link to="/courses">
-            <Button variant="outline">
+            <Button variant="outline" className="group">
               {tSmart(["common.viewAll", "courses.all"], { defaultValue: "View All Courses" })}
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
         </motion.div>
@@ -85,42 +97,43 @@ export function FeaturedCoursesSection() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
               >
-                <Link to={`/course/${course.id}`} className="group">
-                  <Card className="h-full overflow-hidden hover-lift border-0 shadow-md hover:shadow-xl transition-all duration-300">
-                    <div className="relative">
+                <Link to={`/course/${course.id}`} className="group block">
+                  <Card className="h-full overflow-hidden card-3d border-0 shadow-elevated bg-card">
+                    <div className="relative overflow-hidden">
                       <img
                         src={course.thumbnail_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop"}
                         alt={course.title}
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                       {course.price === 0 && (
-                        <Badge className="absolute top-3 left-3 bg-green-500 text-white">Free</Badge>
+                        <Badge className="absolute top-3 left-3 bg-success text-success-foreground shadow-lg">Free</Badge>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                        <Button variant="accent" size="sm" className="w-full">
+                      {/* Overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-5">
+                        <Button variant="accent" size="sm" className="w-full shadow-glow">
                           <Play className="w-4 h-4 mr-2" />
                           {tSmart(["courses.preview", "courses.viewCourse"], { defaultValue: "Preview" })}
                         </Button>
                       </div>
                     </div>
                     <CardContent className="p-5">
-                      <Badge variant="secondary" className="mb-2">{course.category || "General"}</Badge>
-                      <h3 className="font-semibold line-clamp-2 mb-2 group-hover:text-accent transition-colors">
+                      <Badge variant="secondary" className="mb-2 font-medium">{course.category || "General"}</Badge>
+                      <h3 className="font-semibold line-clamp-2 mb-2 group-hover:text-accent transition-colors duration-300">
                         {course.title}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-3">{course.instructor_name || "EduVerse Instructor"}</p>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                         <span className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          {course.duration_hours || 0} hours
+                          {course.duration_hours || 0}h
                         </span>
                         <Badge variant="outline" className="text-xs capitalize">{course.level || "All Levels"}</Badge>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 pt-2 border-t border-border/50">
                         {course.price === 0 ? (
-                          <span className="text-xl font-bold text-green-600">Free</span>
+                          <span className="text-xl font-bold text-success">Free</span>
                         ) : (
                           <span className="text-xl font-bold text-foreground">${course.price}</span>
                         )}
