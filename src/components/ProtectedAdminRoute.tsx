@@ -1,6 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedAdminRouteProps {
   children: React.ReactNode;
@@ -8,9 +9,38 @@ interface ProtectedAdminRouteProps {
 
 const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
   const { user, loading: authLoading } = useAuth();
-  const { isAdmin, loading: roleLoading } = useUserRole();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [roleChecked, setRoleChecked] = useState(false);
 
-  if (authLoading || roleLoading) {
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (!user) {
+      setIsAdmin(false);
+      setRoleChecked(true);
+      return;
+    }
+
+    const checkAdmin = async () => {
+      try {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        
+        setIsAdmin(!!data);
+      } catch {
+        setIsAdmin(false);
+      }
+      setRoleChecked(true);
+    };
+
+    checkAdmin();
+  }, [user, authLoading]);
+
+  if (authLoading || !roleChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -19,7 +49,7 @@ const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/auth/admin" replace />;
   }
 
   if (!isAdmin) {

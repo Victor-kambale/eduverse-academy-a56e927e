@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -16,10 +16,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 export default function AdminAuth() {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,6 +29,27 @@ export default function AdminAuth() {
     password: '',
     adminKey: ''
   });
+
+  // If already logged in, check admin role and redirect
+  useEffect(() => {
+    if (authLoading) return;
+    if (user) {
+      checkAdminAndRedirect(user.id);
+    }
+  }, [user, authLoading]);
+
+  const checkAdminAndRedirect = async (userId: string) => {
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (roleData) {
+      navigate('/admin', { replace: true });
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,11 +69,14 @@ export default function AdminAuth() {
         .select('role')
         .eq('user_id', data.user?.id)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
 
       if (roleData) {
         toast.success('Welcome, Administrator!');
-        navigate('/admin');
+        // Small delay to let auth state propagate
+        setTimeout(() => {
+          navigate('/admin', { replace: true });
+        }, 300);
       } else {
         toast.error('Access denied. Admin privileges required.');
         await supabase.auth.signOut();
